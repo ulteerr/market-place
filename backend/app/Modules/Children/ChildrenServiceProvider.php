@@ -9,6 +9,8 @@ use Modules\Children\Repositories\ChildRepository;
 
 final class ChildrenServiceProvider extends ModuleServiceProvider
 {
+    protected string $moduleName = 'Children';
+
     public function register(): void
     {
         $this->app->bind(ChildRepositoryInterface::class, ChildRepository::class);

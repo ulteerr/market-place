@@ -1,23 +1,38 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Modules\Users;
 
-use Illuminate\Support\ServiceProvider;
-use Modules\Users\Repositories\ChildRepository;
+use App\Support\ModuleServiceProvider;
 use Modules\Users\Repositories\UsersRepositoryInterface;
-use Modules\Users\Repositories\ChildRepositoryInterface;
 use Modules\Users\Repositories\UsersRepository;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Users\Contracts\UsersServiceInterface;
+use Modules\Users\Services\UsersService;
 
-final class UsersServiceProvider extends ServiceProvider
+final class UsersServiceProvider extends ModuleServiceProvider
 {
+    protected string $moduleName = 'Users';
     public function register(): void
     {
         $this->app->bind(UsersRepositoryInterface::class, UsersRepository::class);
+        $this->app->bind(
+            UsersServiceInterface::class,
+            UsersService::class
+        );
     }
 
     public function boot(): void
     {
-        
+        parent::boot();
+
+        if ($this->app->runningInConsole()) {
+            Factory::guessFactoryNamesUsing(
+                fn(string $modelName) =>
+                'Modules\\Users\\Database\\Factories\\' .
+                    class_basename($modelName) . 'Factory'
+            );
+        }
     }
 }

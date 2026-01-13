@@ -7,12 +7,13 @@ namespace Modules\Users\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Shared\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Children\Models\Child;
 
 final class User extends Authenticatable
 {
-	use Notifiable, HasUuid, HasApiTokens;
+	use Notifiable, HasUuid, HasApiTokens, HasFactory;
 
 	protected $keyType = 'string';
 	public $incrementing = false;

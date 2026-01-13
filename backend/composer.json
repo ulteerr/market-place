@@ -28,6 +28,7 @@
         "psr-4": {
             "App\\": "app/",
             "Modules\\": "app/Modules/",
+            "Modules\\Auth\\Tests\\": "app/Modules/Auth/Tests/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

@@ -1,17 +1,21 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Modules\Auth\Services;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Modules\Users\Services\UsersService;
+use Modules\Auth\Contracts\TokenServiceInterface;
+use Modules\Users\Contracts\UsersServiceInterface;
+use Modules\Users\Http\Resources\UserResource;
 use Modules\Users\Models\User;
 
 final class AuthService
 {
     public function __construct(
-        private readonly UsersService $usersService
+        private readonly UsersServiceInterface $usersService,
+        private readonly TokenServiceInterface $tokenService
     ) {}
 
     public function login(array $credentials): array
@@ -24,25 +28,20 @@ final class AuthService
             ]);
         }
 
-        return $this->formatUserWithToken($user);
+        return $this->buildAuthResponse($user);
     }
 
     public function register(array $data): array
     {
         $user = $this->usersService->createUser($data);
-        return $this->formatUserWithToken($user);
+        return $this->buildAuthResponse($user);
     }
 
-    private function formatUserWithToken(User $user): array
+    private function buildAuthResponse(User $user): array
     {
-        $token = $user->createToken('api-token')->plainTextToken;
-
         return [
-            'id'         => $user->id,
-            'email'      => $user->email,
-            'first_name' => $user->first_name,
-            'last_name'  => $user->last_name,
-            'token'      => $token,
+            'user'  => new UserResource($user),
+            'token' => $this->tokenService->createToken($user),
         ];
     }
 }

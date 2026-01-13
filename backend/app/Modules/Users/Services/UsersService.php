@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Users\Services;
 
+use Modules\Users\Contracts\UsersServiceInterface;
 use Modules\Users\Models\User;
 use Modules\Users\Repositories\UsersRepositoryInterface;
+use Illuminate\Support\Collection;
 
-final class UsersService
+final class UsersService implements UsersServiceInterface
 {
 	public function __construct(
 		private readonly UsersRepositoryInterface $repository
@@ -38,7 +40,7 @@ final class UsersService
 		return $this->repository->findById($id);
 	}
 
-	public function getChildrenForParent(string $parentId)
+	public function getChildrenForParent(string $parentId): Collection
 	{
 		$user = $this->repository->findById($parentId);
 		return $user ? $user->children : collect();
