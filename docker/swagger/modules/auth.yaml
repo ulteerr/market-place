@@ -1,0 +1,37 @@
+login:
+  post:
+    tags: [Auth]
+    summary: User login
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/auth.yaml#/LoginRequest
+    responses:
+      '200':
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/auth.yaml#/AuthResponse
+      '422':
+        $ref: ../schemas/auth.yaml#/ValidationError
+
+register:
+  post:
+    tags: [Auth]
+    summary: User registration
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/auth.yaml#/RegisterRequest
+    responses:
+      '201':
+        description: Registered
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/auth.yaml#/AuthResponse

@@ -1,0 +1,36 @@
+LoginRequest:
+  type: object
+  required: [email, password]
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+      format: password
+
+RegisterRequest:
+  type: object
+  required: [email, password]
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+      format: password
+
+AuthResponse:
+  type: object
+  properties:
+    token:
+      type: string
+    user:
+      $ref: ./user.yaml#/User
+
+ValidationError:
+  description: Validation error
+  content:
+    application/json:
+      schema:
+        type: object

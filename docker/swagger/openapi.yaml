@@ -1,0 +1,16 @@
+openapi: 3.0.3
+
+info:
+  title: Marketplace API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local backend (nginx)
+
+paths:
+  /api/auth/login:
+    $ref: ./modules/auth.yaml#/login
+
+  /api/auth/register:
+    $ref: ./modules/auth.yaml#/register

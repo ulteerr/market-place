@@ -49,12 +49,11 @@ services:
     ports:
       - "5050:80"
     volumes:
-      - ./docker/data/pgadmin:/var/lib/pgadmin  
+      - ./docker/data/pgadmin:/var/lib/pgadmin
     depends_on:
       - db
     networks:
       - app
-    
 
   redis:
     image: redis:7-alpine
@@ -62,6 +61,21 @@ services:
     restart: unless-stopped
     ports:
       - "6381:6379"
+    networks:
+      - app
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    volumes:
+      - ./docker/swagger/openapi.yaml:/openapi.yaml:ro
+      - ./docker/swagger/modules:/modules:ro
+      - ./docker/swagger/schemas:/schemas:ro
     networks:
       - app
 
