@@ -8,9 +8,22 @@ servers:
   - url: http://localhost:8080
     description: Local backend (nginx)
 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  
+
+security:
+  - bearerAuth: []
+
 paths:
   /api/auth/login:
     $ref: ./modules/auth.yaml#/login
 
   /api/auth/register:
     $ref: ./modules/auth.yaml#/register
+
+  /api/auth/logout:
+    $ref: ./modules/auth.yaml#/logout  

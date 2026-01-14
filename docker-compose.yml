@@ -71,11 +71,9 @@ services:
     ports:
       - "8081:8080"
     environment:
-      SWAGGER_JSON: /openapi.yaml
+      SWAGGER_JSON: /swagger/openapi.yaml
     volumes:
-      - ./docker/swagger/openapi.yaml:/openapi.yaml:ro
-      - ./docker/swagger/modules:/modules:ro
-      - ./docker/swagger/schemas:/schemas:ro
+      - ./docker/swagger:/swagger:ro
     networks:
       - app
 

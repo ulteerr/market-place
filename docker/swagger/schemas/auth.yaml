@@ -1,36 +1,96 @@
 LoginRequest:
   type: object
-  required: [email, password]
+  required:
+    - email
+    - password
   properties:
     email:
       type: string
       format: email
+      example: test@test.com
     password:
       type: string
       format: password
+      example: password123
+
 
 RegisterRequest:
   type: object
-  required: [email, password]
+  required:
+    - first_name
+    - last_name
+    - email
+    - password
+    - password_confirmation
   properties:
+    first_name:
+      type: string
+      maxLength: 255
+      example: Александр
+
+    last_name:
+      type: string
+      maxLength: 255
+      example: Лебедев
+
+    middle_name:
+      type: string
+      maxLength: 255
+      nullable: true
+      example: Алексеевич
+
     email:
       type: string
       format: email
+      example: user@example.com
+
     password:
       type: string
       format: password
+      minLength: 6
+      example: secret123
+
+    password_confirmation:
+      type: string
+      format: password
+      minLength: 6
+      example: secret123
+
+    phone:
+      type: string
+      maxLength: 20
+      nullable: true
+      example: "+79998887766"
+
 
 AuthResponse:
   type: object
+  required:
+    - status
+    - user
+    - token
   properties:
-    token:
+    status:
       type: string
+      example: ok
     user:
       $ref: ./user.yaml#/User
+    token:
+      type: string
+      description: Sanctum access token
+      example: 588d681d-d1d9-4192-8cea-eb7bf7f9e4aa|POcNCTStEl05Uk3UOAyoETHAZmUn8liSwsxDeG5P54df2baf
 
-ValidationError:
-  description: Validation error
-  content:
-    application/json:
-      schema:
-        type: object
+LogoutResponse:
+  type: object
+  required:
+    - status
+    - message
+  properties:
+    status:
+      type: string
+      example: ok
+    message:
+      type: string
+      example: Logged out successfully
+
+

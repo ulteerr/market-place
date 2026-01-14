@@ -19,7 +19,7 @@ final class RegistrationRequest extends FormRequest
             'last_name'  => ['required', 'string', 'max:255'],
             'middle_name'=> ['nullable', 'string', 'max:255'],
             'email'      => ['required', 'email', 'unique:users,email'],
-            'password'   => ['required', 'string', 'min:6', 'confirmed'], // password_confirmation
+            'password'   => ['required', 'string', 'min:6', 'confirmed'],
             'phone'      => ['nullable', 'string', 'max:20'],
         ];
     }

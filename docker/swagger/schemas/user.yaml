@@ -1,13 +1,22 @@
 User:
   type: object
+  required:
+    - id
+    - email
+    - first_name
+    - last_name
   properties:
     id:
       type: string
       format: uuid
+      example: d3302fd5-360b-48ba-a049-40aa4accf26f
     email:
       type: string
       format: email
+      example: test@test.com
     first_name:
       type: string
+      example: Test
     last_name:
       type: string
+      example: User

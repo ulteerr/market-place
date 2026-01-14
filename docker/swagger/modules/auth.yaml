@@ -2,12 +2,24 @@ login:
   post:
     tags: [Auth]
     summary: User login
+    security: []
     requestBody:
       required: true
       content:
         application/json:
           schema:
             $ref: ../schemas/auth.yaml#/LoginRequest
+          examples:
+            valid:
+              summary: Valid credentials
+              value:
+                email: test@test.com
+                password: password123
+            invalid:
+              summary: Invalid credentials
+              value:
+                email: test@test.com
+                password: wrong-password
     responses:
       '200':
         description: Login successful
@@ -15,23 +27,85 @@ login:
           application/json:
             schema:
               $ref: ../schemas/auth.yaml#/AuthResponse
+            examples:
+              success:
+                summary: Successful login
+                value:
+                  status: ok
+                  user:
+                    id: d3302fd5-360b-48ba-a049-40aa4accf26f
+                    email: test@test.com
+                    first_name: Test
+                    last_name: User
+                  token: 588d681d-d1d9-4192-8cea-eb7bf7f9e4aa|example
       '422':
-        $ref: ../schemas/auth.yaml#/ValidationError
+        $ref: ../errors.yaml#/ValidationError
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
 
 register:
   post:
     tags: [Auth]
     summary: User registration
+    security: []
     requestBody:
       required: true
       content:
         application/json:
           schema:
             $ref: ../schemas/auth.yaml#/RegisterRequest
+          examples:
+            valid:
+              summary: Valid registration
+              value:
+                first_name: Михаил
+                last_name: Попов
+                middle_name: Алексеевич
+                email: user@example.com
+                password: secret123
+                password_confirmation: secret123
+                phone: "+79998887766"
     responses:
       '201':
-        description: Registered
+        description: Registered successfully
         content:
           application/json:
             schema:
               $ref: ../schemas/auth.yaml#/AuthResponse
+            examples:
+              success:
+                summary: Successful registration
+                value:
+                  status: ok
+                  user:
+                    id: d6eee127-5cba-4817-a0c5-00cdf4ef729f
+                    email: user@example.com
+                    first_name: Михаил
+                    last_name: Попов
+                  token: 62d7e9d7-08b1-45ac-b533-5b59c21126fd|example
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+
+logout:
+  post:
+    tags: [Auth]
+    summary: User logout
+    description: Invalidate current access token
+    responses:
+      '200':
+        description: Successfully logged out
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/auth.yaml#/LogoutResponse
+            examples:
+              success:
+                summary: Logout success
+                value:
+                  status: ok
+                  message: Logged out successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
