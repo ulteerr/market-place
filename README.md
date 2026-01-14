@@ -1,3 +1,6 @@
+![CI](https://github.com/ulteerr/market-place/actions/workflows/ci.yml/badge.svg)
+
+
 # 🛒 Marketplace API
 
 Backend API for Marketplace project built with **Laravel**, **PostgreSQL**, **Redis**, and **Docker**.  
