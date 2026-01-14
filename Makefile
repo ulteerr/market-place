@@ -1,10 +1,9 @@
-# Makefile для Laravel 12 + Docker
-# Работает с docker-compose.yml, контейнер app
-
-.PHONY: up down restart art comp migrate seed cache clear
+.PHONY: up down restart art comp migrate migrate-fresh db-seed \
+        cache-clear config-cache route-cache view-clear \
+        test test-auth swagger
 
 # --------------------------
-# Контейнеры
+# Containers
 # --------------------------
 
 up:
@@ -18,39 +17,40 @@ restart:
 	make up
 
 # --------------------------
-# Laravel artisan
-# Использование:
+# Laravel Artisan
+# Usage:
 # make art cmd="migrate"
 # --------------------------
+
 art:
-	docker-compose exec app php artisan $(cmd)
+	docker-compose exec backend php artisan $(cmd)
 
 # --------------------------
 # Composer
-# Использование:
+# Usage:
 # make comp cmd="install"
 # --------------------------
+
 comp:
-	docker-compose exec app composer $(cmd)
+	docker-compose exec backend composer $(cmd)
 
 # --------------------------
-# Миграции базы данных
+# Database
 # --------------------------
+
 migrate:
 	make art cmd="migrate"
 
 migrate-fresh:
 	make art cmd="migrate:fresh --seed"
 
-# --------------------------
-# Seeder
-# --------------------------
 db-seed:
 	make art cmd="db:seed"
 
 # --------------------------
-# Кэш и конфигурации
+# Cache & optimization
 # --------------------------
+
 cache-clear:
 	make art cmd="cache:clear"
 
@@ -62,3 +62,20 @@ route-cache:
 
 view-clear:
 	make art cmd="view:clear"
+
+# --------------------------
+# Tests
+# --------------------------
+
+test:
+	make art cmd="test"
+
+test-auth:
+	make art cmd="test app/Modules/Auth"
+
+# --------------------------
+# Swagger / OpenAPI
+# --------------------------
+
+swagger:
+	docker-compose restart swagger-ui

@@ -1,7 +1,7 @@
 # 🛒 Marketplace API
 
 Backend API for Marketplace project built with **Laravel**, **PostgreSQL**, **Redis**, and **Docker**.  
-API documentation follows **OpenAPI-first** approach and is served via a standalone **Swagger UI** container.
+API documentation follows an **OpenAPI-first** approach and is served via a standalone **Swagger UI** container.
 
 ---
 
@@ -33,6 +33,7 @@ project-root/
 │     │  └─ user.yaml
 │     └─ errors.yaml
 ├─ docker-compose.yml
+├─ Makefile
 └─ README.md
 ```
 
@@ -46,6 +47,7 @@ Make sure you have installed:
 
 - Docker >= 20.x
 - Docker Compose >= 2.x
+- Make
 
 ---
 
@@ -62,7 +64,7 @@ Default configuration works out of the box.
 ## 🐳 Run the project (Docker)
 
 ```bash
-docker-compose up -d
+make up
 ```
 
 ---
@@ -70,14 +72,14 @@ docker-compose up -d
 ## 🧪 Backend setup (first run only)
 
 ```bash
-docker-compose exec backend php artisan key:generate
-docker-compose exec backend php artisan migrate
+make art cmd="key:generate"
+make migrate
 ```
 
 Optional:
 
 ```bash
-docker-compose exec backend php artisan db:seed
+make db-seed
 ```
 
 ---
@@ -115,23 +117,59 @@ Authentication uses **Bearer token** (Laravel Sanctum).
 | POST | /api/auth/register     | User registration |
 | POST | /api/auth/logout       | User logout (protected) |
 
+All request/response examples are available directly in Swagger UI.
+
 ---
 
-## 🧪 Running Tests
+## 🧰 Makefile Commands
+
+The project includes a Makefile to simplify common Docker and Laravel commands.
+
+### Containers
 
 ```bash
-docker-compose exec backend php artisan test
+make up        # Build and start containers
+make down      # Stop containers
+make restart   # Restart containers
 ```
 
----
-
-## 🛠 Useful Commands
+### Artisan commands
 
 ```bash
-docker-compose down
-docker-compose build
-docker-compose logs -f backend
-docker-compose exec backend php artisan
+make art cmd="key:generate"
+make art cmd="migrate"
+make art cmd="test"
+```
+
+### Composer
+
+```bash
+make comp cmd="install"
+make comp cmd="dump-autoload"
+```
+
+### Database
+
+```bash
+make migrate
+make migrate-fresh
+make db-seed
+```
+
+### Cache & optimization
+
+```bash
+make cache-clear
+make config-cache
+make route-cache
+make view-clear
+```
+
+### Testing
+
+```bash
+make test
+make test-auth
 ```
 
 ---
@@ -142,6 +180,7 @@ docker-compose exec backend php artisan
 - Swagger UI runs as a standalone container
 - Backend is fully decoupled from API docs
 - Errors are centralized and reused across modules
+- API documentation acts as a contract for frontend integration
 
 ---
 
@@ -150,5 +189,10 @@ docker-compose exec backend php artisan
 - API versioning (/v1)
 - OpenAPI validation in CI
 - Additional domain modules
+- Production-ready Docker setup
 
 ---
+
+## 👤 Author
+
+Marketplace Backend Team
