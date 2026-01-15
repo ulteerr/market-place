@@ -1,0 +1,32 @@
+me:
+  get:
+    tags: [Users]
+    summary: Get current authenticated user
+    description: Returns profile of the currently authenticated user
+    security:
+      - BearerAuth: []
+    responses:
+      '200':
+        description: Current authenticated user
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: ok
+                user:
+                  $ref: ../schemas/user.yaml#/User
+            examples:
+              success:
+                summary: Authenticated user profile
+                value:
+                  status: ok
+                  user:
+                    id: d3302fd5-360b-48ba-a049-40aa4accf26f
+                    email: test@test.com
+                    first_name: Test
+                    last_name: User
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError

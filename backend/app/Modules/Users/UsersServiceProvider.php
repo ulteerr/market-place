@@ -14,6 +14,7 @@ use Modules\Users\Services\UsersService;
 final class UsersServiceProvider extends ModuleServiceProvider
 {
     protected string $moduleName = 'Users';
+    
     public function register(): void
     {
         $this->app->bind(UsersRepositoryInterface::class, UsersRepository::class);

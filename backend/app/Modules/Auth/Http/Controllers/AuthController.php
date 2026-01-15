@@ -8,7 +8,6 @@ use Illuminate\Routing\Controller;
 use Modules\Auth\Requests\LoginRequest;
 use Modules\Auth\Requests\RegistrationRequest;
 use Modules\Auth\Services\AuthService;
-use Modules\Users\Services\UsersService;
 use Illuminate\Http\Request;
 
 final class AuthController extends Controller
