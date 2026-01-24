@@ -13,7 +13,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT  
+      bearerFormat: Sanctum
 
 security:
   - bearerAuth: []
@@ -27,6 +27,6 @@ paths:
 
   /api/auth/logout:
     $ref: ./modules/auth.yaml#/logout
-      
+
   /api/me:
-    $ref: ./modules/users.yaml#/me
+    $ref: ./modules/users.yaml#/paths/me

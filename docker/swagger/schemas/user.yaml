@@ -13,10 +13,41 @@ User:
     email:
       type: string
       format: email
-      example: test@test.com
+      example: alex.johnson@example.com
     first_name:
       type: string
-      example: Test
+      example: Alex
     last_name:
       type: string
-      example: User
+      example: Johnson
+    middle_name:
+      type: string
+      nullable: true
+      example: Michael
+    phone:
+      type: string
+      nullable: true
+      example: "+79998887766"
+
+
+UpdateMeRequest:
+  type: object
+  properties:
+    first_name:
+      type: string
+      example: Alex
+    last_name:
+      type: string
+      example: Johnson
+    middle_name:
+      type: string
+      nullable: true
+      example: Michael
+    phone:
+      type: string
+      nullable: true
+      example: "+79998887766"
+    email:
+      type: string
+      format: email
+      example: alex.johnson@example.com

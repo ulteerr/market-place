@@ -1,32 +1,84 @@
-me:
-  get:
-    tags: [Users]
-    summary: Get current authenticated user
-    description: Returns profile of the currently authenticated user
-    security:
-      - BearerAuth: []
-    responses:
-      '200':
-        description: Current authenticated user
+paths:
+  me:
+    get:
+      tags: [Users]
+      summary: Get current authenticated user
+      description: Returns profile of the currently authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  user:
+                    $ref: ../schemas/user.yaml#/User
+              examples:
+                success:
+                  summary: Authenticated user profile
+                  value:
+                    status: ok
+                    user:
+                      id: d3302fd5-360b-48ba-a049-40aa4accf26f
+                      email: alex.johnson@example.com
+                      first_name: Alex
+                      last_name: Johnson
+        '401':
+          $ref: ../errors.yaml#/UnauthorizedError
+
+    patch:
+      tags: [Users]
+      summary: Update current authenticated user
+      description: Update profile fields of the currently authenticated user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  example: ok
-                user:
-                  $ref: ../schemas/user.yaml#/User
+              $ref: ../schemas/user.yaml#/UpdateMeRequest
             examples:
-              success:
-                summary: Authenticated user profile
+              valid:
+                summary: Update profile
                 value:
-                  status: ok
+                  first_name: Alex
+                  last_name: Johnson
+                  middle_name: Michael
+                  phone: "+79998887766"
+                  email: alex.johnson@example.com
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
                   user:
-                    id: d3302fd5-360b-48ba-a049-40aa4accf26f
-                    email: test@test.com
-                    first_name: Test
-                    last_name: User
-      '401':
-        $ref: ../errors.yaml#/UnauthorizedError
+                    $ref: ../schemas/user.yaml#/User
+              examples:
+                success:
+                  summary: Updated user profile
+                  value:
+                    status: ok
+                    user:
+                      id: d3302fd5-360b-48ba-a049-40aa4accf26f
+                      email: alex.johnson@example.com
+                      first_name: Alex
+                      last_name: Johnson
+                      middle_name: Michael
+                      phone: "+79998887766"
+        '401':
+          $ref: ../errors.yaml#/UnauthorizedError
+        '422':
+          $ref: ../errors.yaml#/ValidationError
