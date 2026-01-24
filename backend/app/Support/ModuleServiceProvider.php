@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Support;
@@ -27,12 +28,13 @@ abstract class ModuleServiceProvider extends ServiceProvider
 
 	protected function loadMigrations(): void
 	{
-		$migrationsPath = app_path("Modules/{$this->moduleName}/database/migrations");
+		$migrationsPath = app_path("Modules/{$this->moduleName}/Database/Migrations");
 
 		if (is_dir($migrationsPath)) {
 			$this->loadMigrationsFrom($migrationsPath);
 		}
 	}
+
 
 	protected function loadPolicies(): void
 	{

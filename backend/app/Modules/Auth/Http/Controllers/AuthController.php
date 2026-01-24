@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\Auth\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\Auth\Requests\LoginRequest;
-use Modules\Auth\Requests\RegistrationRequest;
+use Modules\Auth\Http\Requests\LoginRequest;
+use Modules\Auth\Http\Requests\RegistrationRequest;
 use Modules\Auth\Services\AuthService;
 use Illuminate\Http\Request;
 

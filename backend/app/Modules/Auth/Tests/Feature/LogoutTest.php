@@ -17,11 +17,10 @@ class LogoutTest extends TestCase
     #[Test]
     public function authenticated_user_can_logout()
     {
-        $user = User::factory()->create();
-        $token = $user->createToken('api-token')->plainTextToken;
+        $auth = $this->actingAsUser();
 
         $response = $this
-            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->withHeaders($auth['headers'])
             ->postJson('/api/auth/logout');
 
         $response->assertStatus(200);

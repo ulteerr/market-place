@@ -11,35 +11,35 @@ use PHPUnit\Framework\Attributes\Test;
 
 final class MeTest extends TestCase
 {
-	use RefreshDatabase;
+    use RefreshDatabase;
 
-	#[Test]
-	public function test_authenticated_user_can_get_profile(): void
-	{
-		$user = User::factory()->create();
+    #[Test]
+    public function test_authenticated_user_can_get_profile(): void
+    {
+        $auth = $this->actingAsUser();
 
-		$token = $user->createToken('test-token')->plainTextToken;
+        $user = $auth['user'];
 
-		$response = $this
-			->withHeader('Authorization', 'Bearer ' . $token)
-			->getJson('/api/me');
+        $response = $this
+            ->withHeaders($auth['headers'])
+            ->getJson('/api/me');
 
-		$response
-			->assertOk()
-			->assertJson([
-				'status' => 'ok',
-				'user' => [
-					'id' => $user->id,
-					'email' => $user->email,
-				],
-			]);
-	}
+        $response
+            ->assertOk()
+            ->assertJson([
+                'status' => 'ok',
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                ],
+            ]);
+    }
 
-	#[Test]
-	public function test_guest_cannot_get_profile(): void
-	{
-		$this
-			->getJson('/api/me')
-			->assertUnauthorized();
-	}
+    #[Test]
+    public function test_guest_cannot_get_profile(): void
+    {
+        $this
+            ->getJson('/api/me')
+            ->assertUnauthorized();
+    }
 }
