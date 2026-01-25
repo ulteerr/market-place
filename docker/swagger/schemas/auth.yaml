@@ -1,6 +1,5 @@
 components:
   schemas:
-
     LoginRequest:
       type: object
       required: [email, password]
@@ -14,22 +13,56 @@ components:
           format: password
           example: secret123
 
-
     RegisterRequest:
       type: object
-      required: [email, password, first_name, last_name]
+      required:
+        [
+          email,
+          password,
+          first_name,
+          last_name,
+          password,
+          password_confirmation,
+        ]
       properties:
+        first_name:
+          type: string
+          maxLength: 255
+          example: Александр
+
+        last_name:
+          type: string
+          maxLength: 255
+          example: Лебедев
+
+        middle_name:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Алексеевич
+
         email:
           type: string
           format: email
+          example: user@example.com
+
         password:
           type: string
           format: password
-        first_name:
-          type: string
-        last_name:
-          type: string
+          minLength: 6
+          example: secret123
 
+        password_confirmation:
+          type: string
+          format: password
+          minLength: 6
+          example: secret123
+
+        phone:
+          type: string
+          maxLength: 20
+          nullable: true
+          example: "+79998887766"
 
     AuthResponse:
       type: object

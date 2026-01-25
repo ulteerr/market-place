@@ -8,19 +8,25 @@ components:
         id:
           type: string
           format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
         email:
           type: string
           format: email
+          example: alex.johnson@example.com
         first_name:
           type: string
+          example: Alex
         last_name:
           type: string
-        created_at:
+          example: Johnson
+        middle_name:
           type: string
-          format: date-time
-        updated_at:
+          nullable: true
+          example: Michael
+        phone:
           type: string
-          format: date-time
+          nullable: true
+          example: "+79998887766"
 
 
     UserResponse:
