@@ -20,9 +20,9 @@ final class UserFactory extends Factory
         return [
             'first_name' => $this->faker->firstName(),
             'last_name'  => $this->faker->lastName(),
-            'middle_name'=> null,
+            'middle_name' => null,
             'email'      => $this->faker->unique()->safeEmail(),
-            'password'   => self::$password ??= Hash::make('password'),
+            'password'         => 'password123',
             'phone'      => $this->faker->optional()->phoneNumber(),
             'remember_token' => Str::random(10),
         ];
@@ -30,7 +30,7 @@ final class UserFactory extends Factory
 
     public function unverified(): self
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'email_verified_at' => null,
         ]);
     }
