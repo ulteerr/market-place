@@ -1,83 +1,42 @@
-LoginRequest:
-  type: object
-  required:
-    - email
-    - password
-  properties:
-    email:
-      type: string
-      format: email
-      example: alex.johnson@example.com
-    password:
-      type: string
-      format: password
-      example: secret123
+components:
+  schemas:
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: secret123
 
 
-RegisterRequest:
-  type: object
-  required:
-    - first_name
-    - last_name
-    - email
-    - password
-    - password_confirmation
-  properties:
-    first_name:
-      type: string
-      example: Alex
-    last_name:
-      type: string
-      example: Johnson
-    middle_name:
-      type: string
-      nullable: true
-      example: Michael
-    email:
-      type: string
-      format: email
-      example: alex.johnson@example.com
-    password:
-      type: string
-      format: password
-      minLength: 6
-      example: secret123
-    password_confirmation:
-      type: string
-      format: password
-      example: secret123
-    phone:
-      type: string
-      nullable: true
-      example: "+79998887766"
+    RegisterRequest:
+      type: object
+      required: [email, password, first_name, last_name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        first_name:
+          type: string
+        last_name:
+          type: string
 
 
-AuthResponse:
-  type: object
-  required:
-    - status
-    - user
-    - token
-  properties:
-    status:
-      type: string
-      example: ok
-    user:
-      $ref: ./user.yaml#/User
-    token:
-      type: string
-      example: 588d681d-d1d9-4192-8cea-eb7bf7f9e4aa|example
-
-
-LogoutResponse:
-  type: object
-  required:
-    - status
-    - message
-  properties:
-    status:
-      type: string
-      example: ok
-    message:
-      type: string
-      example: Logged out successfully
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: ./user.yaml#/components/schemas/User

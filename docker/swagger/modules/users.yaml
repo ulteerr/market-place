@@ -2,25 +2,22 @@ me:
   get:
     tags: [Users]
     summary: Get current authenticated user
-    description: Returns profile of the currently authenticated user
     security:
       - bearerAuth: []
     responses:
       '200':
-        description: Current authenticated user
+        description: Current user
         content:
           application/json:
             schema:
-              $ref: ../schemas/user.yaml#/UserResponse
+              $ref: ../schemas/user.yaml#/components/schemas/UserResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
 
 
-me_update_profile:
   patch:
     tags: [Users]
-    summary: Update current user profile
-    description: Updates first name, last name, middle name and phone
+    summary: Update current authenticated user
     security:
       - bearerAuth: []
     requestBody:
@@ -28,10 +25,10 @@ me_update_profile:
       content:
         application/json:
           schema:
-            $ref: ../schemas/user.yaml#/components/schemas/UpdateMeProfileRequest
+            $ref: ../schemas/user.yaml#/components/schemas/UpdateMeRequest
     responses:
       '200':
-        description: Profile updated successfully
+        description: Updated user
         content:
           application/json:
             schema:
@@ -45,8 +42,7 @@ me_update_profile:
 me_update_password:
   patch:
     tags: [Users]
-    summary: Update current user password
-    description: Changes password for the currently authenticated user
+    summary: Change current user password
     security:
       - bearerAuth: []
     requestBody:
@@ -57,7 +53,7 @@ me_update_password:
             $ref: ../schemas/user.yaml#/components/schemas/UpdateMePasswordRequest
     responses:
       '200':
-        description: Password updated successfully
+        description: Password changed
         content:
           application/json:
             schema:

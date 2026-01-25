@@ -25,15 +25,8 @@ paths:
   /api/auth/register:
     $ref: ./modules/auth.yaml#/register
 
-  /api/auth/logout:
-    $ref: ./modules/auth.yaml#/logout
-
   /api/me:
-    get:
-      $ref: ./modules/users.yaml#/me
-    patch:
-      $ref: ./modules/users.yaml#/me_update_profile
+    $ref: ./modules/users.yaml#/me
 
   /api/me/password:
-    patch:
-      $ref: ./modules/users.yaml#/me_update_password
+    $ref: ./modules/users.yaml#/me_update_password
