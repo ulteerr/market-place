@@ -29,4 +29,11 @@ paths:
     $ref: ./modules/auth.yaml#/logout
 
   /api/me:
-    $ref: ./modules/users.yaml#/me
+    get:
+      $ref: ./modules/users.yaml#/me
+    patch:
+      $ref: ./modules/users.yaml#/me_update_profile
+
+  /api/me/password:
+    patch:
+      $ref: ./modules/users.yaml#/me_update_password

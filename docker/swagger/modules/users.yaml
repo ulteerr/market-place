@@ -2,6 +2,7 @@ me:
   get:
     tags: [Users]
     summary: Get current authenticated user
+    description: Returns profile of the currently authenticated user
     security:
       - bearerAuth: []
     responses:
@@ -14,9 +15,12 @@ me:
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
 
+
+me_update_profile:
   patch:
     tags: [Users]
     summary: Update current user profile
+    description: Updates first name, last name, middle name and phone
     security:
       - bearerAuth: []
     requestBody:
@@ -24,21 +28,25 @@ me:
       content:
         application/json:
           schema:
-            $ref: ../schemas/user.yaml#/UpdateProfileRequest
+            $ref: ../schemas/user.yaml#/components/schemas/UpdateMeProfileRequest
     responses:
       '200':
-        description: Updated profile
+        description: Profile updated successfully
         content:
           application/json:
             schema:
-              $ref: ../schemas/user.yaml#/UserResponse
+              $ref: ../schemas/user.yaml#/components/schemas/UserResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
       '422':
         $ref: ../errors.yaml#/ValidationError
 
-me_password:
+
+me_update_password:
   patch:
     tags: [Users]
-    summary: Change current user password
+    summary: Update current user password
+    description: Changes password for the currently authenticated user
     security:
       - bearerAuth: []
     requestBody:
@@ -46,15 +54,15 @@ me_password:
       content:
         application/json:
           schema:
-            $ref: ../schemas/user.yaml#/UpdatePasswordRequest
+            $ref: ../schemas/user.yaml#/components/schemas/UpdateMePasswordRequest
     responses:
       '200':
-        description: Password changed successfully
+        description: Password updated successfully
         content:
           application/json:
             schema:
-              $ref: ../schemas/user.yaml#/UserResponse
-      '422':
-        $ref: ../errors.yaml#/ValidationError
+              $ref: ../schemas/user.yaml#/components/schemas/UserResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
+      '422':
+        $ref: ../errors.yaml#/ValidationError

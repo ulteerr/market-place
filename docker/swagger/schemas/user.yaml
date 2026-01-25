@@ -1,76 +1,81 @@
-User:
-  type: object
-  required:
-    - id
-    - email
-    - first_name
-    - last_name
-  properties:
-    id:
-      type: string
-      format: uuid
-      example: d3302fd5-360b-48ba-a049-40aa4accf26f
-    email:
-      type: string
-      format: email
-      example: alex.johnson@example.com
-    first_name:
-      type: string
-      example: Alex
-    last_name:
-      type: string
-      example: Johnson
-    middle_name:
-      type: string
-      nullable: true
-      example: Michael
-    phone:
-      type: string
-      nullable: true
-      example: "+79998887766"
+components:
+  schemas:
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - first_name
+        - last_name
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        middle_name:
+          type: string
+          nullable: true
+          example: Michael
+        phone:
+          type: string
+          nullable: true
+          example: "+79998887766"
 
 
-UpdateMeRequest:
-  type: object
-  additionalProperties: false
-  properties:
-    first_name:
-      type: string
-      example: Michael
-
-    last_name:
-      type: string
-      example: Brown
-
-    middle_name:
-      type: string
-      nullable: true
-      example: Andrew
-
-    phone:
-      type: string
-      example: "+79998887766"
-
-    password:
-      type: string
-      format: password
-      example: new-password123
-
-    password_confirmation:
-      type: string
-      format: password
-      example: new-password123
+    UserResponse:
+      type: object
+      required:
+        - status
+        - user
+      properties:
+        status:
+          type: string
+          example: ok
+        user:
+          $ref: '#/components/schemas/User'
 
 
-UserResponse:
-  type: object
-  required:
-    - status
-    - user
-  properties:
-    status:
-      type: string
-      example: ok
+    UpdateMeProfileRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        middle_name:
+          type: string
+          nullable: true
+          example: Michael
+        phone:
+          type: string
+          nullable: true
+          example: "+79998887766"
 
-    user:
-      $ref: ./user.yaml#/User
+
+    UpdateMePasswordRequest:
+      type: object
+      required:
+        - password
+        - password_confirmation
+      properties:
+        password:
+          type: string
+          format: password
+          example: new-password123
+        password_confirmation:
+          type: string
+          format: password
+          example: new-password123
