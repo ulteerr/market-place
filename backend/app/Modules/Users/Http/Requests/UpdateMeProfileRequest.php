@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Modules\Users\Http\Requests;
@@ -6,7 +7,7 @@ namespace Modules\Users\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Users\Validation\UserProfileRules;
 
-final class UpdateMeRequest extends FormRequest
+final class UpdateMeProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,9 +16,6 @@ final class UpdateMeRequest extends FormRequest
 
     public function rules(): array
     {
-        return array_merge(
-            UserProfileRules::base(),
-            UserProfileRules::password()
-        );
+        return UserProfileRules::base();
     }
 }

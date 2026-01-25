@@ -1,84 +1,60 @@
-paths:
-  me:
-    get:
-      tags: [Users]
-      summary: Get current authenticated user
-      description: Returns profile of the currently authenticated user
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Current authenticated user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  user:
-                    $ref: ../schemas/user.yaml#/User
-              examples:
-                success:
-                  summary: Authenticated user profile
-                  value:
-                    status: ok
-                    user:
-                      id: d3302fd5-360b-48ba-a049-40aa4accf26f
-                      email: alex.johnson@example.com
-                      first_name: Alex
-                      last_name: Johnson
-        '401':
-          $ref: ../errors.yaml#/UnauthorizedError
-
-    patch:
-      tags: [Users]
-      summary: Update current authenticated user
-      description: Update profile fields of the currently authenticated user
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
+me:
+  get:
+    tags: [Users]
+    summary: Get current authenticated user
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Current authenticated user
         content:
           application/json:
             schema:
-              $ref: ../schemas/user.yaml#/UpdateMeRequest
-            examples:
-              valid:
-                summary: Update profile
-                value:
-                  first_name: Alex
-                  last_name: Johnson
-                  middle_name: Michael
-                  phone: "+79998887766"
-                  email: alex.johnson@example.com
-      responses:
-        '200':
-          description: Profile updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  user:
-                    $ref: ../schemas/user.yaml#/User
-              examples:
-                success:
-                  summary: Updated user profile
-                  value:
-                    status: ok
-                    user:
-                      id: d3302fd5-360b-48ba-a049-40aa4accf26f
-                      email: alex.johnson@example.com
-                      first_name: Alex
-                      last_name: Johnson
-                      middle_name: Michael
-                      phone: "+79998887766"
-        '401':
-          $ref: ../errors.yaml#/UnauthorizedError
-        '422':
-          $ref: ../errors.yaml#/ValidationError
+              $ref: ../schemas/user.yaml#/UserResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
+  patch:
+    tags: [Users]
+    summary: Update current user profile
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/user.yaml#/UpdateProfileRequest
+    responses:
+      '200':
+        description: Updated profile
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/user.yaml#/UserResponse
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+me_password:
+  patch:
+    tags: [Users]
+    summary: Change current user password
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/user.yaml#/UpdatePasswordRequest
+    responses:
+      '200':
+        description: Password changed successfully
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/user.yaml#/UserResponse
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError

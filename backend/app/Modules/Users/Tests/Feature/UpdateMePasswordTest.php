@@ -6,7 +6,6 @@ namespace Modules\Users\Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 
 final class UpdateMePasswordTest extends TestCase
@@ -30,7 +29,7 @@ final class UpdateMePasswordTest extends TestCase
         
         $response = $this
             ->withHeaders($auth['headers'])
-            ->patchJson('/api/me', [
+            ->patchJson('/api/me/password', [
                 'password'              => 'new-password',
                 'password_confirmation' => 'new-password',
             ]);
@@ -63,7 +62,7 @@ final class UpdateMePasswordTest extends TestCase
       
         $response = $this
             ->withHeaders($auth['headers'])
-            ->patchJson('/api/me', [
+            ->patchJson('/api/me/password', [
                 'password'              => 'new-password',
                 'password_confirmation' => 'wrong-confirmation',
             ]);
@@ -77,7 +76,7 @@ final class UpdateMePasswordTest extends TestCase
     #[Test]
     public function guest_cannot_change_password(): void
     {
-        $response = $this->patchJson('/api/me', [
+        $response = $this->patchJson('/api/me/password', [
             'password'              => 'new-password',
             'password_confirmation' => 'new-password',
         ]);

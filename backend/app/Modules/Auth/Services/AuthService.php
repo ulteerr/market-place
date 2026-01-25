@@ -40,7 +40,7 @@ final class AuthService
     private function buildAuthResponse(User $user): array
     {
         return [
-            'user'  => new UserResource($user),
+            'user'  => $user,
             'token' => $this->tokenService->createToken($user),
         ];
     }

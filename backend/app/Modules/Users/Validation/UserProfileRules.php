@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Modules\Users\Validation;
@@ -20,13 +21,6 @@ final class UserProfileRules
         return [
             'first_name' => ['required'],
             'last_name'  => ['required'],
-        ];
-    }
-
-    public static function password(): array
-    {
-        return [
-            'password' => ['string', 'min:6', 'confirmed'],
         ];
     }
 }

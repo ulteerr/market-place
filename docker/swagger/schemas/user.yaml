@@ -32,22 +32,45 @@ User:
 
 UpdateMeRequest:
   type: object
+  additionalProperties: false
   properties:
     first_name:
       type: string
-      example: Alex
+      example: Michael
+
     last_name:
       type: string
-      example: Johnson
+      example: Brown
+
     middle_name:
       type: string
       nullable: true
-      example: Michael
+      example: Andrew
+
     phone:
       type: string
-      nullable: true
       example: "+79998887766"
-    email:
+
+    password:
       type: string
-      format: email
-      example: alex.johnson@example.com
+      format: password
+      example: new-password123
+
+    password_confirmation:
+      type: string
+      format: password
+      example: new-password123
+
+
+UserResponse:
+  type: object
+  required:
+    - status
+    - user
+  properties:
+    status:
+      type: string
+      example: ok
+
+    user:
+      $ref: ./user.yaml#/User

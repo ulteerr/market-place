@@ -29,4 +29,4 @@ paths:
     $ref: ./modules/auth.yaml#/logout
 
   /api/me:
-    $ref: ./modules/users.yaml#/paths/me
+    $ref: ./modules/users.yaml#/me

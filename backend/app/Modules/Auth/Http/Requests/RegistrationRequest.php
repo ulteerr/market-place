@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Users\Validation\PasswordRules;
 use Modules\Users\Validation\UserProfileRules;
 
 final class RegistrationRequest extends FormRequest
@@ -21,7 +22,10 @@ final class RegistrationRequest extends FormRequest
             UserProfileRules::required(),
             [
                 'email'    => ['required', 'email', 'unique:users,email'],
-                'password' => ['required', 'string', 'min:6', 'confirmed'],
+                'password' => array_merge(
+                    ['required'],
+                    PasswordRules::default()
+                ),
             ]
         );
     }
