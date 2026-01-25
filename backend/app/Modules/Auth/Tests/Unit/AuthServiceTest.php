@@ -72,7 +72,7 @@ class AuthServiceTest extends TestCase
 			'email' => 'test@example.com',
 			'first_name' => 'Test',
 			'last_name' => 'User',
-			'password' => Hash::make('password123'),
+			'password' => 'password123',
 		]);
 
 		

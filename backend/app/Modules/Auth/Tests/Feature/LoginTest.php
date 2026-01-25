@@ -20,7 +20,7 @@ class LoginTest extends TestCase
     {
         User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password123'),
+            'password' => 'password123',
         ]);
 
         $response = $this->postJson('/api/auth/login', [
@@ -49,7 +49,7 @@ class LoginTest extends TestCase
     {
         User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password123'),
+            'password' => 'password123',
         ]);
 
         $response = $this->postJson('/api/auth/login', [
