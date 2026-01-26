@@ -8,6 +8,9 @@ use Modules\Users\Contracts\UsersServiceInterface;
 use Modules\Users\Models\User;
 use Modules\Users\Repositories\UsersRepositoryInterface;
 use Illuminate\Support\Collection;
+use Modules\Users\Models\Role;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 final class UsersService implements UsersServiceInterface
 {
@@ -17,13 +20,33 @@ final class UsersService implements UsersServiceInterface
 
 	public function createUser(array $data): User
 	{
-		return $this->repository->create($data);
+		return DB::transaction(function () use ($data) {
+
+			$user = $this->repository->create($data);
+			$this->syncGlobalRoles(
+				$user,
+				$data['roles'] ?? []
+			);
+
+			return $user;
+		});
 	}
 
 	public function updateUser(User $user, array $data): User
 	{
-		return $this->repository->update($user, $data);
+		return DB::transaction(function () use ($user, $data) {
+			$user = $this->repository->update($user, $data);
+			if (array_key_exists('roles', $data)) {
+				$this->syncGlobalRoles(
+					$user,
+					$data['roles'] ?? []
+				);
+			}
+
+			return $user;
+		});
 	}
+
 
 	public function findByEmail(string $email): ?User
 	{
@@ -44,5 +67,33 @@ final class UsersService implements UsersServiceInterface
 	{
 		$user = $this->repository->findById($parentId);
 		return $user ? $user->children : collect();
+	}
+
+	private function syncGlobalRoles(User $user, array $roleCodes = []): void
+	{
+		
+		if (!in_array('participant', $roleCodes, true)) {
+			$roleCodes[] = 'participant';
+		}
+
+	
+		$roleCodes = array_values(
+			array_unique(
+				array_filter($roleCodes)
+			)
+		);
+
+	
+		$rolesToAssign = Role::whereIn('code', $roleCodes)->get();
+
+		if ($rolesToAssign->count() !== count($roleCodes)) {
+			throw new RuntimeException(
+				'One or more roles not found: ' . implode(', ', $roleCodes)
+			);
+		}
+
+		$user->roles()->sync(
+			$rolesToAssign->pluck('id')->all()
+		);
 	}
 }

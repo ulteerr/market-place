@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Children\Models\Child;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -51,5 +52,37 @@ final class User extends Authenticatable
 	public function children()
 	{
 		return $this->hasMany(Child::class, 'user_id');
+	}
+
+
+	public function roles(): BelongsToMany
+	{
+		return $this->belongsToMany(
+			Role::class,
+			'role_user',
+			'user_id',
+			'role_id'
+		);
+	}
+
+	public function hasRole(string $code): bool
+	{
+		return $this->roles->contains('code', $code);
+	}
+
+	public function hasAnyRole(array $codes): bool
+	{
+		return $this->roles->whereIn('code', $codes)->isNotEmpty();
+	}
+	public function isAdmin(): bool
+	{
+		return $this->roles->contains('code', 'admin');
+	}
+
+	public function canAccessAdminPanel(): bool
+	{
+		return $this->roles
+			->where('code', '!=', 'participant')
+			->isNotEmpty();
 	}
 }

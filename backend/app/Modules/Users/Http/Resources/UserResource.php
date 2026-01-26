@@ -19,6 +19,14 @@ final class UserResource extends JsonResource
             'email'      => $this->email,
             'first_name' => $this->first_name,
             'last_name'  => $this->last_name,
+            'roles' => $this->whenLoaded('roles', function () {
+                return $this->roles->pluck('code')->values();
+            }),
+            'is_admin' => $this->whenLoaded('roles', fn() => $this->isAdmin()),
+            'can_access_admin_panel' => $this->whenLoaded(
+                'roles',
+                fn() => $this->canAccessAdminPanel()
+            ),
         ];
     }
 }

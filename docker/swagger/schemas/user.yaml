@@ -27,6 +27,20 @@ components:
           type: string
           nullable: true
           example: "+79998887766"
+        roles:
+          type: array
+          description: Global platform roles
+          items:
+            type: string
+          example: [participant, admin]
+
+        is_admin:
+          type: boolean
+          example: true
+
+        can_access_admin_panel:
+          type: boolean
+          example: true  
 
 
     UserResponse:

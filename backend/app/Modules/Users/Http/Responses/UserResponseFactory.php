@@ -12,6 +12,9 @@ final class UserResponseFactory
 {
     public static function success(User $user, ?string $token = null, int $status = 200): JsonResponse
     {
+
+        $user->loadMissing('roles');
+
         $payload = [
             'status' => 'ok',
             'user'   => new UserResource($user),
