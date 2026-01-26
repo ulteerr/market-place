@@ -6,6 +6,7 @@ namespace Modules\Auth\Tests\Feature;
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Users\Database\Seeders\RolesSeeder;
 use PHPUnit\Framework\Attributes\Test;
 
 
@@ -16,6 +17,8 @@ class RegistrationTest extends TestCase
     #[Test]
     public function user_can_register()
     {
+        $this->seed(RolesSeeder::class);
+
         $response = $this->postJson('/api/auth/register', [
             'first_name' => 'Test',
             'last_name' => 'User',
@@ -38,6 +41,9 @@ class RegistrationTest extends TestCase
                             ->has('email')
                             ->has('first_name')
                             ->has('last_name')
+                            ->has('roles')
+                            ->has('is_admin')
+                            ->has('can_access_admin_panel')
                     )
                     ->has('token')
             );

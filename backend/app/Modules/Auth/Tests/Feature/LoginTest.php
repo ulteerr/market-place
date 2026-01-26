@@ -6,7 +6,7 @@ namespace Modules\Auth\Tests\Feature;
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
+use Modules\Users\Database\Seeders\RolesSeeder;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -18,6 +18,8 @@ class LoginTest extends TestCase
     #[Test]
     public function user_can_login_with_valid_credentials()
     {
+        $this->seed(RolesSeeder::class);
+        
         User::factory()->create([
             'email' => 'test@example.com',
             'password' => 'password123',
@@ -30,16 +32,23 @@ class LoginTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertJson(fn ($json) =>
+            ->assertJson(
+                fn($json) =>
                 $json
                     ->where('status', 'ok')
-                    ->has('user', fn ($json) =>
+                    ->has(
+                        'user',
+                        fn($json) =>
                         $json
                             ->has('id')
                             ->has('email')
                             ->has('first_name')
                             ->has('last_name')
+                            ->has('roles')
+                            ->has('is_admin')
+                            ->has('can_access_admin_panel')
                     )
+
                     ->has('token')
             );
     }
