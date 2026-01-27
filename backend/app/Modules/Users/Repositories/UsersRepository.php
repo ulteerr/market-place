@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Modules\Users\Repositories;
 
 use Modules\Users\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+
 
 final class UsersRepository implements UsersRepositoryInterface
 {
@@ -27,12 +29,22 @@ final class UsersRepository implements UsersRepositoryInterface
     public function findByEmailOrPhone(string $value): ?User
     {
         return User::where('email', $value)
-                   ->orWhere('phone', $value)
-                   ->first();
+            ->orWhere('phone', $value)
+            ->first();
     }
 
     public function findById(string $id): ?User
     {
-        return User::with('children')->find($id);
+        return User::find($id);
+    }
+
+    public function paginate(int $perPage = 20): LengthAwarePaginator
+    {
+        return User::paginate($perPage);
+    }
+
+    public function delete(User $user): void
+    {
+        $user->delete();
     }
 }

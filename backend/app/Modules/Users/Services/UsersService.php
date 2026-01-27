@@ -10,6 +10,7 @@ use Modules\Users\Repositories\UsersRepositoryInterface;
 use Illuminate\Support\Collection;
 use Modules\Users\Models\Role;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use RuntimeException;
 
 final class UsersService implements UsersServiceInterface
@@ -71,19 +72,19 @@ final class UsersService implements UsersServiceInterface
 
 	private function syncGlobalRoles(User $user, array $roleCodes = []): void
 	{
-		
+
 		if (!in_array('participant', $roleCodes, true)) {
 			$roleCodes[] = 'participant';
 		}
 
-	
+
 		$roleCodes = array_values(
 			array_unique(
 				array_filter($roleCodes)
 			)
 		);
 
-	
+
 		$rolesToAssign = Role::whereIn('code', $roleCodes)->get();
 
 		if ($rolesToAssign->count() !== count($roleCodes)) {
@@ -95,5 +96,27 @@ final class UsersService implements UsersServiceInterface
 		$user->roles()->sync(
 			$rolesToAssign->pluck('id')->all()
 		);
+	}
+
+	public function paginate(int $perPage = 20,  array $with = []): LengthAwarePaginator
+	{
+		$query = User::query();
+
+		if (!empty($with)) {
+			$query->with($with);
+		}
+
+		return $query->paginate($perPage);
+	}
+
+	public function deleteUser(string $id): void
+	{
+		$user = $this->repository->findById($id);
+
+		if (!$user) {
+			throw new RuntimeException('User not found');
+		}
+
+		$this->repository->delete($user);
 	}
 }
