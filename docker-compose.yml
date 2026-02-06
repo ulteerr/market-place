@@ -77,6 +77,19 @@ services:
     networks:
       - app
 
+  redoc:
+    image: redocly/redoc
+    container_name: redoc
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    environment:
+      SPEC_URL: /swagger/openapi.yaml
+    volumes:
+      - ./docker/swagger:/usr/share/nginx/html/swagger:ro
+    networks:
+      - app
+
 
 networks:
   app:

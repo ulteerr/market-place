@@ -93,6 +93,7 @@ make db-seed
 |---------------|------------------------------|
 | Backend API   | http://localhost:8080        |
 | Swagger UI    | http://localhost:8081        |
+| ReDoc CE      | http://localhost:8082        |
 | PostgreSQL    | localhost:5433               |
 | pgAdmin       | http://localhost:5050        |
 | Redis         | localhost:6381               |
@@ -106,6 +107,11 @@ API documentation is **OpenAPI-first** and fully decoupled from backend code.
 Swagger UI:
 ```
 http://localhost:8081
+```
+
+ReDoc CE:
+```
+http://localhost:8082
 ```
 
 Authentication uses **Bearer token** (Laravel Sanctum).
@@ -173,6 +179,16 @@ make view-clear
 ```bash
 make test
 make test-auth
+```
+
+### OpenAPI
+
+```bash
+make docs                # Validate + bundle + restart Swagger/ReDoc
+make openapi-validate    # Validate spec and refs
+make openapi-bundle      # Build bundled spec: docker/swagger/openapi.bundle.yaml
+make swagger             # Restart Swagger UI
+make redoc               # Restart ReDoc CE
 ```
 
 ---

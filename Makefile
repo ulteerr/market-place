@@ -1,6 +1,6 @@
 .PHONY: up down restart art comp migrate migrate-fresh db-seed \
         cache-clear config-cache route-cache view-clear \
-        test test-auth swagger
+        test test-auth swagger redoc openapi-validate openapi-bundle docs
 
 # --------------------------
 # Containers
@@ -79,3 +79,18 @@ test-auth:
 
 swagger:
 	docker-compose restart swagger-ui
+
+redoc:
+	docker-compose restart redoc
+
+openapi-validate:
+	docker run --rm -v $(PWD):/work -w /work node:20-alpine sh -lc "npm i -g swagger-cli@4.0.4 >/dev/null 2>&1 && swagger-cli validate docker/swagger/openapi.yaml"
+
+openapi-bundle:
+	docker run --rm -v $(PWD):/work -w /work node:20-alpine sh -lc "npm i -g swagger-cli@4.0.4 >/dev/null 2>&1 && swagger-cli bundle docker/swagger/openapi.yaml --type yaml --outfile docker/swagger/openapi.bundle.yaml"
+
+docs:
+	make openapi-validate
+	make openapi-bundle
+	make swagger
+	make redoc
