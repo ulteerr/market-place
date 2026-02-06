@@ -1,0 +1,52 @@
+components:
+  schemas:
+
+    Role:
+      type: object
+      required: [id, code]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 8a43f43d-65c7-4f58-8578-2ce9f85f1536
+        code:
+          type: string
+          maxLength: 50
+          example: moderator
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: Moderator
+        is_system:
+          type: boolean
+          example: false
+
+
+    CreateRoleRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          maxLength: 50
+          example: editor
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: Editor
+
+
+    UpdateRoleRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 50
+          example: editor
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: Updated Editor

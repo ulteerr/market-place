@@ -35,4 +35,19 @@ final class AdminRoleController extends AdminCrudController
     {
         return RoleResponseFactory::class;
     }
+
+    protected function createMethod(): string
+    {
+        return 'createRole';
+    }
+
+    protected function findMethod(): string
+    {
+        return 'getRoleById';
+    }
+
+    protected function updateMethod(): string
+    {
+        return 'updateRole';
+    }
 }

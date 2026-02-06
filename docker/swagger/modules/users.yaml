@@ -62,3 +62,335 @@ me_update_password:
         $ref: ../errors.yaml#/UnauthorizedError
       '422':
         $ref: ../errors.yaml#/ValidationError
+
+
+admin_users:
+  get:
+    tags: [Admin Users]
+    summary: List users (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated users list
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  type: object
+                  properties:
+                    current_page:
+                      type: integer
+                      example: 1
+                    data:
+                      type: array
+                      items:
+                        $ref: ../schemas/user.yaml#/components/schemas/User
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+  post:
+    tags: [Admin Users]
+    summary: Create user (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/user.yaml#/components/schemas/CreateAdminUserRequest
+    responses:
+      '201':
+        description: User created
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Created successfully
+                data:
+                  $ref: ../schemas/user.yaml#/components/schemas/User
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+
+admin_users_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Admin Users]
+    summary: Get user by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: User details
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, user]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                user:
+                  $ref: ../schemas/user.yaml#/components/schemas/User
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+  patch:
+    tags: [Admin Users]
+    summary: Update user (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/user.yaml#/components/schemas/UpdateAdminUserRequest
+    responses:
+      '200':
+        description: User updated
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Updated successfully
+                data:
+                  $ref: ../schemas/user.yaml#/components/schemas/User
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+  delete:
+    tags: [Admin Users]
+    summary: Delete user (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: User deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Deleted successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+
+admin_roles:
+  get:
+    tags: [Admin Roles]
+    summary: List roles (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated roles list
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  type: object
+                  properties:
+                    current_page:
+                      type: integer
+                      example: 1
+                    data:
+                      type: array
+                      items:
+                        $ref: ../schemas/role.yaml#/components/schemas/Role
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+  post:
+    tags: [Admin Roles]
+    summary: Create role (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/role.yaml#/components/schemas/CreateRoleRequest
+    responses:
+      '201':
+        description: Role created
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Created successfully
+                data:
+                  $ref: ../schemas/role.yaml#/components/schemas/Role
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+
+admin_roles_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Admin Roles]
+    summary: Get role by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Role details
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, role]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                role:
+                  $ref: ../schemas/role.yaml#/components/schemas/Role
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+  patch:
+    tags: [Admin Roles]
+    summary: Update role (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/role.yaml#/components/schemas/UpdateRoleRequest
+    responses:
+      '200':
+        description: Role updated
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Updated successfully
+                data:
+                  $ref: ../schemas/role.yaml#/components/schemas/Role
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+  delete:
+    tags: [Admin Roles]
+    summary: Delete role (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Role deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Deleted successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError

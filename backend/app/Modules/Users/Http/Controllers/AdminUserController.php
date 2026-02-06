@@ -35,4 +35,35 @@ final class AdminUserController extends AdminCrudController
     {
         return UserResponseFactory::class;
     }
+
+    protected function createMethod(): string
+    {
+        return 'createUser';
+    }
+
+    protected function findMethod(): string
+    {
+        return 'getUserById';
+    }
+
+    protected function updateMethod(): string
+    {
+        return 'updateUser';
+    }
+
+    protected function deleteMethod(): string
+    {
+        return 'deleteUser';
+    }
+
+    protected function updateArguments(string $id, array $data): array
+    {
+        $user = $this->usersService->getUserById($id);
+
+        if (!$user) {
+            abort(404, 'Not found');
+        }
+
+        return [$user, $data];
+    }
 }
