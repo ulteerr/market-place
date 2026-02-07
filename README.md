@@ -1,16 +1,18 @@
 ![CI](https://github.com/ulteerr/market-place/actions/workflows/ci.yml/badge.svg)
 
 
-# 🛒 Marketplace API
+# 🛒 Marketplace Platform
 
-Backend API for Marketplace project built with **Laravel**, **PostgreSQL**, **Redis**, and **Docker**.  
-API documentation follows an **OpenAPI-first** approach and is served via a standalone **Swagger UI** container.
+Frontend + backend for Marketplace built with **Nuxt 4**, **Laravel**, **PostgreSQL**, **Redis**, and **Docker**.  
+Frontend handles public and admin pages; backend is focused on API and authentication.
 
 ---
 
 ## 📦 Tech Stack
 
 - PHP 8.x / Laravel
+- Nuxt 4
+- Tailwind CSS
 - PostgreSQL 15
 - Redis
 - Nginx
@@ -24,6 +26,7 @@ API documentation follows an **OpenAPI-first** approach and is served via a stan
 
 ```text
 project-root/
+├─ fronted/              # Nuxt 4 frontend (public + admin pages)
 ├─ backend/              # Laravel application
 ├─ docker/
 │  ├─ nginx/             # Nginx config
@@ -91,6 +94,7 @@ make db-seed
 
 | Service        | URL                          |
 |---------------|------------------------------|
+| Fronted (Nuxt)| http://localhost:3000        |
 | Backend API   | http://localhost:8080        |
 | Swagger UI    | http://localhost:8081        |
 | ReDoc CE      | http://localhost:8082        |
@@ -138,6 +142,7 @@ The project includes a Makefile to simplify common Docker and Laravel commands.
 
 ```bash
 make up        # Build and start containers
+make front     # Start only frontend container
 make down      # Stop containers
 make restart   # Restart containers
 ```
@@ -156,6 +161,16 @@ make art cmd="test"
 make comp cmd="install"
 make comp cmd="dump-autoload"
 ```
+
+### Fronted (Nuxt)
+
+```bash
+make front-install        # Install npm deps inside frontend container
+make front-npm cmd="run build"
+make front-nuxi cmd="add page profile"
+```
+
+`node_modules` is stored in the container volume (`/app/node_modules`), so all dependency operations run through Docker.
 
 ### Database
 
@@ -196,8 +211,9 @@ make redoc               # Restart ReDoc CE
 ## 🧠 Architecture Notes
 
 - OpenAPI documentation is manually maintained
+- Fronted is modular: component styles live near components
 - Swagger UI runs as a standalone container
-- Backend is fully decoupled from API docs
+- Backend is fully decoupled from frontend pages (API/Auth only)
 - Errors are centralized and reused across modules
 - API documentation acts as a contract for frontend integration
 
@@ -211,7 +227,3 @@ make redoc               # Restart ReDoc CE
 - Production-ready Docker setup
 
 ---
-
-## 👤 Author
-
-Marketplace Backend Team

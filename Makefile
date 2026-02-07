@@ -1,6 +1,7 @@
 .PHONY: up down restart art comp migrate migrate-fresh db-seed \
         cache-clear config-cache route-cache view-clear \
-        test test-auth swagger redoc openapi-validate openapi-bundle docs
+        test test-auth swagger redoc openapi-validate openapi-bundle docs \
+        front front-install front-npm front-nuxi
 
 # --------------------------
 # Containers
@@ -94,3 +95,19 @@ docs:
 	make openapi-bundle
 	make swagger
 	make redoc
+
+# --------------------------
+# Fronted (Nuxt)
+# --------------------------
+
+front:
+	docker-compose up -d frontend
+
+front-install:
+	docker-compose exec frontend npm install
+
+front-npm:
+	docker-compose exec frontend npm $(cmd)
+
+front-nuxi:
+	docker-compose exec frontend npx nuxi $(cmd)
