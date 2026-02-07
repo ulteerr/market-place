@@ -1,0 +1,18 @@
+:root {
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #64748b;
+  --accent: #ea580c;
+  --accent-soft: #ffedd5;
+}
+
+html,
+body,
+#__nuxt {
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(circle at 0% 0%, #fff7ed 0%, #ffffff 40%, #f8fafc 100%);
+  color: var(--text);
+}

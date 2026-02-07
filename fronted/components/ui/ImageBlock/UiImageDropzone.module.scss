@@ -1,0 +1,44 @@
+.zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  padding: 1.1rem;
+  text-align: center;
+  display: grid;
+  gap: 0.45rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.zoneDragging {
+  border-color: #0ea5e9;
+  background: linear-gradient(180deg, #f0f9ff, #e0f2fe);
+}
+
+.input {
+  display: none;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.description {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.browse {
+  justify-self: center;
+  border: 0;
+  border-radius: 0.65rem;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
