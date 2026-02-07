@@ -1,27 +1,47 @@
 <template>
-  <div>
-    <PageHero
-      eyebrow="Admin"
-      title="Панель управления"
-      description="Раздел администрирования доступен только после авторизации."
-    />
+  <section class="mx-auto w-full max-w-6xl space-y-6 admin-dashboard">
+    <div class="admin-panel rounded-2xl p-6 lg:p-8">
+      <h2 class="text-2xl font-semibold">Панель управления</h2>
+      <p class="mt-2 text-sm admin-muted-text">
+        Выберите модуль в левом меню. Здесь отображается контент выбранного раздела.
+      </p>
+    </div>
 
-    <section class="mx-auto w-full max-w-6xl px-4 py-10">
-      <div class="grid gap-4 md:grid-cols-2">
-        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="text-lg font-semibold">Управление пользователями</h2>
-          <p class="mt-2 text-sm text-slate">CRUD-поток для пользователей, ролей и прав доступа.</p>
-        </article>
+    <div class="grid gap-4 md:grid-cols-2">
+      <article class="admin-panel rounded-2xl p-5">
+        <h3 class="text-base font-semibold">Пользователи</h3>
+        <p class="mt-2 text-sm admin-muted-text">
+          Управление ролями, доступами и профилями администраторов.
+        </p>
+      </article>
 
-        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="text-lg font-semibold">Управление контентом</h2>
-          <p class="mt-2 text-sm text-slate">Редактирование разделов, модерация и административные действия.</p>
-        </article>
-      </div>
-    </section>
-  </div>
+      <article class="admin-panel rounded-2xl p-5">
+        <h3 class="text-base font-semibold">Контент</h3>
+        <p class="mt-2 text-sm admin-muted-text">
+          Редактирование разделов, настройка видимости и модерирование.
+        </p>
+      </article>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import PageHero from '~/components/ui/PageHero/PageHero.vue'
+definePageMeta({
+  layout: 'admin'
+})
 </script>
+
+<style scoped>
+.admin-dashboard {
+  color: var(--text);
+}
+
+.admin-panel {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+.admin-muted-text {
+  color: var(--muted);
+}
+</style>

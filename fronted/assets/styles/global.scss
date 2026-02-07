@@ -1,9 +1,60 @@
 :root {
   --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --surface-elevated: #ffffff;
   --text: #111827;
   --muted: #64748b;
+  --border: #e2e8f0;
   --accent: #ea580c;
   --accent-soft: #ffedd5;
+  --page-background: radial-gradient(circle at 0% 0%, #fff7ed 0%, #ffffff 40%, #f8fafc 100%);
+
+  --form-label: var(--text);
+  --form-required: #dc2626;
+  --form-control-bg: var(--surface-elevated);
+  --form-control-border: var(--border);
+  --form-control-text: var(--text);
+  --form-placeholder: #94a3b8;
+  --form-control-disabled-bg: #f8fafc;
+  --form-control-disabled-text: var(--muted);
+  --form-focus: #0ea5e9;
+  --form-focus-ring: rgba(14, 165, 233, 0.18);
+  --form-error: #dc2626;
+  --form-error-border: #f87171;
+  --form-error-focus: #ef4444;
+  --form-error-ring: rgba(239, 68, 68, 0.16);
+  --form-hint: var(--muted);
+  --form-menu-bg: var(--surface-elevated);
+  --form-menu-border: var(--border);
+  --form-menu-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  --form-option-hover: #f8fafc;
+  --form-option-text: var(--text);
+  --form-option-disabled: #94a3b8;
+  --form-tag-bg: var(--accent-soft);
+  --form-tag-text: #c2410c;
+  --form-create-bg: #f0f9ff;
+  --form-create-text: #0369a1;
+}
+
+:root[data-theme='dark'] {
+  --surface: #111319;
+  --surface-soft: #1a1d23;
+  --surface-elevated: #171a20;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #2a3140;
+  --accent: #fb923c;
+  --accent-soft: #29211a;
+  --page-background: radial-gradient(circle at 0% 0%, #161c28 0%, #111319 45%, #0c1017 100%);
+
+  --form-placeholder: #64748b;
+  --form-control-disabled-bg: #232833;
+  --form-focus: #38bdf8;
+  --form-focus-ring: rgba(56, 189, 248, 0.24);
+  --form-option-hover: #232833;
+  --form-tag-text: #fdba74;
+  --form-create-bg: #152533;
+  --form-create-text: #7dd3fc;
 }
 
 html,
@@ -13,6 +64,7 @@ body,
 }
 
 body {
-  background: radial-gradient(circle at 0% 0%, #fff7ed 0%, #ffffff 40%, #f8fafc 100%);
+  background: var(--page-background);
   color: var(--text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

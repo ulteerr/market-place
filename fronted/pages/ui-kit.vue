@@ -11,6 +11,13 @@
         <h2 :class="styles.cardTitle">Поля формы</h2>
 
         <div :class="styles.stack">
+          <UiSwitch
+            :model-value="isDark"
+            label="Тёмная тема"
+            description="Демонстрация нового switch-контрола"
+            @update:model-value="onThemeToggle"
+          />
+
           <UiInput v-model="form.title" label="Название" placeholder="Введите название" />
 
           <UiTextarea
@@ -73,6 +80,7 @@ import UiInput from '~/components/ui/FormControls/UiInput.vue'
 import UiTextarea from '~/components/ui/FormControls/UiTextarea.vue'
 import UiSelect from '~/components/ui/FormControls/UiSelect.vue'
 import UiDropdown from '~/components/ui/FormControls/UiDropdown.vue'
+import UiSwitch from '~/components/ui/FormControls/UiSwitch.vue'
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue'
 import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue'
 import styles from './ui-kit.module.scss'
@@ -89,6 +97,8 @@ const form = reactive({
   tags: [] as string[],
   status: ''
 })
+
+const { isDark, setTheme } = useUserSettings()
 
 const categoryOptions = [
   { label: 'Одежда', value: 'fashion' },
@@ -148,5 +158,9 @@ const onAddImage = () => {
     src: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
     caption: 'Новое фото'
   })
+}
+
+const onThemeToggle = (value: boolean) => {
+  setTheme(value ? 'dark' : 'light')
 }
 </script>

@@ -6,58 +6,58 @@
 .label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--form-label);
 }
 
 .required {
   margin-left: 0.2rem;
-  color: #dc2626;
+  color: var(--form-required);
 }
 
 .control {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--form-control-border);
   border-radius: 0.75rem;
-  background-color: #ffffff;
+  background-color: var(--form-control-bg);
   padding: 0.62rem 0.75rem;
   font-size: 0.92rem;
-  color: #111827;
+  color: var(--form-control-text);
   line-height: 1.5;
   resize: vertical;
   outline: 0;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &::placeholder {
-    color: #94a3b8;
+    color: var(--form-placeholder);
   }
 
   &:focus {
-    border-color: #0ea5e9;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+    border-color: var(--form-focus);
+    box-shadow: 0 0 0 3px var(--form-focus-ring);
   }
 
   &:disabled {
     cursor: not-allowed;
-    background-color: #f8fafc;
-    color: #64748b;
+    background-color: var(--form-control-disabled-bg);
+    color: var(--form-control-disabled-text);
   }
 }
 
 .controlError {
-  border-color: #f87171;
+  border-color: var(--form-error-border);
 
   &:focus {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);
+    border-color: var(--form-error-focus);
+    box-shadow: 0 0 0 3px var(--form-error-ring);
   }
 }
 
 .hint {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--form-hint);
 }
 
 .error {
   font-size: 0.75rem;
-  color: #dc2626;
+  color: var(--form-error);
 }

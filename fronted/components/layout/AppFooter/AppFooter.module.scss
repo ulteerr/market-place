@@ -1,6 +1,6 @@
 .footer {
-  border-top: 1px solid #e2e8f0;
-  background-color: #ffffff;
+  border-top: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--surface) 92%, transparent);
 }
 
 .container {
@@ -13,5 +13,5 @@
   gap: 1rem;
   padding: 1rem;
   font-size: 0.75rem;
-  color: #475569;
+  color: var(--muted);
 }

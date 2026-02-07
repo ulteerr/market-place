@@ -1,25 +1,12 @@
 .wrap {
-  --login-bg: #ffffff;
-  --login-border: #e2e8f0;
-  --login-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
-  --login-title: #111827;
-  --login-description: #475569;
-  --login-label: #111827;
-  --login-input-border: #cbd5e1;
-  --login-input-bg: #ffffff;
-  --login-input-text: #111827;
-  --login-input-focus: #0ea5e9;
-  --login-button-bg: #ea580c;
-  --login-button-text: #ffffff;
-
   margin: 0 auto;
   width: 100%;
   max-width: 28rem;
-  border: 1px solid var(--login-border);
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background-color: var(--login-bg);
+  background-color: color-mix(in srgb, var(--surface) 86%, transparent);
   padding: 1.5rem;
-  box-shadow: var(--login-shadow);
+  box-shadow: 0 10px 36px rgba(2, 6, 23, 0.24);
 }
 
 .wrapPage {
@@ -30,24 +17,24 @@
   max-width: 24rem;
   border-radius: 1.25rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.94)),
-    radial-gradient(circle at 0 0, rgba(14, 165, 233, 0.12), transparent 56%);
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface) 88%, transparent)),
+    radial-gradient(circle at 0 0, color-mix(in srgb, var(--accent) 18%, transparent), transparent 56%);
   box-shadow:
-    0 10px 32px rgba(15, 23, 42, 0.16),
-    0 1px 2px rgba(15, 23, 42, 0.06);
+    0 10px 32px rgba(15, 23, 42, 0.3),
+    0 1px 2px rgba(15, 23, 42, 0.12);
 }
 
 .title {
   font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--login-title);
+  color: var(--text);
 }
 
 .description {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: var(--login-description);
+  color: var(--muted);
 }
 
 .form {
@@ -58,61 +45,36 @@
 
 .statusBox {
   margin-top: 1rem;
-  border: 1px solid #bae6fd;
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
-  background-color: #f0f9ff;
+  background-color: color-mix(in srgb, var(--surface) 92%, transparent);
   padding: 0.75rem;
 }
 
 .statusLink {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0c4a6e;
+  color: var(--accent);
   text-decoration: underline;
 }
 
-.label {
-  margin-bottom: 0.25rem;
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--login-label);
-}
-
-.input {
-  width: 100%;
-  border: 1px solid var(--login-input-border);
-  border-radius: 0.75rem;
-  background-color: var(--login-input-bg);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: var(--login-input-text);
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &:focus {
-    border-color: var(--login-input-focus);
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-  }
-}
-
 .error {
-  border: 1px solid #fecaca;
+  border: 1px solid color-mix(in srgb, var(--form-error) 45%, transparent);
   border-radius: 0.75rem;
-  background-color: #fef2f2;
+  background-color: color-mix(in srgb, var(--form-error) 10%, transparent);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: #b91c1c;
+  color: var(--form-error);
 }
 
 .button {
-  border: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 65%, transparent);
   border-radius: 0.75rem;
-  background-color: var(--login-button-bg);
-  padding: 0.5rem 1rem;
+  background-color: color-mix(in srgb, var(--accent) 82%, black 18%);
+  padding: 0.62rem 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--login-button-text);
+  color: #fff;
   transition: filter 0.2s ease, opacity 0.2s ease;
   cursor: pointer;
 

@@ -1,16 +1,24 @@
 <template>
-  <div class="min-h-screen flex flex-col">
-    <AppHeader />
-
-    <main class="flex-1">
+  <NuxtLayout>
+    <main>
       <NuxtPage />
     </main>
-
-    <AppFooter />
-  </div>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import AppHeader from '~/components/layout/AppHeader/AppHeader.vue'
-import AppFooter from '~/components/layout/AppFooter/AppFooter.vue'
+const { token, refreshUser, logout } = useAuth()
+
+onMounted(async () => {
+  if (!token.value) {
+    return
+  }
+
+  try {
+    await refreshUser()
+  } catch {
+    // Token may be stale/invalid - clear local auth state.
+    await logout()
+  }
+})
 </script>

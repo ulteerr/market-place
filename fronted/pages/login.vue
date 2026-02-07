@@ -1,25 +1,25 @@
 <template>
-  <div>
-    <PageHero
-      eyebrow="Auth"
-      title="Вход в админ-панель"
-      description="Единая форма входа: логика общая, шаблоны могут отличаться по верстке."
-    />
+  <section :class="styles.page">
+    <div :class="styles.inner">
+      <div :class="styles.head">
+        <p :class="styles.eyebrow">Admin Auth</p>
+        <h1 :class="styles.title">Вход в админ-панель</h1>
+        <p :class="styles.description">Авторизуйтесь, чтобы перейти к управлению системой.</p>
+      </div>
 
-    <section class="px-4 py-10">
       <LoginForm
         variant="page"
         :require-admin-access="true"
         success-redirect-to="/admin"
         denied-redirect-to="/"
       />
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import PageHero from '~/components/ui/PageHero/PageHero.vue'
 import LoginForm from '~/components/auth/LoginForm/LoginForm.vue'
+import styles from './login.module.scss'
 
 definePageMeta({
   middleware: () => {

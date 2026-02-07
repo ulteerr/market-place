@@ -8,15 +8,24 @@
     </div>
 
     <form v-else :class="styles.form" @submit.prevent="onSubmit">
-      <div>
-        <label :for="emailInputId" :class="styles.label">Email</label>
-        <input :id="emailInputId" v-model="email" type="email" required :class="styles.input" />
-      </div>
+      <UiInput
+        :id="emailInputId"
+        v-model="email"
+        preset="email"
+        label="Email"
+        placeholder="name@company.com"
+        required
+      />
 
-      <div>
-        <label :for="passwordInputId" :class="styles.label">Пароль</label>
-        <input :id="passwordInputId" v-model="password" type="password" required :class="styles.input" />
-      </div>
+      <UiInput
+        :id="passwordInputId"
+        v-model="password"
+        preset="password"
+        :password-toggle="true"
+        label="Пароль"
+        placeholder="Введите пароль"
+        required
+      />
 
       <p v-if="error" :class="styles.error">{{ error }}</p>
 
@@ -29,6 +38,7 @@
 
 <script setup lang="ts">
 import styles from './LoginForm.module.scss'
+import UiInput from '~/components/ui/FormControls/UiInput.vue'
 
 type LoginFormVariant = 'page' | 'popup'
 
