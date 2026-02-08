@@ -1,0 +1,45 @@
+.admin-crud-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+.admin-crud-actions.is-end {
+  justify-content: flex-end;
+}
+
+.admin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.admin-action-btn.is-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.admin-action-btn.is-danger {
+  color: #dc2626;
+}
+
+.admin-action-btn.is-danger:hover {
+  border-color: #dc2626;
+}
+
+.admin-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-action-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}

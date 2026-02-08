@@ -1,0 +1,22 @@
+
+.admin-input {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--text);
+}
+
+.admin-button-secondary {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  transition: color .2s ease, border-color .2s ease;
+}
+
+.admin-button-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.toolbar-select {
+  min-width: 11rem;
+}

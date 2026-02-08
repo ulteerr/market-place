@@ -31,17 +31,4 @@ definePageMeta({
 })
 </script>
 
-<style scoped>
-.admin-dashboard {
-  color: var(--text);
-}
-
-.admin-panel {
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-}
-
-.admin-muted-text {
-  color: var(--muted);
-}
-</style>
+<style lang="scss" scoped src="./index.scss"></style>

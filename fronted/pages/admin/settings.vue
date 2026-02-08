@@ -33,17 +33,4 @@ const onThemeToggle = (value: boolean) => {
 }
 </script>
 
-<style scoped>
-.settings-page {
-  color: var(--text);
-}
-
-.settings-card {
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-}
-
-.settings-muted {
-  color: var(--muted);
-}
-</style>
+<style lang="scss" scoped src="./settings.scss"></style>

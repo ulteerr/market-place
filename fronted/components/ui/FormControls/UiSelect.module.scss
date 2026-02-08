@@ -146,6 +146,11 @@
   font-weight: 600;
 }
 
+.optionSelected:hover {
+  background-color: var(--form-tag-bg);
+  color: var(--form-tag-text);
+}
+
 .optionCreate {
   background-color: var(--form-create-bg);
   color: var(--form-create-text);

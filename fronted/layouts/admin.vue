@@ -37,26 +37,12 @@
           </nav>
 
           <div class="admin-sidebar-footer p-3">
-            <div class="admin-user-card flex items-center gap-3 rounded-xl p-3">
-              <div class="admin-avatar flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold">
-                {{ userInitials }}
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium">
-                  {{ userFullName }}
-                </p>
-                <p class="truncate text-xs admin-muted-text">
-                  {{ userEmail }}
-                </p>
-              </div>
-              <button
-                type="button"
-                class="admin-mini-button rounded-md px-2 py-1 text-xs"
-                @click="handleLogout"
-              >
-                Выйти
-              </button>
-            </div>
+            <AdminUserMenu
+              :initials="userInitials"
+              :full-name="userFullName"
+              :email="userEmail"
+              @select="onUserMenuSelect"
+            />
           </div>
         </div>
       </aside>
@@ -68,7 +54,7 @@
         @click="isSidebarOpen = false"
       />
 
-      <div class="flex min-h-screen flex-1 flex-col lg:ml-0">
+      <div class="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-0">
         <header class="admin-topbar sticky top-0 z-20">
           <div class="flex h-16 items-center justify-between px-4 lg:px-8">
             <div class="flex items-center gap-3">
@@ -82,13 +68,42 @@
               <h1 class="text-sm font-semibold lg:text-base">Административная панель</h1>
             </div>
 
-            <button type="button" class="admin-mini-button rounded-md px-3 py-2 text-xs" @click="toggleTheme">
-              {{ isDark ? 'Светлая тема' : 'Тёмная тема' }}
+            <button
+              type="button"
+              class="admin-mini-button theme-switcher-btn rounded-md px-2 py-2"
+              :title="isDark ? 'Toggle light mode' : 'Toggle dark mode'"
+              :aria-label="isDark ? 'Toggle light mode' : 'Toggle dark mode'"
+              @click="toggleTheme"
+            >
+              <svg
+                v-if="!isDark"
+                class="theme-switcher-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"></path>
+              </svg>
+              <svg
+                v-else
+                class="theme-switcher-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"></path>
+              </svg>
             </button>
           </div>
         </header>
 
-        <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8">
+        <main class="flex-1 min-w-0 px-4 py-6 lg:px-8 lg:py-8">
           <slot />
         </main>
       </div>
@@ -97,6 +112,8 @@
 </template>
 
 <script setup lang="ts">
+import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue'
+
 const route = useRoute()
 const { user, logout } = useAuth()
 const { isDark, toggleTheme } = useUserSettings()
@@ -106,8 +123,7 @@ const isSidebarOpen = ref(false)
 const menuItems = [
   { to: '/admin', label: 'Главная', icon: '🏠' },
   { to: '/admin/users', label: 'Пользователи', icon: '👤' },
-  { to: '/admin/roles', label: 'Роли', icon: '🛡' },
-  { to: '/admin/settings', label: 'Настройки', icon: '⚙' }
+  { to: '/admin/roles', label: 'Роли', icon: '🛡' }
 ]
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
@@ -119,7 +135,8 @@ const userFullName = computed(() => {
 
   const first = user.value.first_name?.trim() ?? ''
   const last = user.value.last_name?.trim() ?? ''
-  const fullName = `${first} ${last}`.trim()
+  const middle = user.value.middle_name?.trim() ?? ''
+  const fullName = [first, last, middle].filter(Boolean).join(' ')
 
   return fullName || user.value.email
 })
@@ -134,6 +151,14 @@ const userInitials = computed(() => {
   return initials || user.value?.email?.[0]?.toUpperCase() || 'AD'
 })
 
+const onUserMenuSelect = async (action: 'settings' | 'logout') => {
+  if (action === 'settings') {
+    await navigateTo('/admin/settings')
+  } else if (action === 'logout') {
+    await handleLogout()
+  }
+}
+
 const handleLogout = async () => {
   await logout()
   await navigateTo('/login')
@@ -147,86 +172,4 @@ watch(
 )
 </script>
 
-<style scoped>
-.admin-layout {
-  background: var(--surface-soft);
-  color: var(--text);
-}
-
-.admin-sidebar {
-  border-right: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
-}
-
-.admin-sidebar-header,
-.admin-sidebar-footer {
-  border-color: var(--border);
-}
-
-.admin-sidebar-header {
-  border-bottom: 1px solid var(--border);
-}
-
-.admin-sidebar-footer {
-  border-top: 1px solid var(--border);
-}
-
-.admin-title {
-  color: var(--text);
-}
-
-.admin-topbar {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface-soft) 88%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.admin-nav-link {
-  color: var(--muted);
-}
-
-.admin-nav-link:hover {
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
-  color: var(--text);
-}
-
-.admin-nav-link.is-active {
-  background: color-mix(in srgb, var(--surface) 75%, transparent);
-  color: var(--text);
-}
-
-.admin-nav-icon {
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
-}
-
-.admin-nav-link.is-active .admin-nav-icon {
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
-}
-
-.admin-user-card {
-  background: color-mix(in srgb, var(--surface) 75%, transparent);
-}
-
-.admin-avatar {
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-}
-
-.admin-muted-text {
-  color: var(--muted);
-}
-
-.admin-mini-button,
-.admin-icon-button {
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  color: var(--muted);
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.admin-mini-button:hover,
-.admin-icon-button:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-</style>
+<style lang="scss" scoped src="./admin.scss"></style>

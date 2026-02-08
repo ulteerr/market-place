@@ -21,13 +21,15 @@
 
       <input
         :id="resolvedId"
-        v-model="query"
+        :value="inputValue"
         :class="styles.input"
         :placeholder="inputPlaceholder"
         :disabled="disabled"
+        :readonly="!searchable"
         :required="required && !selectedValues.length"
         :name="name"
         autocomplete="off"
+        @input="onInput"
         @focus="open"
         @keydown.down.prevent="open"
         @keydown.esc="close"
@@ -155,6 +157,14 @@ const inputPlaceholder = computed(() => {
   return props.placeholder
 })
 
+const inputValue = computed(() => {
+  if (!props.searchable && !props.multiple) {
+    return selectedOptions.value[0]?.label ?? ''
+  }
+
+  return query.value
+})
+
 const filteredOptions = computed(() => {
   const currentQuery = normalizedQuery.value.toLowerCase()
 
@@ -181,6 +191,15 @@ const canCreateTag = computed(() => {
 })
 
 const isSelected = (value: SelectValue) => selectedValues.value.includes(value)
+
+const onInput = (event: Event) => {
+  if (!props.searchable) {
+    return
+  }
+
+  const target = event.target as HTMLInputElement | null
+  query.value = target?.value ?? ''
+}
 
 const open = () => {
   if (props.disabled) {

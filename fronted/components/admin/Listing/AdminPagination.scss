@@ -1,0 +1,23 @@
+
+.admin-muted {
+  color: var(--muted);
+}
+
+.admin-button-secondary,
+.page-button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  transition: color .2s ease, border-color .2s ease;
+}
+
+.admin-button-secondary:hover,
+.page-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.page-button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}

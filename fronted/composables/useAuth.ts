@@ -3,6 +3,7 @@ interface AuthUser {
   email: string
   first_name?: string
   last_name?: string
+  middle_name?: string
   roles?: string[]
   is_admin?: boolean
   can_access_admin_panel?: boolean

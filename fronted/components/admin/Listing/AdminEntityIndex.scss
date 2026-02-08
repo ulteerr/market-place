@@ -1,0 +1,24 @@
+
+.admin-card { border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); }
+.admin-muted { color: var(--muted); }
+.admin-error { color: #b91c1c; }
+.mode-select-wrap { min-width: 12rem; }
+.sort-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.sort-tag {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+}
+.sort-tag.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.admin-button, .admin-button-secondary { border: 1px solid var(--border); transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.admin-button { background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--text); }
+.admin-button:hover, .admin-button-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.admin-button-secondary { background: transparent; color: var(--muted); }

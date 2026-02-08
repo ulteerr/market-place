@@ -1,0 +1,82 @@
+
+.admin-layout {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.admin-sidebar {
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+}
+
+.admin-sidebar-header,
+.admin-sidebar-footer {
+  border-color: var(--border);
+}
+
+.admin-sidebar-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-sidebar-footer {
+  border-top: 1px solid var(--border);
+}
+
+.admin-title {
+  color: var(--text);
+}
+
+.admin-topbar {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-soft) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.admin-nav-link {
+  color: var(--muted);
+}
+
+.admin-nav-link:hover {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--text);
+}
+
+.admin-nav-link.is-active {
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  color: var(--text);
+}
+
+.admin-nav-icon {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.admin-nav-link.is-active .admin-nav-icon {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+}
+
+.admin-mini-button,
+.admin-icon-button {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--muted);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-mini-button:hover,
+.admin-icon-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.theme-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+}
+
+.theme-switcher-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}

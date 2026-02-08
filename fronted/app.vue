@@ -17,7 +17,6 @@ onMounted(async () => {
   try {
     await refreshUser()
   } catch {
-    // Token may be stale/invalid - clear local auth state.
     await logout()
   }
 })
