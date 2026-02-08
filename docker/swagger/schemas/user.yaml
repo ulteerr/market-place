@@ -40,14 +40,19 @@ components:
 
         can_access_admin_panel:
           type: boolean
-          example: true  
+          example: true
+        settings:
+          $ref: '#/components/schemas/UserSettings'
 
 
     UserResponse:
       type: object
-      required: [data]
+      required: [status, user]
       properties:
-        data:
+        status:
+          type: string
+          example: ok
+        user:
           $ref: '#/components/schemas/User'
 
 
@@ -73,6 +78,44 @@ components:
         password_confirmation:
           type: string
           format: password
+
+    UpdateMeSettingsRequest:
+      type: object
+      required: [settings]
+      properties:
+        settings:
+          $ref: '#/components/schemas/UserSettings'
+
+    UserSettings:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [light, dark]
+          example: dark
+        admin_crud_preferences:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AdminCrudPreference'
+      additionalProperties: true
+      example:
+        theme: dark
+        admin_crud_preferences:
+          users:
+            contentMode: cards
+            tableOnDesktop: false
+
+    AdminCrudPreference:
+      type: object
+      properties:
+        contentMode:
+          type: string
+          enum: [table, table-cards, cards]
+          example: table-cards
+        tableOnDesktop:
+          type: boolean
+          example: true
+      additionalProperties: false
 
 
     CreateAdminUserRequest:

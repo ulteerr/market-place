@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Users\Tests\Feature;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+final class UpdateMeSettingsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    #[Test]
+    public function authenticated_user_can_update_settings(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this
+            ->withHeaders($auth['headers'])
+            ->patchJson('/api/me/settings', [
+                'settings' => [
+                    'theme' => 'dark',
+                    'admin_crud_preferences' => [
+                        'users' => [
+                            'contentMode' => 'cards',
+                            'tableOnDesktop' => false,
+                        ],
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('user.settings.theme', 'dark')
+            ->assertJsonPath('user.settings.admin_crud_preferences.users.contentMode', 'cards')
+            ->assertJsonPath('user.settings.admin_crud_preferences.users.tableOnDesktop', false);
+
+        $auth['user']->refresh();
+
+        $this->assertSame('dark', $auth['user']->settings['theme'] ?? null);
+        $this->assertSame(
+            'cards',
+            $auth['user']->settings['admin_crud_preferences']['users']['contentMode'] ?? null
+        );
+    }
+
+    #[Test]
+    public function invalid_content_mode_returns_validation_error(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this
+            ->withHeaders($auth['headers'])
+            ->patchJson('/api/me/settings', [
+                'settings' => [
+                    'admin_crud_preferences' => [
+                        'users' => [
+                            'contentMode' => 'grid',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['settings.admin_crud_preferences.users.contentMode']);
+    }
+
+    #[Test]
+    public function guest_cannot_update_settings(): void
+    {
+        $this
+            ->patchJson('/api/me/settings', [
+                'settings' => [
+                    'theme' => 'dark',
+                ],
+            ])
+            ->assertUnauthorized();
+    }
+}

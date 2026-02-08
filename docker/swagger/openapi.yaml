@@ -30,6 +30,9 @@ paths:
 
   /api/me/password:
     $ref: ./modules/users.yaml#/me_update_password
+  
+  /api/me/settings:
+    $ref: ./modules/users.yaml#/me_update_settings
 
   /api/admin/users:
     $ref: ./modules/users.yaml#/admin_users

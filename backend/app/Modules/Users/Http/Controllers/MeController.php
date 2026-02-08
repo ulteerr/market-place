@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Users\Http\Requests\UpdateMeProfileRequest;
 use Modules\Users\Http\Requests\UpdateMePasswordRequest;
+use Modules\Users\Http\Requests\UpdateMeSettingsRequest;
 use Modules\Users\Http\Responses\UserResponseFactory;
 use Modules\Users\Services\UsersService;
 
@@ -38,6 +39,16 @@ final class MeController extends Controller
         $user = $this->usersService->updateUser(
             $request->user(),
             $request->validated()
+        );
+
+        return UserResponseFactory::success($user);
+    }
+
+    public function updateSettings(UpdateMeSettingsRequest $request): JsonResponse
+    {
+        $user = $this->usersService->updateUser(
+            $request->user(),
+            ['settings' => $request->validated('settings')]
         );
 
         return UserResponseFactory::success($user);

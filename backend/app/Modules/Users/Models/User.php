@@ -29,6 +29,7 @@ final class User extends Authenticatable
 		'email',
 		'password',
 		'phone',
+		'settings',
 	];
 
 	protected $hidden = [
@@ -38,6 +39,7 @@ final class User extends Authenticatable
 
 	protected $casts = [
 		'email_verified_at' => 'datetime',
+		'settings' => 'array',
 	];
 
 	protected function password(): Attribute

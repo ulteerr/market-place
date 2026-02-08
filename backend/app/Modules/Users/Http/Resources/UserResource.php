@@ -19,6 +19,8 @@ final class UserResource extends JsonResource
             'email'      => $this->email,
             'first_name' => $this->first_name,
             'last_name'  => $this->last_name,
+            'middle_name' => $this->middle_name,
+            'settings' => $this->settings ?? (object) [],
             'roles' => $this->whenLoaded('roles', function () {
                 return $this->roles->pluck('code')->values();
             }),

@@ -1,0 +1,838 @@
+openapi: 3.0.3
+info:
+  title: Marketplace API
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+    description: Local backend (nginx)
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                  - user
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - first_name
+                - last_name
+                - password
+                - password_confirmation
+              properties:
+                first_name:
+                  type: string
+                  maxLength: 255
+                  example: Александр
+                last_name:
+                  type: string
+                  maxLength: 255
+                  example: Лебедев
+                middle_name:
+                  type: string
+                  maxLength: 255
+                  nullable: true
+                  example: Алексеевич
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: secret123
+                password_confirmation:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: secret123
+                phone:
+                  type: string
+                  maxLength: 20
+                  nullable: true
+                  example: '+79998887766'
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1auth~1login/post/responses/200/content/application~1json/schema'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/me:
+    get:
+      tags:
+        - Users
+      summary: Get current authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - user
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  user:
+                    $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+    patch:
+      tags:
+        - Users
+      summary: Update current authenticated user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1me/get/responses/200/content/application~1json/schema'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - errors
+                properties:
+                  message:
+                    type: string
+                    example: Validation error
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                    example:
+                      email:
+                        - The email field is required.
+                      password:
+                        - The password field must be at least 6 characters.
+  /api/me/password:
+    patch:
+      tags:
+        - Users
+      summary: Change current user password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+                - password_confirmation
+              properties:
+                password:
+                  type: string
+                  format: password
+                password_confirmation:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1me/get/responses/200/content/application~1json/schema'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/me/settings:
+    patch:
+      tags:
+        - Users
+      summary: Update current user settings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - settings
+              properties:
+                settings:
+                  type: object
+                  properties:
+                    theme:
+                      type: string
+                      enum:
+                        - light
+                        - dark
+                      example: dark
+                    admin_crud_preferences:
+                      type: object
+                      additionalProperties:
+                        type: object
+                        properties:
+                          contentMode:
+                            type: string
+                            enum:
+                              - table
+                              - table-cards
+                              - cards
+                            example: table-cards
+                          tableOnDesktop:
+                            type: boolean
+                            example: true
+                        additionalProperties: false
+                  additionalProperties: true
+                  example:
+                    theme: dark
+                    admin_crud_preferences:
+                      users:
+                        contentMode: cards
+                        tableOnDesktop: false
+      responses:
+        '200':
+          description: Updated user settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1me/get/responses/200/content/application~1json/schema'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/admin/users:
+    get:
+      tags:
+        - Admin Users
+      summary: List users (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated users list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: This action is unauthorized.
+    post:
+      tags:
+        - Admin Users
+      summary: Create user (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - first_name
+                - last_name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                first_name:
+                  type: string
+                  maxLength: 255
+                  example: John
+                last_name:
+                  type: string
+                  maxLength: 255
+                  example: Doe
+                middle_name:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                  example: M
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+                password_confirmation:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+                phone:
+                  type: string
+                  nullable: true
+                  maxLength: 20
+                  example: '+79998887766'
+                roles:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - moderator
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Created successfully
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - email
+                      - first_name
+                      - last_name
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: d3302fd5-360b-48ba-a049-40aa4accf26f
+                      email:
+                        type: string
+                        format: email
+                        example: alex.johnson@example.com
+                      first_name:
+                        type: string
+                        example: Alex
+                      last_name:
+                        type: string
+                        example: Johnson
+                      middle_name:
+                        type: string
+                        nullable: true
+                        example: Michael
+                      phone:
+                        type: string
+                        nullable: true
+                        example: '+79998887766'
+                      roles:
+                        type: array
+                        description: Global platform roles
+                        items:
+                          type: string
+                        example:
+                          - participant
+                          - admin
+                      is_admin:
+                        type: boolean
+                        example: true
+                      can_access_admin_panel:
+                        type: boolean
+                        example: true
+                      settings:
+                        $ref: '#/paths/~1api~1me~1settings/patch/requestBody/content/application~1json/schema/properties/settings'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/admin/users/{id}':
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Admin Users
+      summary: Get user by id (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - user
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  user:
+                    $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: Resource not found.
+    patch:
+      tags:
+        - Admin Users
+      summary: Update user (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  maxLength: 255
+                  example: John
+                last_name:
+                  type: string
+                  maxLength: 255
+                  example: Doe
+                middle_name:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                  example: M
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+                password_confirmation:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+                phone:
+                  type: string
+                  nullable: true
+                  maxLength: 20
+                  example: '+79998887766'
+                roles:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - admin
+                    - moderator
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Updated successfully
+                  data:
+                    $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    delete:
+      tags:
+        - Admin Users
+      summary: Delete user (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Deleted successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/admin/roles:
+    get:
+      tags:
+        - Admin Roles
+      summary: List roles (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated roles list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1roles/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+    post:
+      tags:
+        - Admin Roles
+      summary: Create role (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  maxLength: 50
+                  example: editor
+                label:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                  example: Editor
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Created successfully
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - code
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 8a43f43d-65c7-4f58-8578-2ce9f85f1536
+                      code:
+                        type: string
+                        maxLength: 50
+                        example: moderator
+                      label:
+                        type: string
+                        nullable: true
+                        maxLength: 255
+                        example: Moderator
+                      is_system:
+                        type: boolean
+                        example: false
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/admin/roles/{id}':
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Admin Roles
+      summary: Get role by id (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - role
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  role:
+                    $ref: '#/paths/~1api~1admin~1roles/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
+    patch:
+      tags:
+        - Admin Roles
+      summary: Update role (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  maxLength: 50
+                  example: editor
+                label:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                  example: Updated Editor
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Updated successfully
+                  data:
+                    $ref: '#/paths/~1api~1admin~1roles/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    delete:
+      tags:
+        - Admin Roles
+      summary: Delete role (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Role deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Deleted successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'

@@ -63,6 +63,30 @@ me_update_password:
       '422':
         $ref: ../errors.yaml#/ValidationError
 
+me_update_settings:
+  patch:
+    tags: [Users]
+    summary: Update current user settings
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/user.yaml#/components/schemas/UpdateMeSettingsRequest
+    responses:
+      '200':
+        description: Updated user settings
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/user.yaml#/components/schemas/UserResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
 
 admin_users:
   get:
