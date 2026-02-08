@@ -18,5 +18,9 @@ interface RolesRepositoryInterface
 
 	public function delete(Role $role): void;
 
-	public function paginate(int $perPage = 20): LengthAwarePaginator;
+	public function paginate(
+		int $perPage = 20,
+		array $with = [],
+		array $filters = []
+	): LengthAwarePaginator;
 }

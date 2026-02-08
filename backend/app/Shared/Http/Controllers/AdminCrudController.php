@@ -78,8 +78,27 @@ abstract class AdminCrudController extends Controller
 
     public function index(): JsonResponse
     {
+        $request = request();
+
+        $perPage = max(1, min(100, (int) $request->integer('per_page', 20)));
+        $sortBy = trim((string) $request->query('sort_by', ''));
+        $sortDir = strtolower((string) $request->query('sort_dir', 'asc'));
+        $search = trim((string) $request->query('search', ''));
+
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'asc';
+        }
+
         $method = $this->paginateMethod();
-        $items = $this->service()->{$method}(20);
+        $items = $this->service()->{$method}(
+            $perPage,
+            [],
+            [
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
+                'search' => $search,
+            ]
+        );
 
         return StatusResponseFactory::success($items);
     }

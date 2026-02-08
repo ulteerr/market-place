@@ -15,6 +15,10 @@ interface UsersRepositoryInterface
     public function findByEmail(string $email): ?User;
     public function findByEmailOrPhone(string $value): ?User;
     public function findById(string $id): ?User;
-    public function paginate(int $perPage = 20): LengthAwarePaginator;
+    public function paginate(
+        int $perPage = 20,
+        array $with = [],
+        array $filters = []
+    ): LengthAwarePaginator;
     public function delete(User $user): void;
 }

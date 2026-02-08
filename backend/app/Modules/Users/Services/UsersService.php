@@ -98,15 +98,12 @@ final class UsersService implements UsersServiceInterface
 		);
 	}
 
-	public function paginate(int $perPage = 20,  array $with = []): LengthAwarePaginator
-	{
-		$query = User::query();
-
-		if (!empty($with)) {
-			$query->with($with);
-		}
-
-		return $query->paginate($perPage);
+	public function paginate(
+		int $perPage = 20,
+		array $with = [],
+		array $filters = []
+	): LengthAwarePaginator {
+		return $this->repository->paginate($perPage, $with, $filters);
 	}
 
 	public function deleteUser(string $id): void

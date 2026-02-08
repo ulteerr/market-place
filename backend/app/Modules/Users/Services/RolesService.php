@@ -15,15 +15,12 @@ final class RolesService
 		private readonly RolesRepositoryInterface $repository
 	) {}
 
-	public function paginate(int $perPage = 20,  array $with = []): LengthAwarePaginator
-	{
-		$query = Role::query();
-
-		if (!empty($with)) {
-			$query->with($with);
-		}
-
-		return $query->paginate($perPage);
+	public function paginate(
+		int $perPage = 20,
+		array $with = [],
+		array $filters = []
+	): LengthAwarePaginator {
+		return $this->repository->paginate($perPage, $with, $filters);
 	}
 
 	public function findById(string $id): Role
