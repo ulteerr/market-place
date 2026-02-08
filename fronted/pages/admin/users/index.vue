@@ -38,25 +38,65 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('name')">Имя {{ listState.sortMark('name') }}</button></th>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('email')">Email {{ listState.sortMark('email') }}</button></th>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('phone')">Телефон {{ listState.sortMark('phone') }}</button></th>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('access')">Доступ {{ listState.sortMark('access') }}</button></th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('name')"
+              >
+                Имя {{ listState.sortMark("name") }}
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('email')"
+              >
+                Email {{ listState.sortMark("email") }}
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('phone')"
+              >
+                Телефон {{ listState.sortMark("phone") }}
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('access')"
+              >
+                Доступ {{ listState.sortMark("access") }}
+              </button>
+            </th>
             <th class="text-right">Действия</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="5" class="admin-muted py-5 text-center text-sm">Загрузка...</td>
+            <td colspan="5" class="admin-muted py-5 text-center text-sm">
+              Загрузка...
+            </td>
           </tr>
           <tr v-else-if="!users.length">
-            <td colspan="5" class="admin-muted py-5 text-center text-sm">Пользователи не найдены.</td>
+            <td colspan="5" class="admin-muted py-5 text-center text-sm">
+              Пользователи не найдены.
+            </td>
           </tr>
           <tr v-for="item in users" :key="item.id">
             <td>{{ getAdminUserFullName(item) }}</td>
             <td>{{ item.email }}</td>
-            <td>{{ item.phone || '—' }}</td>
-            <td><span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span></td>
+            <td>{{ item.phone || "—" }}</td>
+            <td>
+              <span :class="['access-chip', accessClass(item)]">{{
+                accessLabel(item)
+              }}</span>
+            </td>
             <td>
               <AdminCrudActions
                 :show-to="`/admin/users/${item.id}`"
@@ -73,15 +113,29 @@
 
     <template #cards>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <article v-for="item in users" :key="item.id" class="user-card rounded-xl p-4">
-          <h4 class="text-sm font-semibold">{{ getAdminUserFullName(item) }}</h4>
+        <article
+          v-for="item in users"
+          :key="item.id"
+          class="user-card rounded-xl p-4"
+        >
+          <h4 class="text-sm font-semibold">
+            {{ getAdminUserFullName(item) }}
+          </h4>
           <p class="admin-muted mt-1 text-xs">{{ item.email }}</p>
-          <p class="admin-muted text-xs">{{ item.phone || 'Телефон не указан' }}</p>
+          <p class="admin-muted text-xs">
+            {{ item.phone || "Телефон не указан" }}
+          </p>
           <div class="mt-2">
-            <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
+            <span :class="['access-chip', accessClass(item)]">{{
+              accessLabel(item)
+            }}</span>
           </div>
           <div class="mt-3">
-            <AdminCrudActions :show-to="`/admin/users/${item.id}`" :edit-to="`/admin/users/${item.id}/edit`" :can-delete="false" />
+            <AdminCrudActions
+              :show-to="`/admin/users/${item.id}`"
+              :edit-to="`/admin/users/${item.id}/edit`"
+              :deleting="deletingId === item.id"
+            />
           </div>
         </article>
       </div>
@@ -90,16 +144,19 @@
 </template>
 
 <script setup lang="ts">
-import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue'
-import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue'
-import type { AdminUser } from '~/composables/useAdminUsers'
-import { getAdminUserFullName, resolveAdminUserPanelAccess } from '~/composables/useAdminUsers'
+import AdminCrudActions from "~/components/admin/Listing/AdminCrudActions.vue";
+import AdminEntityIndex from "~/components/admin/Listing/AdminEntityIndex.vue";
+import type { AdminUser } from "~/composables/useAdminUsers";
+import {
+  getAdminUserFullName,
+  resolveAdminUserPanelAccess,
+} from "~/composables/useAdminUsers";
 
 definePageMeta({
-  layout: 'admin'
-})
+  layout: "admin",
+});
 
-const usersApi = useAdminUsers()
+const usersApi = useAdminUsers();
 const {
   listState,
   items: users,
@@ -116,58 +173,58 @@ const {
   onApplySearch,
   onResetFilters,
   onUpdatePerPage,
-  removeItem
+  removeItem,
 } = useAdminCrudIndex<AdminUser>({
-  settingsKey: 'users',
-  defaultSortBy: 'name',
+  settingsKey: "users",
+  defaultSortBy: "name",
   defaultPerPage: 10,
-  listErrorMessage: 'Не удалось загрузить пользователей.',
-  deleteErrorMessage: 'Не удалось удалить пользователя.',
+  listErrorMessage: "Не удалось загрузить пользователей.",
+  deleteErrorMessage: "Не удалось удалить пользователя.",
   list: usersApi.list,
   remove: usersApi.remove,
-  getItemId: (user) => user.id
-})
+  getItemId: (user) => user.id,
+});
 
 const cardSortFields = [
-  { value: 'name', label: 'Имя' },
-  { value: 'email', label: 'Email' },
-  { value: 'phone', label: 'Телефон' },
-  { value: 'access', label: 'Доступ' }
-]
+  { value: "name", label: "Имя" },
+  { value: "email", label: "Email" },
+  { value: "phone", label: "Телефон" },
+  { value: "access", label: "Доступ" },
+];
 
-const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
-  contentMode.value = mode
-}
+const onModeChange = (mode: "table" | "table-cards" | "cards") => {
+  contentMode.value = mode;
+};
 
 const onToggleDesktopMode = () => {
-  tableOnDesktop.value = !tableOnDesktop.value
-}
+  tableOnDesktop.value = !tableOnDesktop.value;
+};
 
 const accessLabel = (item: AdminUser): string => {
-  const access = resolveAdminUserPanelAccess(item)
+  const access = resolveAdminUserPanelAccess(item);
 
   if (access === null) {
-    return 'Неизвестно'
+    return "Неизвестно";
   }
 
-  return access ? 'Админ-панель' : 'Без админ-доступа'
-}
+  return access ? "Админ-панель" : "Без админ-доступа";
+};
 
 const accessClass = (item: AdminUser): string => {
-  const access = resolveAdminUserPanelAccess(item)
+  const access = resolveAdminUserPanelAccess(item);
 
   if (access === null) {
-    return 'is-unknown'
+    return "is-unknown";
   }
 
-  return access ? 'is-admin' : 'is-basic'
-}
+  return access ? "is-admin" : "is-basic";
+};
 
 const removeUser = async (user: AdminUser) => {
   await removeItem(user, {
-    confirmMessage: `Удалить пользователя ${getAdminUserFullName(user)}?`
-  })
-}
+    confirmMessage: `Удалить пользователя ${getAdminUserFullName(user)}?`,
+  });
+};
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

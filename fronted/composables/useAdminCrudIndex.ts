@@ -47,6 +47,7 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
 
   const contentMode = ref<AdminCrudContentMode>(options.defaultContentMode ?? 'table')
   const tableOnDesktop = ref(options.defaultTableOnDesktop ?? true)
+  const viewPreference = computed(() => crudPreferences.preferences.value[options.settingsKey] ?? {})
 
   const pagination = reactive<PaginationPayload<T>>({
     data: [],
@@ -128,26 +129,37 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     }
   }
 
+  const applyPreference = (preference: Partial<{ contentMode: AdminCrudContentMode; tableOnDesktop: boolean }>) => {
+    if (preference.contentMode && preference.contentMode !== contentMode.value) {
+      contentMode.value = preference.contentMode
+    }
+
+    if (preference.tableOnDesktop !== undefined && preference.tableOnDesktop !== tableOnDesktop.value) {
+      tableOnDesktop.value = preference.tableOnDesktop
+    }
+  }
+
   onMounted(async () => {
-    const viewPreference = crudPreferences.getViewPreference(options.settingsKey)
-
-    if (viewPreference.contentMode) {
-      contentMode.value = viewPreference.contentMode
-    }
-
-    if (viewPreference.tableOnDesktop !== undefined) {
-      tableOnDesktop.value = viewPreference.tableOnDesktop
-    }
+    applyPreference(crudPreferences.getViewPreference(options.settingsKey))
 
     const page = listState.readStateFromQuery()
     await fetchItems(page)
   })
 
+  watch(viewPreference, (nextPreference) => {
+    applyPreference(nextPreference)
+  })
+
   watch([contentMode, tableOnDesktop], ([mode, desktop]) => {
-    crudPreferences.updateViewPreference(options.settingsKey, {
-      contentMode: mode,
-      tableOnDesktop: desktop
-    })
+    const currentPreference = viewPreference.value
+    const sameMode = currentPreference.contentMode === mode
+    const sameDesktop = currentPreference.tableOnDesktop === desktop
+
+    if (sameMode && sameDesktop) {
+      return
+    }
+
+    crudPreferences.updateViewPreference(options.settingsKey, { contentMode: mode, tableOnDesktop: desktop })
   })
 
   return {

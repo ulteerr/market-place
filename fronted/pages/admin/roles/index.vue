@@ -38,25 +38,58 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('code')">Code {{ listState.sortMark('code') }}</button></th>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('label')">Label {{ listState.sortMark('label') }}</button></th>
-            <th><button type="button" class="sort-btn" @click="onToggleSort('is_system')">Тип {{ listState.sortMark('is_system') }}</button></th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('code')"
+              >
+                Code {{ listState.sortMark("code") }}
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('label')"
+              >
+                Label {{ listState.sortMark("label") }}
+              </button>
+            </th>
+            <th>
+              <button
+                type="button"
+                class="sort-btn"
+                @click="onToggleSort('is_system')"
+              >
+                Тип {{ listState.sortMark("is_system") }}
+              </button>
+            </th>
             <th class="text-right">Действия</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="4" class="admin-muted py-5 text-center text-sm">Загрузка...</td>
+            <td colspan="4" class="admin-muted py-5 text-center text-sm">
+              Загрузка...
+            </td>
           </tr>
           <tr v-else-if="!roles.length">
-            <td colspan="4" class="admin-muted py-5 text-center text-sm">Роли не найдены.</td>
+            <td colspan="4" class="admin-muted py-5 text-center text-sm">
+              Роли не найдены.
+            </td>
           </tr>
           <tr v-for="role in roles" :key="role.id">
             <td class="font-mono text-xs">{{ role.code }}</td>
-            <td>{{ role.label || '—' }}</td>
+            <td>{{ role.label || "—" }}</td>
             <td>
-              <span :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']">
-                {{ role.is_system ? 'Системная' : 'Пользовательская' }}
+              <span
+                :class="[
+                  'role-chip',
+                  role.is_system ? 'is-system' : 'is-custom',
+                ]"
+              >
+                {{ role.is_system ? "Системная" : "Пользовательская" }}
               </span>
             </td>
             <td>
@@ -76,16 +109,29 @@
 
     <template #cards>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <article v-for="role in roles" :key="role.id" class="role-card rounded-xl p-4">
+        <article
+          v-for="role in roles"
+          :key="role.id"
+          class="role-card rounded-xl p-4"
+        >
           <h4 class="font-mono text-xs">{{ role.code }}</h4>
-          <p class="admin-muted mt-1 text-xs">{{ role.label || 'Без label' }}</p>
+          <p class="admin-muted mt-1 text-xs">
+            {{ role.label || "Без label" }}
+          </p>
           <div class="mt-2">
-            <span :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']">
-              {{ role.is_system ? 'Системная' : 'Пользовательская' }}
+            <span
+              :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']"
+            >
+              {{ role.is_system ? "Системная" : "Пользовательская" }}
             </span>
           </div>
           <div class="mt-3">
-            <AdminCrudActions :show-to="`/admin/roles/${role.id}`" :edit-to="`/admin/roles/${role.id}/edit`" :can-delete="false" />
+            <AdminCrudActions
+              :show-to="`/admin/roles/${role.id}`"
+              :edit-to="`/admin/roles/${role.id}/edit`"
+              :can-delete="!role.is_system"
+              :deleting="deletingId === role.id"
+            />
           </div>
         </article>
       </div>
@@ -94,15 +140,15 @@
 </template>
 
 <script setup lang="ts">
-import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue'
-import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue'
-import type { AdminRole } from '~/composables/useAdminRoles'
+import AdminCrudActions from "~/components/admin/Listing/AdminCrudActions.vue";
+import AdminEntityIndex from "~/components/admin/Listing/AdminEntityIndex.vue";
+import type { AdminRole } from "~/composables/useAdminRoles";
 
 definePageMeta({
-  layout: 'admin'
-})
+  layout: "admin",
+});
 
-const rolesApi = useAdminRoles()
+const rolesApi = useAdminRoles();
 const {
   listState,
   items: roles,
@@ -119,38 +165,38 @@ const {
   onApplySearch,
   onResetFilters,
   onUpdatePerPage,
-  removeItem
+  removeItem,
 } = useAdminCrudIndex<AdminRole>({
-  settingsKey: 'roles',
-  defaultSortBy: 'code',
+  settingsKey: "roles",
+  defaultSortBy: "code",
   defaultPerPage: 10,
-  listErrorMessage: 'Не удалось загрузить роли.',
-  deleteErrorMessage: 'Не удалось удалить роль.',
+  listErrorMessage: "Не удалось загрузить роли.",
+  deleteErrorMessage: "Не удалось удалить роль.",
   list: rolesApi.list,
   remove: rolesApi.remove,
-  getItemId: (role) => role.id
-})
+  getItemId: (role) => role.id,
+});
 
 const cardSortFields = [
-  { value: 'code', label: 'Code' },
-  { value: 'label', label: 'Label' },
-  { value: 'is_system', label: 'Тип' }
-]
+  { value: "code", label: "Code" },
+  { value: "label", label: "Label" },
+  { value: "is_system", label: "Тип" },
+];
 
-const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
-  contentMode.value = mode
-}
+const onModeChange = (mode: "table" | "table-cards" | "cards") => {
+  contentMode.value = mode;
+};
 
 const onToggleDesktopMode = () => {
-  tableOnDesktop.value = !tableOnDesktop.value
-}
+  tableOnDesktop.value = !tableOnDesktop.value;
+};
 
 const removeRole = async (role: AdminRole) => {
   await removeItem(role, {
     canDelete: !role.is_system,
-    confirmMessage: `Удалить роль ${role.code}?`
-  })
-}
+    confirmMessage: `Удалить роль ${role.code}?`,
+  });
+};
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

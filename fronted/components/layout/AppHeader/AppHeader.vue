@@ -8,7 +8,7 @@
         <NuxtLink to="/admin" :class="styles.link">Админка</NuxtLink>
 
         <button type="button" :class="styles.themeButton" @click="toggleTheme">
-          {{ isDark ? 'Светлая' : 'Тёмная' }} тема
+          {{ resolvedIsDark ? 'Светлая' : 'Тёмная' }} тема
         </button>
       </nav>
     </div>
@@ -19,4 +19,10 @@
 import styles from './AppHeader.module.scss'
 
 const { isDark, toggleTheme } = useUserSettings()
+const isThemeUiMounted = ref(false)
+const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false))
+
+onMounted(() => {
+  isThemeUiMounted.value = true
+})
 </script>

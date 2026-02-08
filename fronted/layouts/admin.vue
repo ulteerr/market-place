@@ -71,12 +71,12 @@
             <button
               type="button"
               class="admin-mini-button theme-switcher-btn rounded-md px-2 py-2"
-              :title="isDark ? 'Toggle light mode' : 'Toggle dark mode'"
-              :aria-label="isDark ? 'Toggle light mode' : 'Toggle dark mode'"
+              :title="resolvedIsDark ? 'Toggle light mode' : 'Toggle dark mode'"
+              :aria-label="resolvedIsDark ? 'Toggle light mode' : 'Toggle dark mode'"
               @click="toggleTheme"
             >
               <svg
-                v-if="!isDark"
+                v-if="!resolvedIsDark"
                 class="theme-switcher-icon"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -117,8 +117,10 @@ import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue'
 const route = useRoute()
 const { user, logout } = useAuth()
 const { isDark, toggleTheme } = useUserSettings()
+const isThemeUiMounted = ref(false)
 
 const isSidebarOpen = ref(false)
+const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false))
 
 const menuItems = [
   { to: '/admin', label: 'Главная', icon: '🏠' },
@@ -170,6 +172,10 @@ watch(
     isSidebarOpen.value = false
   }
 )
+
+onMounted(() => {
+  isThemeUiMounted.value = true
+})
 </script>
 
 <style lang="scss" scoped src="./admin.scss"></style>
