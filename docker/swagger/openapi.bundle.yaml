@@ -295,6 +295,25 @@ paths:
           $ref: '#/paths/~1api~1me/get/responses/401'
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/me/settings/stream:
+    get:
+      tags:
+        - Users
+      summary: Stream current user settings updates (SSE)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Server-Sent Events stream with settings updates
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: |
+                  event: settings
+                  data: {"settings":{"theme":"dark"}}
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
   /api/admin/users:
     get:
       tags:

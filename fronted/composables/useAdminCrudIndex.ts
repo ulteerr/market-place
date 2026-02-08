@@ -1,6 +1,6 @@
 import type { PaginationPayload } from '~/composables/useAdminCrudCommon'
 import { buildPaginationItems, getApiErrorMessage } from '~/composables/useAdminCrudCommon'
-import type { AdminCrudContentMode } from '~/composables/useAdminCrudPreferences'
+import type { AdminCrudContentMode } from '~/composables/useUserSettings'
 
 interface ListQueryParams {
   page?: number

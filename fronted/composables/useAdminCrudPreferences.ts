@@ -1,5 +1,4 @@
 import type { AdminCrudContentMode } from '~/composables/useUserSettings'
-export type { AdminCrudContentMode } from '~/composables/useUserSettings'
 
 interface AdminCrudViewPreference {
   contentMode: AdminCrudContentMode

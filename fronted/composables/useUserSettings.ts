@@ -14,6 +14,12 @@ interface UserSettings {
 const STORAGE_KEY = 'user_settings'
 const LEGACY_CRUD_STORAGE_KEY = 'admin_crud_preferences'
 const DEFAULT_THEME: ThemeMode = 'light'
+const SETTINGS_STREAM_PATH = '/api/me/settings/stream'
+const SETTINGS_STREAM_RECONNECT_DELAY = 1500
+
+let settingsStreamController: AbortController | null = null
+let settingsStreamPromise: Promise<void> | null = null
+let settingsStreamEnabled = false
 
 const isThemeMode = (value: unknown): value is ThemeMode => value === 'light' || value === 'dark'
 
@@ -112,6 +118,20 @@ const areSettingsEqual = (left: UserSettings, right: UserSettings): boolean => {
   return createStableString(left) === createStableString(right)
 }
 
+const sleep = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+const buildApiUrl = (baseUrl: string, path: string): string => {
+  try {
+    return new URL(path, baseUrl).toString()
+  } catch {
+    return path
+  }
+}
+
 const mergeSettings = (
   remoteSettings: Partial<UserSettings> | null,
   localSettings: Partial<UserSettings> | null,
@@ -131,7 +151,8 @@ const mergeSettings = (
 }
 
 export const useUserSettings = () => {
-  const { user, isAuthenticated, updateSettings: updateRemoteSettings } = useAuth()
+  const { user, token, isAuthenticated, updateSettings: updateRemoteSettings } = useAuth()
+  const config = useRuntimeConfig()
 
   const settings = useState<UserSettings>('user_settings', () => ({
     theme: DEFAULT_THEME,
@@ -140,6 +161,7 @@ export const useUserSettings = () => {
 
   const initialized = useState<boolean>('user_settings_initialized', () => false)
   const storageListenerReady = useState<boolean>('user_settings_storage_listener_ready', () => false)
+  const streamWatcherReady = useState<boolean>('user_settings_stream_watcher_ready', () => false)
   let syncTimer: ReturnType<typeof setTimeout> | null = null
 
   const theme = computed(() => settings.value.theme)
@@ -184,6 +206,26 @@ export const useUserSettings = () => {
 
     if (syncRemote) {
       queueSyncToServer()
+    }
+  }
+
+  const applyRemoteSettings = (remote: unknown) => {
+    const payload = (remote ?? {}) as Partial<UserSettings>
+    const normalized: UserSettings = {
+      theme: isThemeMode(payload.theme) ? payload.theme : settings.value.theme,
+      admin_crud_preferences: {
+        ...settings.value.admin_crud_preferences,
+        ...normalizeAdminCrudPreferences(payload.admin_crud_preferences)
+      }
+    }
+
+    applySettings(normalized, false)
+
+    if (user.value) {
+      user.value = {
+        ...user.value,
+        settings: normalized
+      }
     }
   }
 
@@ -268,6 +310,140 @@ export const useUserSettings = () => {
     storageListenerReady.value = true
   }
 
+  const processStreamMessage = (rawMessage: string) => {
+    const lines = rawMessage
+      .split('\n')
+      .map((line) => line.trimEnd())
+      .filter((line) => line.length > 0)
+
+    if (lines.length === 0) {
+      return
+    }
+
+    let eventName = 'message'
+    const dataChunks: string[] = []
+
+    for (const line of lines) {
+      if (line.startsWith('event:')) {
+        eventName = line.slice(6).trim()
+        continue
+      }
+
+      if (line.startsWith('data:')) {
+        dataChunks.push(line.slice(5).trim())
+      }
+    }
+
+    if (eventName !== 'settings' || dataChunks.length === 0) {
+      return
+    }
+
+    try {
+      const payload = JSON.parse(dataChunks.join('\n')) as {
+        settings?: Partial<UserSettings>
+      }
+
+      if (payload.settings) {
+        applyRemoteSettings(payload.settings)
+      }
+    } catch {
+      // ignore malformed stream payload and keep the connection alive
+    }
+  }
+
+  const connectSettingsStream = async (): Promise<void> => {
+    const streamUrl = buildApiUrl(config.public.apiBase, SETTINGS_STREAM_PATH)
+
+    while (settingsStreamEnabled && isAuthenticated.value && token.value) {
+      settingsStreamController = new AbortController()
+
+      try {
+        const response = await fetch(streamUrl, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            Accept: 'text/event-stream',
+            Authorization: `Bearer ${token.value}`
+          },
+          signal: settingsStreamController.signal
+        })
+
+        if (!response.ok || !response.body) {
+          throw new Error('Settings stream is unavailable')
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (settingsStreamEnabled && isAuthenticated.value) {
+          const { done, value } = await reader.read()
+
+          if (done) {
+            break
+          }
+
+          buffer += decoder.decode(value, { stream: true })
+          const messages = buffer.split('\n\n')
+          buffer = messages.pop() ?? ''
+
+          for (const message of messages) {
+            processStreamMessage(message)
+          }
+        }
+      } catch {
+        // reconnect below
+      } finally {
+        if (settingsStreamController) {
+          settingsStreamController.abort()
+          settingsStreamController = null
+        }
+      }
+
+      if (settingsStreamEnabled && isAuthenticated.value && token.value) {
+        await sleep(SETTINGS_STREAM_RECONNECT_DELAY)
+      }
+    }
+  }
+
+  const startRemoteSync = () => {
+    if (!process.client || !isAuthenticated.value || !token.value || settingsStreamPromise) {
+      return
+    }
+
+    settingsStreamEnabled = true
+    settingsStreamPromise = connectSettingsStream().finally(() => {
+      settingsStreamPromise = null
+    })
+  }
+
+  const stopRemoteSync = () => {
+    settingsStreamEnabled = false
+
+    if (settingsStreamController) {
+      settingsStreamController.abort()
+      settingsStreamController = null
+    }
+  }
+
+  if (process.client && !streamWatcherReady.value) {
+    watch(
+      [isAuthenticated, token],
+      ([authenticated, nextToken]) => {
+        if (authenticated && nextToken) {
+          startRemoteSync()
+          return
+        }
+
+        stopRemoteSync()
+      },
+      { immediate: true }
+    )
+
+    streamWatcherReady.value = true
+  }
+
   return {
     settings,
     theme,
@@ -275,6 +451,8 @@ export const useUserSettings = () => {
     initSettings,
     setTheme,
     toggleTheme,
-    updateSettings
+    updateSettings,
+    startRemoteSync,
+    stopRemoteSync
   }
 }
