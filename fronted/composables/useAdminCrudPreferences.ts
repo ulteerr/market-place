@@ -1,4 +1,5 @@
-export type AdminCrudContentMode = 'table' | 'table-cards' | 'cards'
+import type { AdminCrudContentMode } from '~/composables/useUserSettings'
+export type { AdminCrudContentMode } from '~/composables/useUserSettings'
 
 interface AdminCrudViewPreference {
   contentMode: AdminCrudContentMode
@@ -7,68 +8,24 @@ interface AdminCrudViewPreference {
 
 type AdminCrudPreferencesState = Record<string, Partial<AdminCrudViewPreference>>
 
-const STORAGE_KEY = 'admin_crud_preferences'
-
-const readFromStorage = (): AdminCrudPreferencesState | null => {
-  if (!process.client) {
-    return null
-  }
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-
-    if (!raw) {
-      return null
-    }
-
-    const parsed = JSON.parse(raw) as AdminCrudPreferencesState
-    return typeof parsed === 'object' && parsed !== null ? parsed : null
-  } catch {
-    return null
-  }
-}
-
 const isContentMode = (value: unknown): value is AdminCrudContentMode => {
   return value === 'table' || value === 'table-cards' || value === 'cards'
 }
 
 export const useAdminCrudPreferences = () => {
-  const preferences = useState<AdminCrudPreferencesState>('admin_crud_preferences', () => ({}))
-  const initialized = useState<boolean>('admin_crud_preferences_initialized', () => false)
-  const storageListenerReady = useState<boolean>('admin_crud_preferences_listener_ready', () => false)
+  const { settings, updateSettings, initSettings } = useUserSettings()
 
-  const persist = () => {
-    if (!process.client) {
-      return
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences.value))
-  }
-
-  const init = () => {
-    if (!process.client || initialized.value) {
-      return
-    }
-
-    preferences.value = readFromStorage() ?? {}
-    initialized.value = true
-  }
-
-  const syncFromStorage = () => {
-    const stored = readFromStorage()
-
-    if (stored) {
-      preferences.value = stored
-    }
-  }
+  const preferences = computed<AdminCrudPreferencesState>(() => {
+    return settings.value.admin_crud_preferences ?? {}
+  })
 
   const getViewPreference = (key: string): Partial<AdminCrudViewPreference> => {
-    init()
+    initSettings()
     return preferences.value[key] ?? {}
   }
 
   const updateViewPreference = (key: string, patch: Partial<AdminCrudViewPreference>) => {
-    init()
+    initSettings()
 
     const current = preferences.value[key] ?? {}
     const next: Partial<AdminCrudViewPreference> = {
@@ -83,33 +40,17 @@ export const useAdminCrudPreferences = () => {
       next.tableOnDesktop = Boolean(patch.tableOnDesktop)
     }
 
-    preferences.value = {
-      ...preferences.value,
-      [key]: next
-    }
-
-    persist()
-  }
-
-  if (process.client && !initialized.value) {
-    init()
-  }
-
-  if (process.client && !storageListenerReady.value) {
-    window.addEventListener('storage', (event) => {
-      if (event.key !== STORAGE_KEY) {
-        return
+    updateSettings({
+      admin_crud_preferences: {
+        ...preferences.value,
+        [key]: next
       }
-
-      syncFromStorage()
     })
-
-    storageListenerReady.value = true
   }
 
   return {
     preferences,
-    init,
+    init: initSettings,
     getViewPreference,
     updateViewPreference
   }

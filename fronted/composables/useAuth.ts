@@ -4,6 +4,16 @@ interface AuthUser {
   first_name?: string
   last_name?: string
   middle_name?: string
+  settings?: {
+    theme?: 'light' | 'dark'
+    admin_crud_preferences?: Record<
+      string,
+      {
+        contentMode?: 'table' | 'table-cards' | 'cards'
+        tableOnDesktop?: boolean
+      }
+    >
+  } | null
   roles?: string[]
   is_admin?: boolean
   can_access_admin_panel?: boolean
@@ -86,6 +96,19 @@ export const useAuth = () => {
     return response.user
   }
 
+  const updateSettings = async (settings: Record<string, unknown>): Promise<AuthUser> => {
+    const api = useApi()
+    const response = await api<MeResponse>('/api/me/settings', {
+      method: 'PATCH',
+      body: {
+        settings
+      }
+    })
+
+    setUser(response.user)
+    return response.user
+  }
+
   const logout = async (): Promise<void> => {
     try {
       const api = useApi()
@@ -107,6 +130,7 @@ export const useAuth = () => {
     refreshUser,
     updateProfile,
     updatePassword,
+    updateSettings,
     logout
   }
 }
