@@ -39,12 +39,12 @@
         <thead>
           <tr>
             <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('first_name')">
+              <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
                 Фамилия {{ listState.sortMark('last_name') }}
               </button>
             </th>
             <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
+              <button type="button" class="sort-btn" @click="onToggleSort('first_name')">
                 Имя {{ listState.sortMark('first_name') }}
               </button>
             </th>
