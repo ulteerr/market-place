@@ -7,7 +7,7 @@
     create-to="/admin/users/new"
     create-label="Новый пользователь"
     :search-value="listState.searchInput.value"
-    search-placeholder="Поиск: имя, email, телефон, роль"
+    search-placeholder="Поиск: фамилия, имя, отчество, email, телефон, роль"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
     :loading="loading"
@@ -39,39 +39,23 @@
         <thead>
           <tr>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('name')"
-              >
-                Имя {{ listState.sortMark("name") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('first_name')">
+                Фамилия {{ listState.sortMark('last_name') }}
               </button>
             </th>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('email')"
-              >
-                Email {{ listState.sortMark("email") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
+                Имя {{ listState.sortMark('first_name') }}
               </button>
             </th>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('phone')"
-              >
-                Телефон {{ listState.sortMark("phone") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('middle_name')">
+                Отчество {{ listState.sortMark('middle_name') }}
               </button>
             </th>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('access')"
-              >
-                Доступ {{ listState.sortMark("access") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('access')">
+                Доступ {{ listState.sortMark('access') }}
               </button>
             </th>
             <th class="text-right">Действия</th>
@@ -79,9 +63,7 @@
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="5" class="admin-muted py-5 text-center text-sm">
-              Загрузка...
-            </td>
+            <td colspan="5" class="admin-muted py-5 text-center text-sm">Загрузка...</td>
           </tr>
           <tr v-else-if="!users.length">
             <td colspan="5" class="admin-muted py-5 text-center text-sm">
@@ -89,13 +71,11 @@
             </td>
           </tr>
           <tr v-for="item in users" :key="item.id">
-            <td>{{ getAdminUserFullName(item) }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.phone || "—" }}</td>
+            <td>{{ item.last_name || '—' }}</td>
+            <td>{{ item.first_name || '—' }}</td>
+            <td>{{ item.middle_name || '—' }}</td>
             <td>
-              <span :class="['access-chip', accessClass(item)]">{{
-                accessLabel(item)
-              }}</span>
+              <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
             </td>
             <td>
               <AdminCrudActions
@@ -113,22 +93,15 @@
 
     <template #cards>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <article
-          v-for="item in users"
-          :key="item.id"
-          class="user-card rounded-xl p-4"
-        >
+        <article v-for="item in users" :key="item.id" class="user-card rounded-xl p-4">
           <h4 class="text-sm font-semibold">
             {{ getAdminUserFullName(item) }}
           </h4>
-          <p class="admin-muted mt-1 text-xs">{{ item.email }}</p>
-          <p class="admin-muted text-xs">
-            {{ item.phone || "Телефон не указан" }}
-          </p>
+          <p class="admin-muted text-xs">Фамилия: {{ item.last_name || '—' }}</p>
+          <p class="admin-muted mt-1 text-xs">Имя: {{ item.first_name || '—' }}</p>
+          <p class="admin-muted text-xs">Отчество: {{ item.middle_name || '—' }}</p>
           <div class="mt-2">
-            <span :class="['access-chip', accessClass(item)]">{{
-              accessLabel(item)
-            }}</span>
+            <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
           </div>
           <div class="mt-3">
             <AdminCrudActions
@@ -144,16 +117,13 @@
 </template>
 
 <script setup lang="ts">
-import AdminCrudActions from "~/components/admin/Listing/AdminCrudActions.vue";
-import AdminEntityIndex from "~/components/admin/Listing/AdminEntityIndex.vue";
-import type { AdminUser } from "~/composables/useAdminUsers";
-import {
-  getAdminUserFullName,
-  resolveAdminUserPanelAccess,
-} from "~/composables/useAdminUsers";
+import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
+import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import type { AdminUser } from '~/composables/useAdminUsers';
+import { getAdminUserFullName, resolveAdminUserPanelAccess } from '~/composables/useAdminUsers';
 
 definePageMeta({
-  layout: "admin",
+  layout: 'admin',
 });
 
 const usersApi = useAdminUsers();
@@ -175,24 +145,25 @@ const {
   onUpdatePerPage,
   removeItem,
 } = useAdminCrudIndex<AdminUser>({
-  settingsKey: "users",
-  defaultSortBy: "name",
+  settingsKey: 'users',
+  useViewPreference: false,
+  defaultSortBy: 'last_name',
   defaultPerPage: 10,
-  listErrorMessage: "Не удалось загрузить пользователей.",
-  deleteErrorMessage: "Не удалось удалить пользователя.",
+  listErrorMessage: 'Не удалось загрузить пользователей.',
+  deleteErrorMessage: 'Не удалось удалить пользователя.',
   list: usersApi.list,
   remove: usersApi.remove,
   getItemId: (user) => user.id,
 });
 
 const cardSortFields = [
-  { value: "name", label: "Имя" },
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Телефон" },
-  { value: "access", label: "Доступ" },
+  { value: 'last_name', label: 'Фамилия' },
+  { value: 'first_name', label: 'Имя' },
+  { value: 'middle_name', label: 'Отчество' },
+  { value: 'access', label: 'Доступ' },
 ];
 
-const onModeChange = (mode: "table" | "table-cards" | "cards") => {
+const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
   contentMode.value = mode;
 };
 
@@ -204,20 +175,20 @@ const accessLabel = (item: AdminUser): string => {
   const access = resolveAdminUserPanelAccess(item);
 
   if (access === null) {
-    return "Неизвестно";
+    return 'Неизвестно';
   }
 
-  return access ? "Админ-панель" : "Без админ-доступа";
+  return access ? 'Админ-панель' : 'Без админ-доступа';
 };
 
 const accessClass = (item: AdminUser): string => {
   const access = resolveAdminUserPanelAccess(item);
 
   if (access === null) {
-    return "is-unknown";
+    return 'is-unknown';
   }
 
-  return access ? "is-admin" : "is-basic";
+  return access ? 'is-admin' : 'is-basic';
 };
 
 const removeUser = async (user: AdminUser) => {

@@ -206,3 +206,78 @@ components:
           items:
             type: string
           example: [admin, moderator]
+
+    AdminUserRoleListItem:
+      type: object
+      required: [id, code]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        code:
+          type: string
+          example: moderator
+
+    AdminUserListItem:
+      type: object
+      required: [id, email, first_name, last_name]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        email:
+          type: string
+          format: email
+          example: alex.johnson@example.com
+        first_name:
+          type: string
+          example: Alex
+        last_name:
+          type: string
+          example: Johnson
+        middle_name:
+          type: string
+          nullable: true
+          example: Michael
+        phone:
+          type: string
+          nullable: true
+          example: "+79998887766"
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserRoleListItem'
+        can_access_admin_panel:
+          type: boolean
+          nullable: true
+          example: true
+
+    AdminUsersPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminUserListItem'
