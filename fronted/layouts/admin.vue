@@ -153,8 +153,10 @@ const userInitials = computed(() => {
   return initials || user.value?.email?.[0]?.toUpperCase() || 'AD'
 })
 
-const onUserMenuSelect = async (action: 'settings' | 'logout') => {
-  if (action === 'settings') {
+const onUserMenuSelect = async (action: 'profile' | 'settings' | 'logout') => {
+  if (action === 'profile') {
+    await navigateTo('/admin/profile')
+  } else if (action === 'settings') {
     await navigateTo('/admin/settings')
   } else if (action === 'logout') {
     await handleLogout()

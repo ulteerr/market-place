@@ -9,6 +9,7 @@
     </button>
 
     <div v-if="isOpen" class="admin-user-dropdown">
+      <button type="button" class="admin-user-item" @click="onSelect('profile')">Профиль</button>
       <button type="button" class="admin-user-item" @click="onSelect('settings')">Настройки</button>
       <div class="admin-user-divider" />
       <button type="button" class="admin-user-item is-danger" @click="onSelect('logout')">Выйти</button>
@@ -17,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-type MenuAction = 'settings' | 'logout'
+type MenuAction = 'profile' | 'settings' | 'logout'
 
 defineProps<{
   initials: string

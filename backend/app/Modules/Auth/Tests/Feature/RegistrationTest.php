@@ -41,9 +41,12 @@ class RegistrationTest extends TestCase
                             ->has('email')
                             ->has('first_name')
                             ->has('last_name')
+                            ->has('middle_name')
+                            ->has('settings')
                             ->has('roles')
                             ->has('is_admin')
                             ->has('can_access_admin_panel')
+                            ->etc()
                     )
                     ->has('token')
             );

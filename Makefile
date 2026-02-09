@@ -1,6 +1,7 @@
 .PHONY: up down restart art comp migrate migrate-fresh db-seed \
         cache-clear config-cache route-cache view-clear \
         test test-auth swagger redoc openapi-validate openapi-bundle docs \
+        hooks-install \
         front front-install front-npm front-nuxi
 
 # --------------------------
@@ -95,6 +96,13 @@ docs:
 	make openapi-bundle
 	make swagger
 	make redoc
+
+# --------------------------
+# Git hooks
+# --------------------------
+
+hooks-install:
+	git config core.hooksPath .githooks
 
 # --------------------------
 # Fronted (Nuxt)
