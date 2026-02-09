@@ -16,9 +16,7 @@ use Modules\Users\Services\UsersService;
 
 final class MeController extends Controller
 {
-    public function __construct(
-        private readonly UsersService $usersService
-    ) {}
+    public function __construct(private readonly UsersService $usersService) {}
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -27,30 +25,37 @@ final class MeController extends Controller
 
     public function updateProfile(UpdateMeProfileRequest $request): JsonResponse
     {
-        $user = $this->usersService->updateUser(
-            $request->user(),
-            $request->validated()
-        );
+        $user = $this->usersService->updateUser($request->user(), $request->validated());
 
         return UserResponseFactory::success($user);
     }
 
     public function updatePassword(UpdateMePasswordRequest $request): JsonResponse
     {
-        $user = $this->usersService->updateUser(
-            $request->user(),
-            $request->validated()
-        );
+        $user = $this->usersService->updateUser($request->user(), $request->validated());
 
         return UserResponseFactory::success($user);
     }
 
     public function updateSettings(UpdateMeSettingsRequest $request): JsonResponse
     {
-        $user = $this->usersService->updateUser(
-            $request->user(),
-            ['settings' => $request->validated('settings')]
-        );
+        $incomingSettings = $request->validated("settings");
+        $currentSettings = $request->user()->settings ?? [];
+
+        $mergedSettings = [...$currentSettings, ...$incomingSettings];
+
+        if (array_key_exists("admin_crud_preferences", $incomingSettings)) {
+            $mergedSettings["admin_crud_preferences"] = [
+                ...is_array($currentSettings["admin_crud_preferences"] ?? null)
+                    ? $currentSettings["admin_crud_preferences"]
+                    : [],
+                ...is_array($incomingSettings["admin_crud_preferences"] ?? null)
+                    ? $incomingSettings["admin_crud_preferences"]
+                    : [],
+            ];
+        }
+
+        $user = $this->usersService->updateUser($request->user(), ["settings" => $mergedSettings]);
 
         return UserResponseFactory::success($user);
     }
@@ -62,8 +67,8 @@ final class MeController extends Controller
 
         return response()->stream(
             function () use ($user, $maxDuration): void {
-                @ini_set('zlib.output_compression', '0');
-                @ini_set('output_buffering', 'off');
+                @ini_set("zlib.output_compression", "0");
+                @ini_set("output_buffering", "off");
 
                 echo "retry: 3000\n\n";
 
@@ -81,8 +86,8 @@ final class MeController extends Controller
 
                     if ($currentHash !== $lastHash) {
                         $payload = json_encode(
-                            ['settings' => $settings],
-                            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+                            ["settings" => $settings],
+                            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
                         );
 
                         echo "event: settings\n";
@@ -100,11 +105,11 @@ final class MeController extends Controller
             },
             200,
             [
-                'Content-Type' => 'text/event-stream; charset=UTF-8',
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Connection' => 'keep-alive',
-                'X-Accel-Buffering' => 'no',
-            ]
+                "Content-Type" => "text/event-stream; charset=UTF-8",
+                "Cache-Control" => "no-cache, no-store, must-revalidate",
+                "Connection" => "keep-alive",
+                "X-Accel-Buffering" => "no",
+            ],
         );
     }
 }

@@ -146,7 +146,7 @@ const {
   removeItem,
 } = useAdminCrudIndex<AdminUser>({
   settingsKey: 'users',
-  useViewPreference: false,
+  useViewPreference: true,
   defaultSortBy: 'last_name',
   defaultPerPage: 10,
   listErrorMessage: 'Не удалось загрузить пользователей.',

@@ -2,13 +2,14 @@
   <div class="admin-layout min-h-screen">
     <div class="flex min-h-screen">
       <aside
-        class="admin-sidebar fixed inset-y-0 left-0 z-40 w-72 transition-transform duration-200 lg:static lg:translate-x-0"
-        :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        class="admin-sidebar"
+        :class="{ 'is-open': isSidebarOpen, 'is-collapsed': isMenuCollapsed }"
       >
         <div class="flex h-full flex-col">
           <div class="admin-sidebar-header flex items-center justify-between px-5 py-4">
             <NuxtLink to="/admin" class="admin-title text-lg font-semibold tracking-wide">
-              Admin Panel
+              <span :class="isMenuCollapsed ? 'lg:hidden' : ''">Admin Panel</span>
+              <span :class="isMenuCollapsed ? 'hidden lg:inline' : 'hidden'">AP</span>
             </NuxtLink>
             <button
               type="button"
@@ -26,11 +27,14 @@
                   :to="item.to"
                   class="admin-nav-link group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
                   :class="isActive(item.to) && 'is-active'"
+                  :title="isMenuCollapsed ? item.label : undefined"
                 >
-                  <span class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs">
+                  <span
+                    class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
+                  >
                     {{ item.icon }}
                   </span>
-                  <span>{{ item.label }}</span>
+                  <span class="admin-nav-label">{{ item.label }}</span>
                 </NuxtLink>
               </li>
             </ul>
@@ -41,11 +45,45 @@
               :initials="userInitials"
               :full-name="userFullName"
               :email="userEmail"
+              :compact="isMenuCollapsed"
               @select="onUserMenuSelect"
             />
           </div>
         </div>
       </aside>
+
+      <button
+        type="button"
+        class="admin-sidebar-toggle"
+        :title="isMenuCollapsed ? 'Expand menu' : 'Collapse menu'"
+        :aria-label="isMenuCollapsed ? 'Expand menu' : 'Collapse menu'"
+        @click="toggleCollapseMenu"
+      >
+        <svg
+          v-if="isMenuCollapsed"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6" />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
 
       <button
         v-if="isSidebarOpen"
@@ -85,7 +123,11 @@
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+                ></path>
               </svg>
               <svg
                 v-else
@@ -97,7 +139,11 @@
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                ></path>
               </svg>
             </button>
           </div>
@@ -112,72 +158,73 @@
 </template>
 
 <script setup lang="ts">
-import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue'
+import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue';
 
-const route = useRoute()
-const { user, logout } = useAuth()
-const { isDark, toggleTheme } = useUserSettings()
-const isThemeUiMounted = ref(false)
+const route = useRoute();
+const { user, logout } = useAuth();
+const { isDark, toggleTheme, settings, toggleCollapseMenu } = useUserSettings();
+const isThemeUiMounted = ref(false);
 
-const isSidebarOpen = ref(false)
-const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false))
+const isSidebarOpen = ref(false);
+const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
+const isMenuCollapsed = computed(() => settings.value.collapse_menu);
 
 const menuItems = [
   { to: '/admin', label: 'Главная', icon: '🏠' },
   { to: '/admin/users', label: 'Пользователи', icon: '👤' },
-  { to: '/admin/roles', label: 'Роли', icon: '🛡' }
-]
+  { to: '/admin/roles', label: 'Роли', icon: '🛡' },
+];
 
-const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
+const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`);
 
 const userFullName = computed(() => {
   if (!user.value) {
-    return 'Гость'
+    return 'Гость';
   }
 
-  const first = user.value.first_name?.trim() ?? ''
-  const last = user.value.last_name?.trim() ?? ''
-  const middle = user.value.middle_name?.trim() ?? ''
-  const fullName = [first, last, middle].filter(Boolean).join(' ')
+  const first = user.value.first_name?.trim() ?? '';
+  const last = user.value.last_name?.trim() ?? '';
+  const middle = user.value.middle_name?.trim() ?? '';
+  const fullName = [first, last, middle].filter(Boolean).join(' ');
 
-  return fullName || user.value.email
-})
+  return fullName || user.value.email;
+});
 
-const userEmail = computed(() => user.value?.email ?? 'Нет email')
+const userEmail = computed(() => user.value?.email ?? 'Нет email');
 
 const userInitials = computed(() => {
-  const first = user.value?.first_name?.trim()?.[0] ?? ''
-  const last = user.value?.last_name?.trim()?.[0] ?? ''
-  const initials = `${first}${last}`.toUpperCase()
+  const first = user.value?.first_name?.trim()?.[0] ?? '';
+  const last = user.value?.last_name?.trim()?.[0] ?? '';
+  const initials = `${first}${last}`.toUpperCase();
 
-  return initials || user.value?.email?.[0]?.toUpperCase() || 'AD'
-})
+  return initials || user.value?.email?.[0]?.toUpperCase() || 'AD';
+});
 
 const onUserMenuSelect = async (action: 'profile' | 'settings' | 'logout') => {
   if (action === 'profile') {
-    await navigateTo('/admin/profile')
+    await navigateTo('/admin/profile');
   } else if (action === 'settings') {
-    await navigateTo('/admin/settings')
+    await navigateTo('/admin/settings');
   } else if (action === 'logout') {
-    await handleLogout()
+    await handleLogout();
   }
-}
+};
 
 const handleLogout = async () => {
-  await logout()
-  await navigateTo('/login')
-}
+  await logout();
+  await navigateTo('/login');
+};
 
 watch(
   () => route.path,
   () => {
-    isSidebarOpen.value = false
+    isSidebarOpen.value = false;
   }
-)
+);
 
 onMounted(() => {
-  isThemeUiMounted.value = true
-})
+  isThemeUiMounted.value = true;
+});
 </script>
 
 <style lang="scss" scoped src="./admin.scss"></style>

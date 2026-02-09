@@ -1,5 +1,5 @@
 <template>
-  <label :class="styles.field" :for="resolvedId">
+  <div :class="styles.field">
     <div :class="styles.row">
       <button
         :id="resolvedId"
@@ -8,7 +8,11 @@
         :aria-checked="String(modelValue)"
         :aria-label="label || name || 'Switch'"
         :disabled="disabled"
-        :class="[styles.control, modelValue ? styles.controlChecked : '', error ? styles.controlError : '']"
+        :class="[
+          styles.control,
+          modelValue ? styles.controlChecked : '',
+          error ? styles.controlError : '',
+        ]"
         @click="onToggle"
       >
         <span :class="styles.thumb" aria-hidden="true" />
@@ -25,23 +29,23 @@
 
     <span v-if="error" :class="styles.error">{{ error }}</span>
     <span v-else-if="hint" :class="styles.hint">{{ hint }}</span>
-  </label>
+  </div>
 </template>
 
 <script setup lang="ts">
-import styles from './UiSwitch.module.scss'
+import styles from './UiSwitch.module.scss';
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: boolean
-    id?: string
-    name?: string
-    label?: string
-    description?: string
-    hint?: string
-    error?: string
-    required?: boolean
-    disabled?: boolean
+    modelValue?: boolean;
+    id?: string;
+    name?: string;
+    label?: string;
+    description?: string;
+    hint?: string;
+    error?: string;
+    required?: boolean;
+    disabled?: boolean;
   }>(),
   {
     modelValue: false,
@@ -52,22 +56,22 @@ const props = withDefaults(
     hint: '',
     error: '',
     required: false,
-    disabled: false
+    disabled: false,
   }
-)
+);
 
 const emit = defineEmits<{
-  (event: 'update:modelValue', value: boolean): void
-}>()
+  (event: 'update:modelValue', value: boolean): void;
+}>();
 
-const uid = useId()
-const resolvedId = computed(() => props.id || `ui-switch-${uid}`)
+const uid = useId();
+const resolvedId = computed(() => props.id || `ui-switch-${uid}`);
 
 const onToggle = () => {
   if (props.disabled) {
-    return
+    return;
   }
 
-  emit('update:modelValue', !props.modelValue)
-}
+  emit('update:modelValue', !props.modelValue);
+};
 </script>

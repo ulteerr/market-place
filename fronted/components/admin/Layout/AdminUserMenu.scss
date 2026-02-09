@@ -2,6 +2,30 @@
   position: relative;
 }
 
+.admin-user-menu.is-compact .admin-user-trigger {
+  justify-content: flex-start;
+}
+
+.admin-user-menu.is-compact .admin-user-dropdown {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .admin-user-menu.is-compact .admin-user-trigger {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .admin-user-menu.is-compact .admin-user-text {
+    display: none;
+  }
+
+  .admin-user-menu.is-compact .admin-user-dropdown {
+    right: -0.45rem;
+    width: 14rem;
+  }
+}
+
 .admin-user-trigger {
   width: 100%;
   display: flex;

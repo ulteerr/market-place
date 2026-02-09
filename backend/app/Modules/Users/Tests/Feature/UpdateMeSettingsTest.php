@@ -17,32 +17,33 @@ final class UpdateMeSettingsTest extends TestCase
     {
         $auth = $this->actingAsUser();
 
-        $response = $this
-            ->withHeaders($auth['headers'])
-            ->patchJson('/api/me/settings', [
-                'settings' => [
-                    'theme' => 'dark',
-                    'admin_crud_preferences' => [
-                        'users' => [
-                            'contentMode' => 'cards',
-                            'tableOnDesktop' => false,
-                        ],
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "theme" => "dark",
+                "collapse_menu" => true,
+                "admin_crud_preferences" => [
+                    "users" => [
+                        "contentMode" => "cards",
+                        "tableOnDesktop" => false,
                     ],
                 ],
-            ]);
+            ],
+        ]);
 
         $response
             ->assertOk()
-            ->assertJsonPath('user.settings.theme', 'dark')
-            ->assertJsonPath('user.settings.admin_crud_preferences.users.contentMode', 'cards')
-            ->assertJsonPath('user.settings.admin_crud_preferences.users.tableOnDesktop', false);
+            ->assertJsonPath("user.settings.theme", "dark")
+            ->assertJsonPath("user.settings.collapse_menu", true)
+            ->assertJsonPath("user.settings.admin_crud_preferences.users.contentMode", "cards")
+            ->assertJsonPath("user.settings.admin_crud_preferences.users.tableOnDesktop", false);
 
-        $auth['user']->refresh();
+        $auth["user"]->refresh();
 
-        $this->assertSame('dark', $auth['user']->settings['theme'] ?? null);
+        $this->assertSame("dark", $auth["user"]->settings["theme"] ?? null);
+        $this->assertTrue($auth["user"]->settings["collapse_menu"] ?? false);
         $this->assertSame(
-            'cards',
-            $auth['user']->settings['admin_crud_preferences']['users']['contentMode'] ?? null
+            "cards",
+            $auth["user"]->settings["admin_crud_preferences"]["users"]["contentMode"] ?? null,
         );
     }
 
@@ -51,32 +52,73 @@ final class UpdateMeSettingsTest extends TestCase
     {
         $auth = $this->actingAsUser();
 
-        $response = $this
-            ->withHeaders($auth['headers'])
-            ->patchJson('/api/me/settings', [
-                'settings' => [
-                    'admin_crud_preferences' => [
-                        'users' => [
-                            'contentMode' => 'grid',
-                        ],
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "admin_crud_preferences" => [
+                    "users" => [
+                        "contentMode" => "grid",
                     ],
                 ],
-            ]);
+            ],
+        ]);
 
         $response
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['settings.admin_crud_preferences.users.contentMode']);
+            ->assertJsonValidationErrors(["settings.admin_crud_preferences.users.contentMode"]);
+    }
+
+    #[Test]
+    public function invalid_collapse_menu_returns_validation_error(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "collapse_menu" => "yes",
+            ],
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(["settings.collapse_menu"]);
     }
 
     #[Test]
     public function guest_cannot_update_settings(): void
     {
-        $this
-            ->patchJson('/api/me/settings', [
-                'settings' => [
-                    'theme' => 'dark',
+        $this->patchJson("/api/me/settings", [
+            "settings" => [
+                "theme" => "dark",
+            ],
+        ])->assertUnauthorized();
+    }
+
+    #[Test]
+    public function partial_settings_update_preserves_existing_keys(): void
+    {
+        $auth = $this->actingAsUser();
+        $auth["user"]->update([
+            "settings" => [
+                "theme" => "light",
+                "collapse_menu" => true,
+                "admin_crud_preferences" => [
+                    "users" => [
+                        "contentMode" => "cards",
+                        "tableOnDesktop" => false,
+                    ],
                 ],
-            ])
-            ->assertUnauthorized();
+            ],
+        ]);
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "theme" => "dark",
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath("user.settings.theme", "dark")
+            ->assertJsonPath("user.settings.collapse_menu", true)
+            ->assertJsonPath("user.settings.admin_crud_preferences.users.contentMode", "cards")
+            ->assertJsonPath("user.settings.admin_crud_preferences.users.tableOnDesktop", false);
     }
 }

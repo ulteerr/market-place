@@ -17,16 +17,17 @@ final class UpdateMeSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'settings' => ['required', 'array'],
-            'settings.theme' => ['sometimes', 'string', Rule::in(['light', 'dark'])],
-            'settings.admin_crud_preferences' => ['sometimes', 'array'],
-            'settings.admin_crud_preferences.*' => ['array'],
-            'settings.admin_crud_preferences.*.contentMode' => [
-                'sometimes',
-                'string',
-                Rule::in(['table', 'table-cards', 'cards']),
+            "settings" => ["required", "array"],
+            "settings.theme" => ["sometimes", "string", Rule::in(["light", "dark"])],
+            "settings.collapse_menu" => ["sometimes", "boolean"],
+            "settings.admin_crud_preferences" => ["sometimes", "array"],
+            "settings.admin_crud_preferences.*" => ["array"],
+            "settings.admin_crud_preferences.*.contentMode" => [
+                "sometimes",
+                "string",
+                Rule::in(["table", "table-cards", "cards"]),
             ],
-            'settings.admin_crud_preferences.*.tableOnDesktop' => ['sometimes', 'boolean'],
+            "settings.admin_crud_preferences.*.tableOnDesktop" => ["sometimes", "boolean"],
         ];
     }
 }

@@ -1,6 +1,11 @@
 <template>
-  <div ref="rootRef" class="admin-user-menu">
-    <button type="button" class="admin-user-trigger" @click="toggleMenu">
+  <div ref="rootRef" class="admin-user-menu" :class="{ 'is-compact': compact }">
+    <button
+      type="button"
+      class="admin-user-trigger"
+      :title="compact ? fullName : undefined"
+      @click="toggleMenu"
+    >
       <span class="admin-avatar">{{ initials }}</span>
       <span class="admin-user-text">
         <span class="admin-user-name">{{ fullName }}</span>
@@ -12,65 +17,68 @@
       <button type="button" class="admin-user-item" @click="onSelect('profile')">Профиль</button>
       <button type="button" class="admin-user-item" @click="onSelect('settings')">Настройки</button>
       <div class="admin-user-divider" />
-      <button type="button" class="admin-user-item is-danger" @click="onSelect('logout')">Выйти</button>
+      <button type="button" class="admin-user-item is-danger" @click="onSelect('logout')">
+        Выйти
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-type MenuAction = 'profile' | 'settings' | 'logout'
+type MenuAction = 'profile' | 'settings' | 'logout';
 
 defineProps<{
-  initials: string
-  fullName: string
-  email: string
-}>()
+  initials: string;
+  fullName: string;
+  email: string;
+  compact?: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'select', action: MenuAction): void
-}>()
+  (e: 'select', action: MenuAction): void;
+}>();
 
-const rootRef = ref<HTMLElement | null>(null)
-const isOpen = ref(false)
+const rootRef = ref<HTMLElement | null>(null);
+const isOpen = ref(false);
 
 const toggleMenu = () => {
-  isOpen.value = !isOpen.value
-}
+  isOpen.value = !isOpen.value;
+};
 
 const closeMenu = () => {
-  isOpen.value = false
-}
+  isOpen.value = false;
+};
 
 const onSelect = (action: MenuAction) => {
-  emit('select', action)
-  closeMenu()
-}
+  emit('select', action);
+  closeMenu();
+};
 
 const onOutsideClick = (event: MouseEvent) => {
-  const target = event.target as Node | null
+  const target = event.target as Node | null;
 
   if (!target || !rootRef.value || rootRef.value.contains(target)) {
-    return
+    return;
   }
 
-  closeMenu()
-}
+  closeMenu();
+};
 
 const onEscape = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    closeMenu()
+    closeMenu();
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('mousedown', onOutsideClick)
-  document.addEventListener('keydown', onEscape)
-})
+  document.addEventListener('mousedown', onOutsideClick);
+  document.addEventListener('keydown', onEscape);
+});
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', onOutsideClick)
-  document.removeEventListener('keydown', onEscape)
-})
+  document.removeEventListener('mousedown', onOutsideClick);
+  document.removeEventListener('keydown', onEscape);
+});
 </script>
 
 <style lang="scss" scoped src="./AdminUserMenu.scss"></style>
