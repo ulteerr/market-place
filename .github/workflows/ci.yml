@@ -22,6 +22,10 @@ jobs:
         working-directory: fronted
         run: npm install
 
+      - name: Install Playwright browsers
+        working-directory: fronted
+        run: npx playwright install --with-deps chrome firefox webkit
+
       - name: Run frontend tests
         working-directory: fronted
         run: npm test

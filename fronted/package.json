@@ -7,7 +7,7 @@
     "build": "nuxt build",
     "preview": "nuxt preview --host 0.0.0.0 --port 3000",
     "prepare": "nuxt prepare",
-    "test": "playwright test --project=chrome --project=mozilla-firefox --project=safari-webkit tests/e2e/admin-auth.spec.ts",
+    "test": "playwright test --project=chrome --project=mozilla-firefox --project=safari-webkit tests/e2e",
     "pretest:e2e": "playwright install --with-deps chrome firefox webkit",
     "test:e2e": "playwright test",
     "pretest:e2e:ui": "playwright install --with-deps chrome firefox webkit",
