@@ -2,7 +2,7 @@
         cache-clear config-cache route-cache view-clear \
         test test-auth swagger redoc openapi-validate openapi-bundle docs \
         hooks-install \
-        front front-install front-npm front-nuxi
+        front front-install front-npm front-nuxi front-test
 
 # --------------------------
 # Containers
@@ -119,3 +119,6 @@ front-npm:
 
 front-nuxi:
 	docker-compose exec frontend npx nuxi $(cmd)
+
+front-test:
+	docker-compose exec frontend npm run test

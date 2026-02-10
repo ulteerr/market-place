@@ -196,6 +196,33 @@ make test
 make test-auth
 ```
 
+### Fronted E2E (Playwright)
+
+```bash
+make up
+make front-install
+make front-test
+```
+
+`test` прогоняет обязательный e2e-сценарий `/admin` в `chrome`, `mozilla-firefox` и `safari-webkit`.
+Браузеры и системные зависимости устанавливаются автоматически при первом запуске.
+
+Для UI-режима:
+
+```bash
+make front-npm cmd="run test:e2e:ui"
+```
+
+Запуск по конкретному браузеру:
+
+```bash
+make front-npm cmd="run test:e2e -- --project=chrome"
+make front-npm cmd="run test:e2e -- --project=mozilla-firefox"
+make front-npm cmd="run test:e2e -- --project=safari-webkit"
+```
+
+Примечание по Safari: на Linux нельзя запустить нативный Safari, но `safari-webkit` в Playwright проверяет движок WebKit (ближайший эквивалент Safari).
+
 ### OpenAPI
 
 ```bash
