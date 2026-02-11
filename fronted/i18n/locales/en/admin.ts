@@ -10,8 +10,12 @@ export default {
     toggleDarkMode: 'Toggle dark mode',
     menu: {
       dashboard: 'Dashboard',
+      settings: 'Settings',
       users: 'Users',
       roles: 'Roles',
+    },
+    sections: {
+      system: 'System',
     },
     user: {
       guest: 'Guest',

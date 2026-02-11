@@ -29,6 +29,9 @@ final class UpdateMeSettingsRequest extends FormRequest
                 Rule::in(["table", "table-cards", "cards"]),
             ],
             "settings.admin_crud_preferences.*.tableOnDesktop" => ["sometimes", "boolean"],
+            "settings.admin_navigation_sections" => ["sometimes", "array"],
+            "settings.admin_navigation_sections.*" => ["array"],
+            "settings.admin_navigation_sections.*.open" => ["sometimes", "boolean"],
         ];
     }
 }

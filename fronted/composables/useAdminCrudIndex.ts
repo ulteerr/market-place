@@ -28,6 +28,9 @@ interface UseAdminCrudIndexOptions<T, P extends ListQueryParams = ListQueryParam
 interface RemoveItemOptions {
   confirmMessage: string;
   canDelete?: boolean;
+  confirmTitle?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }
 
 export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams>(
@@ -46,6 +49,12 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
   const loading = ref(false);
   const loadError = ref('');
   const deletingId = ref<string | null>(null);
+  const removeConfirmOpen = ref(false);
+  const removeConfirmTitle = ref('');
+  const removeConfirmMessage = ref('');
+  const removeConfirmLabel = ref('');
+  const removeCancelLabel = ref('');
+  const pendingRemoveItem = ref<T | null>(null);
 
   const contentMode = ref<AdminCrudContentMode>(options.defaultContentMode ?? 'table');
   const tableOnDesktop = ref(options.defaultTableOnDesktop ?? true);
@@ -112,16 +121,34 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     fetchItems(listState.onPerPageChange());
   };
 
-  const removeItem = async (item: T, removeOptions: RemoveItemOptions) => {
+  const closeRemoveConfirm = () => {
+    removeConfirmOpen.value = false;
+    removeConfirmTitle.value = '';
+    removeConfirmMessage.value = '';
+    removeConfirmLabel.value = '';
+    removeCancelLabel.value = '';
+    pendingRemoveItem.value = null;
+  };
+
+  const removeItem = (item: T, removeOptions: RemoveItemOptions) => {
     if (removeOptions.canDelete === false) {
       return;
     }
 
-    const approved = window.confirm(removeOptions.confirmMessage);
-    if (!approved) {
+    pendingRemoveItem.value = item;
+    removeConfirmOpen.value = true;
+    removeConfirmTitle.value = removeOptions.confirmTitle ?? '';
+    removeConfirmMessage.value = removeOptions.confirmMessage;
+    removeConfirmLabel.value = removeOptions.confirmLabel ?? '';
+    removeCancelLabel.value = removeOptions.cancelLabel ?? '';
+  };
+
+  const confirmRemoveItem = async () => {
+    if (!pendingRemoveItem.value) {
       return;
     }
 
+    const item = pendingRemoveItem.value;
     const id = options.getItemId(item);
     deletingId.value = id;
 
@@ -136,7 +163,12 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
       loadError.value = getApiErrorMessage(error, options.deleteErrorMessage);
     } finally {
       deletingId.value = null;
+      closeRemoveConfirm();
     }
+  };
+
+  const cancelRemoveItem = () => {
+    closeRemoveConfirm();
   };
 
   const applyPreference = (
@@ -192,6 +224,11 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     loading,
     loadError,
     deletingId,
+    removeConfirmOpen,
+    removeConfirmTitle,
+    removeConfirmMessage,
+    removeConfirmLabel,
+    removeCancelLabel,
     contentMode,
     tableOnDesktop,
     pagination,
@@ -203,5 +240,7 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     onResetFilters,
     onUpdatePerPage,
     removeItem,
+    confirmRemoveItem,
+    cancelRemoveItem,
   };
 };

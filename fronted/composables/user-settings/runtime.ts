@@ -15,7 +15,9 @@ export const settingsAreSame = (left: UserSettings, right: UserSettings): boolea
     left.locale === right.locale &&
     left.theme === right.theme &&
     left.collapse_menu === right.collapse_menu &&
-    JSON.stringify(left.admin_crud_preferences) === JSON.stringify(right.admin_crud_preferences)
+    JSON.stringify(left.admin_crud_preferences) === JSON.stringify(right.admin_crud_preferences) &&
+    JSON.stringify(left.admin_navigation_sections) ===
+      JSON.stringify(right.admin_navigation_sections)
   );
 };
 
@@ -24,6 +26,7 @@ export const cloneSettings = (value: UserSettings): UserSettings => ({
   theme: value.theme,
   collapse_menu: value.collapse_menu,
   admin_crud_preferences: { ...value.admin_crud_preferences },
+  admin_navigation_sections: { ...value.admin_navigation_sections },
 });
 
 export const sleep = (ms: number): Promise<void> => {

@@ -36,6 +36,12 @@ onMounted(async () => {
             tableOnDesktop?: boolean;
           }
         >;
+        admin_navigation_sections?: Record<
+          string,
+          {
+            open?: boolean;
+          }
+        >;
       } | null
     );
   } catch {

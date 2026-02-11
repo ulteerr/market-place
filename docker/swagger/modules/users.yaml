@@ -76,12 +76,8 @@ me_update_settings:
           schema:
             $ref: ../schemas/user.yaml#/components/schemas/UpdateMeSettingsRequest
     responses:
-      '200':
-        description: Updated user settings
-        content:
-          application/json:
-            schema:
-              $ref: ../schemas/user.yaml#/components/schemas/UserResponse
+      '204':
+        description: Settings updated successfully (no response body)
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '422':

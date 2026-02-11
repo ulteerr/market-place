@@ -14,6 +14,7 @@ export interface AdminAuthUser {
     theme: 'light' | 'dark';
     collapse_menu: boolean;
     admin_crud_preferences: Record<string, unknown>;
+    admin_navigation_sections?: Record<string, { open?: boolean }>;
   };
 }
 

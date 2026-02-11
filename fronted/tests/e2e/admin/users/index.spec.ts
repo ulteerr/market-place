@@ -23,14 +23,27 @@ const users = [
 
 const setupUsersPage = async (page: Page) => {
   await setupAdminAuth(page);
+  let dataset = [...users];
+
   await page.route('**/api/admin/users**', async (route) => {
+    if (route.request().method() === 'DELETE') {
+      const userId = route.request().url().split('/').pop();
+      dataset = dataset.filter((item) => item.id !== userId);
+
+      await route.fulfill({
+        status: 204,
+        body: '',
+      });
+      return;
+    }
+
     const url = new URL(route.request().url());
     const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
     const sortBy = url.searchParams.get('sort_by') ?? 'last_name';
     const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
     const perPage = Number(url.searchParams.get('per_page') ?? 10);
 
-    const filtered = users.filter((item) => {
+    const filtered = dataset.filter((item) => {
       if (!search) {
         return true;
       }
@@ -96,5 +109,19 @@ test.describe('Admin users page', () => {
 
     await expect(firstLastNameCell).toHaveText('Петрова');
     await expect(page.getByRole('button', { name: 'Фамилия ↓' })).toBeVisible();
+  });
+
+  test('deletes user through confirm modal', async ({ page }) => {
+    await setupUsersPage(page);
+    await page.goto('/admin/users');
+
+    await page.getByRole('button', { name: 'Удалить' }).first().click();
+
+    await expect(page.getByText('Удалить пользователя Иванов Иван Иванович?')).toBeVisible();
+    await page.locator('[role="dialog"]').getByRole('button', { name: 'Удалить' }).click();
+
+    await expect(page.getByRole('cell', { name: 'Иванов', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('cell', { name: 'Петрова', exact: true })).toBeVisible();
+    await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
   });
 });

@@ -3,15 +3,15 @@
     <div class="flex min-h-screen">
       <aside
         class="admin-sidebar"
-        :class="{ 'is-open': isSidebarOpen, 'is-collapsed': isMenuCollapsed }"
+        :class="{ 'is-open': isSidebarOpen, 'is-collapsed': isCollapsedNavigation }"
       >
         <div class="flex h-full flex-col">
           <div class="admin-sidebar-header flex items-center justify-between px-5 py-4">
             <NuxtLink to="/admin" class="admin-title text-lg font-semibold tracking-wide">
-              <span :class="isMenuCollapsed ? 'lg:hidden' : ''">{{
+              <span :class="isCollapsedNavigation ? 'lg:hidden' : ''">{{
                 t('admin.layout.panelTitle')
               }}</span>
-              <span :class="isMenuCollapsed ? 'hidden lg:inline' : 'hidden'">{{
+              <span :class="isCollapsedNavigation ? 'hidden lg:inline' : 'hidden'">{{
                 t('admin.layout.shortPanelTitle')
               }}</span>
             </NuxtLink>
@@ -27,20 +27,135 @@
 
           <nav class="flex-1 overflow-y-auto px-3 py-4">
             <ul class="space-y-1">
-              <li v-for="item in menuItems" :key="item.to">
+              <li>
                 <NuxtLink
-                  :to="item.to"
+                  :to="dashboardItem.to"
                   class="admin-nav-link group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
-                  :class="isActive(item.to) && 'is-active'"
-                  :title="isMenuCollapsed ? item.label : undefined"
+                  :class="{
+                    'is-active': isDashboardActive,
+                    'is-active-block': isCollapsedNavigation && isDashboardActive,
+                  }"
+                  :title="isCollapsedNavigation ? dashboardItem.label : undefined"
                 >
                   <span
                     class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
                   >
-                    {{ item.icon }}
+                    <AdminNavIcon :name="dashboardItem.icon" />
                   </span>
-                  <span class="admin-nav-label">{{ item.label }}</span>
+                  <span class="admin-nav-label">{{ dashboardItem.label }}</span>
                 </NuxtLink>
+              </li>
+
+              <li
+                v-for="section in navigationSections"
+                :key="section.key"
+                class="admin-nav-section"
+                :class="{
+                  'is-active-block': isCollapsedNavigation && isSectionItemActive(section.items),
+                }"
+              >
+                <div v-if="isCollapsedNavigation" class="admin-nav-collapsed-group">
+                  <button
+                    type="button"
+                    class="admin-nav-link admin-nav-section-toggle admin-nav-section-collapsed-toggle group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                    :class="
+                      (isSectionItemActive(section.items) || isSectionOpen(section.key)) &&
+                      'is-active'
+                    "
+                    :title="section.label"
+                    :aria-expanded="String(isSectionOpen(section.key))"
+                    :aria-controls="`admin-nav-section-${section.key}`"
+                    @click="toggleSection(section.key)"
+                  >
+                    <span
+                      class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
+                    >
+                      <AdminNavIcon :name="section.icon" />
+                    </span>
+                    <span class="admin-nav-label">{{ section.label }}</span>
+                    <span
+                      class="admin-nav-section-arrow admin-nav-section-collapsed-arrow"
+                      :class="{ 'is-open': isSectionOpen(section.key) }"
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  <div
+                    v-show="isSectionOpen(section.key)"
+                    :id="`admin-nav-section-${section.key}`"
+                    class="admin-nav-collapsed-panel mt-2"
+                    :class="{ 'is-active-block': isSectionItemActive(section.items) }"
+                  >
+                    <ul class="space-y-1">
+                      <li
+                        v-for="item in section.items"
+                        :key="`collapsed-${section.key}-${item.key}`"
+                      >
+                        <NuxtLink
+                          :to="item.to"
+                          class="admin-nav-link admin-nav-collapsed-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                          :class="isActive(item.to) && 'is-active'"
+                          :title="item.label"
+                        >
+                          <span
+                            class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
+                          >
+                            <AdminNavIcon :name="item.icon" />
+                          </span>
+                          <span class="admin-nav-label">{{ item.label }}</span>
+                        </NuxtLink>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <button
+                  v-else
+                  type="button"
+                  class="admin-nav-link admin-nav-section-toggle group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                  :class="
+                    (isSectionItemActive(section.items) || isSectionOpen(section.key)) &&
+                    'is-active'
+                  "
+                  :title="isCollapsedNavigation ? section.label : undefined"
+                  :aria-expanded="String(isSectionOpen(section.key))"
+                  :aria-controls="`admin-nav-section-${section.key}`"
+                  @click="toggleSection(section.key)"
+                >
+                  <span
+                    class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
+                  >
+                    <AdminNavIcon :name="section.icon" />
+                  </span>
+                  <span class="admin-nav-label">{{ section.label }}</span>
+                  <span
+                    class="admin-nav-section-arrow ml-auto"
+                    :class="{ 'is-open': isSectionOpen(section.key) }"
+                    aria-hidden="true"
+                  />
+                </button>
+
+                <ul
+                  v-if="!isCollapsedNavigation"
+                  v-show="!isCollapsedNavigation && isSectionOpen(section.key)"
+                  :id="`admin-nav-section-${section.key}`"
+                  class="admin-nav-submenu mt-1 space-y-1"
+                >
+                  <li v-for="item in section.items" :key="item.to">
+                    <NuxtLink
+                      :to="item.to"
+                      class="admin-nav-link admin-nav-sub-link group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                      :class="isActive(item.to) && 'is-active'"
+                    >
+                      <span
+                        class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
+                      >
+                        <AdminNavIcon :name="item.icon" />
+                      </span>
+                      <span class="admin-nav-label">{{ item.label }}</span>
+                    </NuxtLink>
+                  </li>
+                </ul>
               </li>
             </ul>
           </nav>
@@ -50,7 +165,7 @@
               :initials="userInitials"
               :full-name="userFullName"
               :email="userEmail"
-              :compact="isMenuCollapsed"
+              :compact="isCollapsedNavigation"
               @select="onUserMenuSelect"
             />
           </div>
@@ -61,41 +176,22 @@
         type="button"
         class="admin-sidebar-toggle"
         :title="
-          isMenuCollapsed
+          isCollapsedNavigation
             ? t('admin.layout.sidebarToggleExpand')
             : t('admin.layout.sidebarToggleCollapse')
         "
         :aria-label="
-          isMenuCollapsed
+          isCollapsedNavigation
             ? t('admin.layout.sidebarToggleExpand')
             : t('admin.layout.sidebarToggleCollapse')
         "
         @click="toggleCollapseMenu"
       >
-        <svg
-          v-if="isMenuCollapsed"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          class="h-4 w-4"
+        <span
+          class="admin-sidebar-toggle-chevron"
+          :class="{ 'is-collapsed': isCollapsedNavigation }"
           aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6" />
-        </svg>
-        <svg
-          v-else
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          class="h-4 w-4"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
-        </svg>
+        />
       </button>
 
       <button
@@ -192,6 +288,15 @@
 </template>
 
 <script setup lang="ts">
+import type {
+  AdminNavigationItemDefinition,
+  AdminNavigationSectionDefinition,
+} from '~/config/admin-navigation';
+import {
+  adminDashboardItemDefinition,
+  adminNavigationSectionDefinitions,
+} from '~/config/admin-navigation';
+import AdminNavIcon from '~/components/admin/Layout/AdminNavIcon.vue';
 import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
 
@@ -204,20 +309,66 @@ const isApplyingLocaleFromSettings = ref(false);
 const localeStorageKey = 'preferred_locale';
 
 const isSidebarOpen = ref(false);
+const isDesktopViewport = ref(false);
 const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 const isMenuCollapsed = computed(() => settings.value.collapse_menu);
+const isCollapsedNavigation = computed(() => isMenuCollapsed.value && isDesktopViewport.value);
 const localeSelectOptions = [
   { value: 'ru', label: 'RU' },
   { value: 'en', label: 'EN' },
 ];
 
-const menuItems = computed(() => [
-  { to: '/admin', label: t('admin.layout.menu.dashboard'), icon: '🏠' },
-  { to: '/admin/users', label: t('admin.layout.menu.users'), icon: '👤' },
-  { to: '/admin/roles', label: t('admin.layout.menu.roles'), icon: '🛡' },
-]);
+type NavigationItemView = AdminNavigationItemDefinition & {
+  label: string;
+};
+
+type NavigationSectionView = Omit<AdminNavigationSectionDefinition, 'items'> & {
+  label: string;
+  items: NavigationItemView[];
+};
+
+const dashboardItem = computed<NavigationItemView>(() => ({
+  ...adminDashboardItemDefinition,
+  label: t(adminDashboardItemDefinition.labelKey),
+}));
+
+const navigationSections = computed<NavigationSectionView[]>(() =>
+  adminNavigationSectionDefinitions.map((section) => ({
+    ...section,
+    label: t(section.labelKey),
+    items: section.items.map((item) => ({
+      ...item,
+      label: t(item.labelKey),
+    })),
+  }))
+);
+
+const isSectionOpen = (key: string) => settings.value.admin_navigation_sections[key]?.open === true;
+
+const setSectionOpen = (key: string, open: boolean) => {
+  updateSettings({
+    admin_navigation_sections: {
+      [key]: { open },
+    },
+  });
+};
+
+const toggleSection = (key: string) => {
+  setSectionOpen(key, !isSectionOpen(key));
+};
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`);
+const isSectionItemActive = (items: Array<{ to: string }>) =>
+  items.some((item) => isActive(item.to));
+const isDashboardActive = computed(() => route.path === dashboardItem.value.to);
+
+const updateDesktopViewportState = () => {
+  if (!process.client) {
+    return;
+  }
+
+  isDesktopViewport.value = window.matchMedia('(min-width: 1024px)').matches;
+};
 
 const userFullName = computed(() => {
   if (!user.value) {
@@ -308,7 +459,13 @@ watch(
 
 onMounted(() => {
   isThemeUiMounted.value = true;
+  updateDesktopViewportState();
+  window.addEventListener('resize', updateDesktopViewportState);
   void syncLocaleFromSource();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateDesktopViewportState);
 });
 
 watch(

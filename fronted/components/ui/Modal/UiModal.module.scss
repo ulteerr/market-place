@@ -1,0 +1,95 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: color-mix(in srgb, #000 58%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.dialog {
+  width: min(100%, 32rem);
+  border: 1px solid var(--border);
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+}
+
+.header {
+  padding: 1rem 1rem 0.35rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.body {
+  padding: 0.65rem 1rem 0.35rem;
+}
+
+.message {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem;
+}
+
+.button {
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0.46rem 0.82rem;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonSecondary {
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+}
+
+.buttonPrimary {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  color: var(--accent);
+}
+
+.buttonDanger {
+  color: #ff6b6b;
+  background: color-mix(in srgb, #451111 44%, var(--surface));
+  border-color: color-mix(in srgb, #ff6b6b 36%, var(--border));
+}
+
+.buttonDanger:hover:not(:disabled) {
+  color: #ff8787;
+  border-color: color-mix(in srgb, #ff8f8f 52%, var(--border));
+}

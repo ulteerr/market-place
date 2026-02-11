@@ -116,17 +116,33 @@
               :edit-to="`/admin/roles/${role.id}/edit`"
               :can-delete="!role.is_system"
               :deleting="deletingId === role.id"
+              @delete="removeRole(role)"
             />
           </div>
         </article>
       </div>
     </template>
   </AdminEntityIndex>
+
+  <UiModal
+    v-model="removeConfirmOpen"
+    mode="confirm"
+    :title="removeConfirmTitle"
+    :message="removeConfirmMessage"
+    :confirm-label="removeConfirmLabel"
+    :cancel-label="removeCancelLabel"
+    :loading-label="t('common.loading')"
+    :confirm-loading="Boolean(deletingId)"
+    destructive
+    @confirm="confirmRemoveItem"
+    @cancel="cancelRemoveItem"
+  />
 </template>
 
 <script setup lang="ts">
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import UiModal from '~/components/ui/Modal/UiModal.vue';
 import type { AdminRole } from '~/composables/useAdminRoles';
 const { t } = useI18n();
 
@@ -141,6 +157,11 @@ const {
   loading,
   loadError,
   deletingId,
+  removeConfirmOpen,
+  removeConfirmTitle,
+  removeConfirmMessage,
+  removeConfirmLabel,
+  removeCancelLabel,
   contentMode,
   tableOnDesktop,
   pagination,
@@ -152,6 +173,8 @@ const {
   onResetFilters,
   onUpdatePerPage,
   removeItem,
+  confirmRemoveItem,
+  cancelRemoveItem,
 } = useAdminCrudIndex<AdminRole>({
   settingsKey: 'roles',
   defaultSortBy: 'code',
@@ -178,9 +201,12 @@ const onToggleDesktopMode = () => {
 };
 
 const removeRole = async (role: AdminRole) => {
-  await removeItem(role, {
+  removeItem(role, {
     canDelete: !role.is_system,
+    confirmTitle: t('admin.actions.delete'),
     confirmMessage: t('admin.roles.confirmDelete', { code: role.code }),
+    confirmLabel: t('admin.actions.delete'),
+    cancelLabel: t('common.cancel'),
   });
 };
 </script>

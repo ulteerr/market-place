@@ -7,6 +7,7 @@ namespace Modules\Users\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Users\Http\Requests\UpdateMeProfileRequest;
 use Modules\Users\Http\Requests\UpdateMePasswordRequest;
@@ -37,7 +38,7 @@ final class MeController extends Controller
         return UserResponseFactory::success($user);
     }
 
-    public function updateSettings(UpdateMeSettingsRequest $request): JsonResponse
+    public function updateSettings(UpdateMeSettingsRequest $request): Response
     {
         $incomingSettings = $request->validated("settings");
         $currentSettings = $request->user()->settings ?? [];
@@ -55,9 +56,20 @@ final class MeController extends Controller
             ];
         }
 
-        $user = $this->usersService->updateUser($request->user(), ["settings" => $mergedSettings]);
+        if (array_key_exists("admin_navigation_sections", $incomingSettings)) {
+            $mergedSettings["admin_navigation_sections"] = [
+                ...is_array($currentSettings["admin_navigation_sections"] ?? null)
+                    ? $currentSettings["admin_navigation_sections"]
+                    : [],
+                ...is_array($incomingSettings["admin_navigation_sections"] ?? null)
+                    ? $incomingSettings["admin_navigation_sections"]
+                    : [],
+            ];
+        }
 
-        return UserResponseFactory::success($user);
+        $this->usersService->updateUser($request->user(), ["settings" => $mergedSettings]);
+
+        return response()->noContent();
     }
 
     public function streamSettings(Request $request): StreamedResponse

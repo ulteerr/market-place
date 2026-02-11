@@ -10,8 +10,12 @@ export default {
     toggleDarkMode: 'Toggle dark mode',
     menu: {
       dashboard: 'Главная',
+      settings: 'Настройки',
       users: 'Пользователи',
       roles: 'Роли',
+    },
+    sections: {
+      system: 'Система',
     },
     user: {
       guest: 'Гость',

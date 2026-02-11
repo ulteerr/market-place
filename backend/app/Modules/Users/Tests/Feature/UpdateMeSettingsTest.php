@@ -28,16 +28,15 @@ final class UpdateMeSettingsTest extends TestCase
                         "tableOnDesktop" => false,
                     ],
                 ],
+                "admin_navigation_sections" => [
+                    "system" => [
+                        "open" => true,
+                    ],
+                ],
             ],
         ]);
 
-        $response
-            ->assertOk()
-            ->assertJsonPath("user.settings.locale", "en")
-            ->assertJsonPath("user.settings.theme", "dark")
-            ->assertJsonPath("user.settings.collapse_menu", true)
-            ->assertJsonPath("user.settings.admin_crud_preferences.users.contentMode", "cards")
-            ->assertJsonPath("user.settings.admin_crud_preferences.users.tableOnDesktop", false);
+        $response->assertNoContent();
 
         $auth["user"]->refresh();
 
@@ -47,6 +46,12 @@ final class UpdateMeSettingsTest extends TestCase
         $this->assertSame(
             "cards",
             $auth["user"]->settings["admin_crud_preferences"]["users"]["contentMode"] ?? null,
+        );
+        $this->assertFalse(
+            $auth["user"]->settings["admin_crud_preferences"]["users"]["tableOnDesktop"] ?? true,
+        );
+        $this->assertTrue(
+            $auth["user"]->settings["admin_navigation_sections"]["system"]["open"] ?? false,
         );
     }
 
@@ -82,6 +87,26 @@ final class UpdateMeSettingsTest extends TestCase
         ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors(["settings.collapse_menu"]);
+    }
+
+    #[Test]
+    public function invalid_navigation_section_open_returns_validation_error(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "admin_navigation_sections" => [
+                    "system" => [
+                        "open" => "yes",
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(["settings.admin_navigation_sections.system.open"]);
     }
 
     #[Test]
@@ -123,6 +148,11 @@ final class UpdateMeSettingsTest extends TestCase
                         "tableOnDesktop" => false,
                     ],
                 ],
+                "admin_navigation_sections" => [
+                    "system" => [
+                        "open" => true,
+                    ],
+                ],
             ],
         ]);
 
@@ -132,12 +162,22 @@ final class UpdateMeSettingsTest extends TestCase
             ],
         ]);
 
-        $response
-            ->assertOk()
-            ->assertJsonPath("user.settings.locale", "ru")
-            ->assertJsonPath("user.settings.theme", "dark")
-            ->assertJsonPath("user.settings.collapse_menu", true)
-            ->assertJsonPath("user.settings.admin_crud_preferences.users.contentMode", "cards")
-            ->assertJsonPath("user.settings.admin_crud_preferences.users.tableOnDesktop", false);
+        $response->assertNoContent();
+
+        $auth["user"]->refresh();
+
+        $this->assertSame("ru", $auth["user"]->settings["locale"] ?? null);
+        $this->assertSame("dark", $auth["user"]->settings["theme"] ?? null);
+        $this->assertTrue($auth["user"]->settings["collapse_menu"] ?? false);
+        $this->assertSame(
+            "cards",
+            $auth["user"]->settings["admin_crud_preferences"]["users"]["contentMode"] ?? null,
+        );
+        $this->assertFalse(
+            $auth["user"]->settings["admin_crud_preferences"]["users"]["tableOnDesktop"] ?? true,
+        );
+        $this->assertTrue(
+            $auth["user"]->settings["admin_navigation_sections"]["system"]["open"] ?? false,
+        );
     }
 }

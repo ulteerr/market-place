@@ -15,6 +15,12 @@ interface AuthUser {
         tableOnDesktop?: boolean;
       }
     >;
+    admin_navigation_sections?: Record<
+      string,
+      {
+        open?: boolean;
+      }
+    >;
   } | null;
   roles?: string[];
   is_admin?: boolean;
@@ -97,17 +103,14 @@ export const useAuth = () => {
     return response.user;
   };
 
-  const updateSettings = async (settings: Record<string, unknown>): Promise<AuthUser> => {
+  const updateSettings = async (settings: Record<string, unknown>): Promise<void> => {
     const api = useApi();
-    const response = await api<MeResponse>('/api/me/settings', {
+    await api('/api/me/settings', {
       method: 'PATCH',
       body: {
         settings,
       },
     });
-
-    setUser(response.user);
-    return response.user;
   };
 
   const logout = async (): Promise<void> => {

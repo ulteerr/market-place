@@ -126,17 +126,33 @@
               :show-to="`/admin/users/${item.id}`"
               :edit-to="`/admin/users/${item.id}/edit`"
               :deleting="deletingId === item.id"
+              @delete="removeUser(item)"
             />
           </div>
         </article>
       </div>
     </template>
   </AdminEntityIndex>
+
+  <UiModal
+    v-model="removeConfirmOpen"
+    mode="confirm"
+    :title="removeConfirmTitle"
+    :message="removeConfirmMessage"
+    :confirm-label="removeConfirmLabel"
+    :cancel-label="removeCancelLabel"
+    :loading-label="t('common.loading')"
+    :confirm-loading="Boolean(deletingId)"
+    destructive
+    @confirm="confirmRemoveItem"
+    @cancel="cancelRemoveItem"
+  />
 </template>
 
 <script setup lang="ts">
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import UiModal from '~/components/ui/Modal/UiModal.vue';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import { getAdminUserFullName, resolveAdminUserPanelAccess } from '~/composables/useAdminUsers';
 const { t } = useI18n();
@@ -152,6 +168,11 @@ const {
   loading,
   loadError,
   deletingId,
+  removeConfirmOpen,
+  removeConfirmTitle,
+  removeConfirmMessage,
+  removeConfirmLabel,
+  removeCancelLabel,
   contentMode,
   tableOnDesktop,
   pagination,
@@ -163,6 +184,8 @@ const {
   onResetFilters,
   onUpdatePerPage,
   removeItem,
+  confirmRemoveItem,
+  cancelRemoveItem,
 } = useAdminCrudIndex<AdminUser>({
   settingsKey: 'users',
   useViewPreference: true,
@@ -211,8 +234,11 @@ const accessClass = (item: AdminUser): string => {
 };
 
 const removeUser = async (user: AdminUser) => {
-  await removeItem(user, {
+  removeItem(user, {
+    confirmTitle: t('admin.actions.delete'),
     confirmMessage: t('admin.users.confirmDelete', { name: getAdminUserFullName(user) }),
+    confirmLabel: t('admin.actions.delete'),
+    cancelLabel: t('common.cancel'),
   });
 };
 </script>

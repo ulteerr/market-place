@@ -33,4 +33,43 @@ test.describe('Admin settings page', () => {
     await expect(themeSwitch).toHaveAttribute('aria-checked', 'false');
     await expect(menuSwitch).toHaveAttribute('aria-checked', 'false');
   });
+
+  test('coalesces rapid settings updates into a single patch request', async ({ page }) => {
+    const settingsPatchPayloads: Array<Record<string, unknown>> = [];
+
+    await page.route('**/api/me/settings', async (route) => {
+      const rawBody = route.request().postData() ?? '{}';
+      settingsPatchPayloads.push(JSON.parse(rawBody) as Record<string, unknown>);
+
+      await route.fulfill({
+        status: 204,
+        body: '',
+      });
+    });
+
+    await setupAdminAuth(page, {
+      ...defaultAdminUser,
+      settings: {
+        locale: 'ru',
+        theme: 'light',
+        collapse_menu: false,
+        admin_crud_preferences: {},
+        admin_navigation_sections: {},
+      },
+    });
+
+    await page.goto('/admin/settings');
+
+    const themeSwitch = page.getByRole('switch', { name: 'Тёмная тема' });
+    await expect(themeSwitch).toHaveAttribute('aria-checked', 'false');
+
+    for (let index = 0; index < 5; index += 1) {
+      await themeSwitch.click();
+    }
+
+    await page.waitForTimeout(1200);
+
+    await expect.poll(() => settingsPatchPayloads.length).toBe(1);
+    expect(settingsPatchPayloads[0]?.settings).toMatchObject({ theme: 'dark' });
+  });
 });

@@ -19,6 +19,11 @@ const baseSettings: UserSettings = {
       tableOnDesktop: false,
     },
   },
+  admin_navigation_sections: {
+    system: {
+      open: true,
+    },
+  },
 };
 
 describe('user settings normalize', () => {
@@ -47,6 +52,10 @@ describe('user settings normalize', () => {
         roles: { contentMode: 'cards' },
         invalid: { contentMode: 'grid' },
       },
+      admin_navigation_sections: {
+        system: { open: false },
+        invalid: { open: 'yes' },
+      },
     });
 
     expect(merged.locale).toBe('en');
@@ -55,6 +64,9 @@ describe('user settings normalize', () => {
     expect(merged.admin_crud_preferences).toEqual({
       users: { contentMode: 'table-cards', tableOnDesktop: true },
       roles: { contentMode: 'cards' },
+    });
+    expect(merged.admin_navigation_sections).toEqual({
+      system: { open: false },
     });
   });
 
@@ -65,6 +77,9 @@ describe('user settings normalize', () => {
         users: { tableOnDesktop: true },
         roles: { contentMode: 'table' },
       },
+      admin_navigation_sections: {
+        system: { open: false },
+      },
     });
 
     expect(next).toEqual({
@@ -74,6 +89,9 @@ describe('user settings normalize', () => {
       admin_crud_preferences: {
         users: { tableOnDesktop: true },
         roles: { contentMode: 'table' },
+      },
+      admin_navigation_sections: {
+        system: { open: false },
       },
     });
   });
@@ -86,6 +104,9 @@ describe('user settings normalize', () => {
       admin_crud_preferences: {
         users: { contentMode: 'table' },
       },
+      admin_navigation_sections: {
+        system: { open: false },
+      },
     });
 
     expect(next).toEqual({
@@ -94,6 +115,9 @@ describe('user settings normalize', () => {
       collapse_menu: false,
       admin_crud_preferences: {
         users: { contentMode: 'table' },
+      },
+      admin_navigation_sections: {
+        system: { open: false },
       },
     });
   });

@@ -28,6 +28,7 @@ let lastCollapseToggleAt = 0;
 let syncInFlight = false;
 let syncQueued = false;
 let lastSyncedSettingsSnapshot = '';
+let pendingSettingsSnapshot: string | null = null;
 
 export const useUserSettings = () => {
   const { user, token, isAuthenticated, updateSettings: updateRemoteSettings } = useAuth();
@@ -58,6 +59,8 @@ export const useUserSettings = () => {
     // server is the source of truth for settings
   };
 
+  const toSettingsSnapshot = (value: UserSettings): string => JSON.stringify(cloneSettings(value));
+
   const pushSettingsToServer = async () => {
     if (!process.client || !isAuthenticated.value) {
       return;
@@ -87,7 +90,7 @@ export const useUserSettings = () => {
 
       if (syncQueued) {
         syncQueued = false;
-        queueSyncToServer();
+        await pushSettingsToServer();
       }
     }
   };
@@ -98,7 +101,7 @@ export const useUserSettings = () => {
     }
 
     if (syncTimer) {
-      clearTimeout(syncTimer);
+      return;
     }
 
     syncTimer = setTimeout(async () => {
@@ -116,6 +119,7 @@ export const useUserSettings = () => {
         theme: nextSettings.theme,
         collapse_menu: nextSettings.collapse_menu,
         admin_crud_preferences: { ...nextSettings.admin_crud_preferences },
+        admin_navigation_sections: { ...nextSettings.admin_navigation_sections },
       };
     }
 
@@ -125,21 +129,35 @@ export const useUserSettings = () => {
     persist();
 
     if (syncRemote && hasChanges) {
+      if (process.client && isAuthenticated.value) {
+        pendingSettingsSnapshot = toSettingsSnapshot(nextSettings);
+      }
       queueSyncToServer();
     }
   };
 
   const applyRemoteSettings = (remote: unknown) => {
     const normalized = mergeIncomingSettings(settings.value, remote);
+    const remoteSnapshot = toSettingsSnapshot(normalized);
+    const localSnapshot = toSettingsSnapshot(settings.value);
+
+    if (pendingSettingsSnapshot) {
+      if (remoteSnapshot === pendingSettingsSnapshot) {
+        pendingSettingsSnapshot = null;
+      } else if (remoteSnapshot !== localSnapshot) {
+        return;
+      }
+    }
 
     applySettings(normalized, false);
-    lastSyncedSettingsSnapshot = JSON.stringify(cloneSettings(normalized));
+    lastSyncedSettingsSnapshot = remoteSnapshot;
   };
 
   const applyServerSettings = (remote: Partial<UserSettings> | null) => {
     const normalized = mergeSettings(remote);
     applySettings(normalized, false);
-    lastSyncedSettingsSnapshot = JSON.stringify(cloneSettings(normalized));
+    lastSyncedSettingsSnapshot = toSettingsSnapshot(normalized);
+    pendingSettingsSnapshot = null;
   };
 
   const updateSettings = (patch: Partial<UserSettings>, syncRemote = true) => {
@@ -178,7 +196,8 @@ export const useUserSettings = () => {
     const mergedSettings = mergeSettings(remoteSettings);
 
     applySettings(mergedSettings, false);
-    lastSyncedSettingsSnapshot = JSON.stringify(cloneSettings(mergedSettings));
+    lastSyncedSettingsSnapshot = toSettingsSnapshot(mergedSettings);
+    pendingSettingsSnapshot = null;
     initialized.value = true;
   };
 

@@ -105,6 +105,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/AdminCrudPreference'
+        admin_navigation_sections:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AdminNavigationSectionPreference'
       additionalProperties: true
       example:
         locale: en
@@ -114,6 +118,9 @@ components:
           users:
             contentMode: cards
             tableOnDesktop: false
+        admin_navigation_sections:
+          system:
+            open: true
 
     AdminCrudPreference:
       type: object
@@ -123,6 +130,14 @@ components:
           enum: [table, table-cards, cards]
           example: table-cards
         tableOnDesktop:
+          type: boolean
+          example: true
+      additionalProperties: false
+
+    AdminNavigationSectionPreference:
+      type: object
+      properties:
+        open:
           type: boolean
           example: true
       additionalProperties: false

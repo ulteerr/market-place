@@ -68,6 +68,75 @@
   background: color-mix(in srgb, var(--surface) 85%, transparent);
 }
 
+.admin-nav-section-toggle {
+  align-items: center;
+}
+
+.admin-nav-section-arrow {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.9;
+  transform: translateY(-10%) rotate(45deg);
+  transition: transform 0.18s ease;
+}
+
+.admin-nav-section-arrow.is-open {
+  transform: translateY(10%) rotate(-135deg);
+}
+
+.admin-nav-submenu {
+  margin-left: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.admin-nav-sub-link {
+  padding-left: 0.55rem;
+}
+
+.admin-nav-collapsed-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 0.35rem;
+}
+
+.admin-nav-section-collapsed-toggle {
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.admin-nav-section-collapsed-arrow {
+  margin-top: 0.1rem;
+}
+
+.admin-nav-collapsed-panel {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: 0.9rem;
+  padding: 0.35rem 0.25rem;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+}
+
+.admin-nav-collapsed-panel.is-active-block {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.admin-nav-collapsed-item {
+  justify-content: center;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+}
+
 .admin-sidebar-toggle {
   display: none;
   position: fixed;
@@ -95,10 +164,28 @@
   color: var(--accent);
 }
 
+.admin-sidebar-toggle-chevron {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.9;
+  transform: rotate(135deg);
+  transition: transform 0.18s ease;
+}
+
+.admin-sidebar-toggle-chevron.is-collapsed {
+  transform: rotate(-45deg);
+}
+
 @media (min-width: 1024px) {
   .admin-sidebar {
     position: static;
     transform: none;
+  }
+
+  .admin-sidebar nav {
+    overflow-x: hidden;
   }
 
   .admin-sidebar-toggle {
@@ -125,8 +212,29 @@
     padding-right: 0.5rem;
   }
 
+  .admin-sidebar.is-collapsed .admin-nav-link.is-active-block {
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  .admin-sidebar.is-collapsed .admin-nav-collapsed-item {
+    width: 100%;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
   .admin-sidebar.is-collapsed .admin-nav-label {
     display: none;
+  }
+
+  .admin-sidebar.is-collapsed .admin-nav-section-arrow,
+  .admin-sidebar.is-collapsed .admin-nav-submenu {
+    display: none;
+  }
+
+  .admin-sidebar.is-collapsed .admin-nav-section-collapsed-arrow {
+    display: inline;
   }
 
   .admin-sidebar.is-collapsed + .admin-sidebar-toggle {

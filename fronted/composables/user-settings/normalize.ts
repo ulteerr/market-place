@@ -2,6 +2,7 @@ import { DEFAULT_COLLAPSE_MENU, DEFAULT_THEME } from '~/composables/user-setting
 import type {
   AdminCrudContentMode,
   AdminCrudPreference,
+  AdminNavigationSectionPreference,
   LocaleCode,
   ThemeMode,
   UserSettings,
@@ -50,6 +51,36 @@ export const normalizeAdminCrudPreferences = (
   return normalized;
 };
 
+export const normalizeAdminNavigationSections = (
+  value: unknown
+): Record<string, AdminNavigationSectionPreference> => {
+  if (typeof value !== 'object' || value === null) {
+    return {};
+  }
+
+  const source = value as Record<string, unknown>;
+  const normalized: Record<string, AdminNavigationSectionPreference> = {};
+
+  for (const [key, section] of Object.entries(source)) {
+    if (typeof section !== 'object' || section === null) {
+      continue;
+    }
+
+    const candidate = section as Record<string, unknown>;
+    const next: AdminNavigationSectionPreference = {};
+
+    if (typeof candidate.open === 'boolean') {
+      next.open = candidate.open;
+    }
+
+    if (Object.keys(next).length > 0) {
+      normalized[key] = next;
+    }
+  }
+
+  return normalized;
+};
+
 export const resolveCollapseMenu = (value: unknown): boolean | undefined => {
   return typeof value === 'boolean' ? value : undefined;
 };
@@ -67,6 +98,9 @@ export const mergeSettings = (remoteSettings: Partial<UserSettings> | null): Use
   theme: isThemeMode(remoteSettings?.theme) ? remoteSettings.theme : getSystemTheme(),
   collapse_menu: resolveCollapseMenu(remoteSettings?.collapse_menu) ?? DEFAULT_COLLAPSE_MENU,
   admin_crud_preferences: normalizeAdminCrudPreferences(remoteSettings?.admin_crud_preferences),
+  admin_navigation_sections: normalizeAdminNavigationSections(
+    remoteSettings?.admin_navigation_sections
+  ),
 });
 
 export const mergeIncomingSettings = (current: UserSettings, remote: unknown): UserSettings => {
@@ -79,6 +113,10 @@ export const mergeIncomingSettings = (current: UserSettings, remote: unknown): U
     admin_crud_preferences: {
       ...current.admin_crud_preferences,
       ...normalizeAdminCrudPreferences(payload.admin_crud_preferences),
+    },
+    admin_navigation_sections: {
+      ...current.admin_navigation_sections,
+      ...normalizeAdminNavigationSections(payload.admin_navigation_sections),
     },
   };
 };
@@ -98,11 +136,18 @@ export const mergePatchWithSettings = (
         ...normalizeAdminCrudPreferences(patch.admin_crud_preferences),
       }
     : current.admin_crud_preferences;
+  const nextNavigationSections = patch.admin_navigation_sections
+    ? {
+        ...current.admin_navigation_sections,
+        ...normalizeAdminNavigationSections(patch.admin_navigation_sections),
+      }
+    : current.admin_navigation_sections;
 
   return {
     locale: nextLocale,
     theme: nextTheme,
     collapse_menu: nextCollapseMenu,
     admin_crud_preferences: nextCrud,
+    admin_navigation_sections: nextNavigationSections,
   };
 };
