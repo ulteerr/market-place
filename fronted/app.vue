@@ -11,6 +11,14 @@ const { token, refreshUser, logout } = useAuth();
 const { applyServerSettings } = useUserSettings();
 
 onMounted(async () => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.setAttribute('data-ui-ready', '1');
+      document.body.style.visibility = 'visible';
+      document.getElementById('app-boot-loader')?.remove();
+    });
+  });
+
   if (!token.value) {
     return;
   }

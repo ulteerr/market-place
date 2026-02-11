@@ -6,8 +6,8 @@ on:
   pull_request:
 
 jobs:
-  frontend-e2e:
-    name: Frontend e2e (Playwright)
+  frontend-tests:
+    name: Frontend tests (unit + e2e)
     runs-on: ubuntu-latest
 
     steps:
@@ -22,11 +22,15 @@ jobs:
         working-directory: fronted
         run: npm install
 
+      - name: Run frontend unit tests
+        working-directory: fronted
+        run: npm run test:unit
+
       - name: Install Playwright browsers
         working-directory: fronted
         run: npx playwright install --with-deps chrome firefox webkit
 
-      - name: Run frontend tests
+      - name: Run frontend e2e tests
         working-directory: fronted
         run: npm test
 

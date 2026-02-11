@@ -121,4 +121,5 @@ front-nuxi:
 	docker-compose exec frontend npx nuxi $(cmd)
 
 front-test:
+	docker-compose exec frontend npm run test:unit
 	docker-compose exec frontend npm run test

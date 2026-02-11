@@ -204,8 +204,9 @@ make front-install
 make front-test
 ```
 
-`test` прогоняет обязательный e2e-сценарий `/admin` в `chrome`, `mozilla-firefox` и `safari-webkit`.
-Браузеры и системные зависимости устанавливаются автоматически при первом запуске.
+`front-test` прогоняет unit-тесты (`vitest`), затем обязательный e2e-сценарий `/admin`
+в `chrome`, `mozilla-firefox` и `safari-webkit`.
+Браузеры и системные зависимости устанавливаются автоматически при первом e2e запуске.
 
 Для UI-режима:
 
