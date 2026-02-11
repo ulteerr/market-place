@@ -1,5 +1,7 @@
 <template>
-  <section :class="['admin-entity-page mx-auto w-full min-w-0 space-y-6', maxWidthClass, pageClass]">
+  <section
+    :class="['admin-entity-page mx-auto w-full min-w-0 space-y-6', maxWidthClass, pageClass]"
+  >
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -7,7 +9,9 @@
           <p class="admin-muted mt-2 text-sm">{{ subtitle }}</p>
         </div>
 
-        <NuxtLink :to="createTo" class="admin-button rounded-lg px-4 py-2 text-sm">{{ createLabel }}</NuxtLink>
+        <NuxtLink :to="createTo" class="admin-button rounded-lg px-4 py-2 text-sm">{{
+          createLabel
+        }}</NuxtLink>
       </div>
     </div>
 
@@ -24,15 +28,19 @@
         @reset="$emit('reset')"
       />
 
-      <div class="flex items-center justify-between gap-3">
-        <p class="admin-muted text-sm">Показано {{ shownCount }} из {{ totalCount }}.</p>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <p class="admin-muted text-sm sm:shrink-0">
+          {{ t('admin.entity.shownCount', { shown: shownCount, total: totalCount }) }}
+        </p>
 
-        <div class="flex items-center gap-2">
+        <div
+          class="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:flex-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end"
+        >
           <div class="mode-select-wrap">
             <UiSelect
               :model-value="mode"
               :options="modeOptions"
-              placeholder="Таблица"
+              :placeholder="t('admin.entity.modePlaceholder')"
               :searchable="false"
               @update:model-value="onModeChange"
             />
@@ -41,10 +49,10 @@
           <button
             v-if="mode === 'table-cards'"
             type="button"
-            class="admin-button-secondary rounded-md px-2 py-1.5 text-xs"
+            class="admin-button-secondary w-full rounded-md px-2 py-1.5 text-xs sm:w-auto"
             @click="$emit('toggleDesktop')"
           >
-            {{ tableOnDesktop ? 'Desktop: таблица' : 'Desktop: карточки' }}
+            {{ tableOnDesktop ? t('admin.entity.desktopTable') : t('admin.entity.desktopCards') }}
           </button>
         </div>
       </div>
@@ -94,72 +102,73 @@
 </template>
 
 <script setup lang="ts">
-import type { PaginationItem } from '~/composables/useAdminCrudCommon'
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue'
-import AdminListToolbar from '~/components/admin/Listing/AdminListToolbar.vue'
-import AdminPagination from '~/components/admin/Listing/AdminPagination.vue'
-import AdminContentView from '~/components/admin/Listing/AdminContentView.vue'
-import AdminCrudSkeleton from '~/components/admin/Listing/AdminCrudSkeleton.vue'
+import type { PaginationItem } from '~/composables/useAdminCrudCommon';
+import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import AdminListToolbar from '~/components/admin/Listing/AdminListToolbar.vue';
+import AdminPagination from '~/components/admin/Listing/AdminPagination.vue';
+import AdminContentView from '~/components/admin/Listing/AdminContentView.vue';
+import AdminCrudSkeleton from '~/components/admin/Listing/AdminCrudSkeleton.vue';
+const { t } = useI18n();
 
-type ContentMode = 'table' | 'table-cards' | 'cards'
+type ContentMode = 'table' | 'table-cards' | 'cards';
 
 interface CardSortField {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 const emit = defineEmits<{
-  (e: 'update:searchValue', value: string): void
-  (e: 'update:perPage', value: number): void
-  (e: 'update:mode', value: ContentMode): void
-  (e: 'toggleDesktop'): void
-  (e: 'apply'): void
-  (e: 'reset'): void
-  (e: 'sort', field: string): void
-  (e: 'page', value: number): void
-}>()
+  (e: 'update:searchValue', value: string): void;
+  (e: 'update:perPage', value: number): void;
+  (e: 'update:mode', value: ContentMode): void;
+  (e: 'toggleDesktop'): void;
+  (e: 'apply'): void;
+  (e: 'reset'): void;
+  (e: 'sort', field: string): void;
+  (e: 'page', value: number): void;
+}>();
 
 defineProps<{
-  pageClass?: string
-  maxWidthClass?: string
-  title: string
-  subtitle: string
-  createTo: string
-  createLabel: string
-  searchValue: string
-  searchPlaceholder: string
-  perPage: number
-  perPageOptions: number[]
-  loading: boolean
-  shownCount: number
-  totalCount: number
-  loadError: string
-  mode: ContentMode
-  tableOnDesktop: boolean
-  cardSortFields: CardSortField[]
-  activeSortBy: string
-  sortMark: (field: string) => string
-  showPagination: boolean
-  currentPage: number
-  lastPage: number
-  paginationPerPage: number
-  paginationItems: PaginationItem[]
-  tableSkeletonColumns?: number
-}>()
+  pageClass?: string;
+  maxWidthClass?: string;
+  title: string;
+  subtitle: string;
+  createTo: string;
+  createLabel: string;
+  searchValue: string;
+  searchPlaceholder: string;
+  perPage: number;
+  perPageOptions: number[];
+  loading: boolean;
+  shownCount: number;
+  totalCount: number;
+  loadError: string;
+  mode: ContentMode;
+  tableOnDesktop: boolean;
+  cardSortFields: CardSortField[];
+  activeSortBy: string;
+  sortMark: (field: string) => string;
+  showPagination: boolean;
+  currentPage: number;
+  lastPage: number;
+  paginationPerPage: number;
+  paginationItems: PaginationItem[];
+  tableSkeletonColumns?: number;
+}>();
 
-const modeOptions = [
-  { value: 'table', label: 'Таблица' },
-  { value: 'table-cards', label: 'Таблица + карточки' },
-  { value: 'cards', label: 'Карточки' }
-] as const
+const modeOptions = computed(() => [
+  { value: 'table', label: t('admin.entity.modes.table') },
+  { value: 'table-cards', label: t('admin.entity.modes.tableCards') },
+  { value: 'cards', label: t('admin.entity.modes.cards') },
+]);
 
 const onModeChange = (value: string | number | (string | number)[]) => {
-  const nextValue = Array.isArray(value) ? value[0] : value
+  const nextValue = Array.isArray(value) ? value[0] : value;
 
   if (nextValue === 'table' || nextValue === 'table-cards' || nextValue === 'cards') {
-    emit('update:mode', nextValue)
+    emit('update:mode', nextValue);
   }
-}
+};
 </script>
 
 <style lang="scss" src="./AdminEntityIndex.scss"></style>

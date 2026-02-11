@@ -9,20 +9,20 @@
 </template>
 
 <script setup lang="ts">
-import LoginForm from './LoginForm.vue'
+import LoginForm from './LoginForm.vue';
 
 withDefaults(
   defineProps<{
-    description?: string
-    requireAdminAccess?: boolean
-    successRedirectTo?: string
-    deniedRedirectTo?: string
+    description?: string;
+    requireAdminAccess?: boolean;
+    successRedirectTo?: string;
+    deniedRedirectTo?: string;
   }>(),
   {
     description: '',
     requireAdminAccess: false,
     successRedirectTo: '/admin',
-    deniedRedirectTo: '/'
+    deniedRedirectTo: '/',
   }
-)
+);
 </script>

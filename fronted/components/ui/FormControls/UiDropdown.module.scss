@@ -23,7 +23,9 @@
   font-size: 0.92rem;
   color: var(--form-control-text);
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus-visible {
     border-color: var(--form-focus);

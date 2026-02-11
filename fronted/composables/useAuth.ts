@@ -5,6 +5,7 @@ interface AuthUser {
   last_name?: string;
   middle_name?: string;
   settings?: {
+    locale?: 'ru' | 'en' | null;
     theme?: 'light' | 'dark';
     collapse_menu?: boolean;
     admin_crud_preferences?: Record<

@@ -1,7 +1,9 @@
 <template>
   <section :class="[styles.wrap, isPopup ? styles.wrapPopup : styles.wrapPage]">
     <h1 :class="styles.title">{{ isAuthenticated ? 'Статус' : 'Вход' }}</h1>
-    <p :class="styles.description">{{ isAuthenticated ? authenticatedDescriptionText : descriptionText }}</p>
+    <p :class="styles.description">
+      {{ isAuthenticated ? authenticatedDescriptionText : descriptionText }}
+    </p>
 
     <div v-if="isAuthenticated" :class="styles.statusBox">
       <NuxtLink to="/" :class="styles.statusLink">Вернуться на главную</NuxtLink>
@@ -37,80 +39,80 @@
 </template>
 
 <script setup lang="ts">
-import styles from './LoginForm.module.scss'
-import UiInput from '~/components/ui/FormControls/UiInput.vue'
+import styles from './LoginForm.module.scss';
+import UiInput from '~/components/ui/FormControls/UiInput.vue';
 
-type LoginFormVariant = 'page' | 'popup'
+type LoginFormVariant = 'page' | 'popup';
 
 const props = withDefaults(
   defineProps<{
-    variant?: LoginFormVariant
-    description?: string
-    requireAdminAccess?: boolean
-    successRedirectTo?: string
-    deniedRedirectTo?: string
+    variant?: LoginFormVariant;
+    description?: string;
+    requireAdminAccess?: boolean;
+    successRedirectTo?: string;
+    deniedRedirectTo?: string;
   }>(),
   {
     variant: 'page',
     description: '',
     requireAdminAccess: false,
     successRedirectTo: '/admin',
-    deniedRedirectTo: '/'
+    deniedRedirectTo: '/',
   }
-)
+);
 
-const { isAuthenticated, canAccessAdminPanel, login } = useAuth()
+const { isAuthenticated, canAccessAdminPanel, login } = useAuth();
 
-const email = ref('')
-const password = ref('')
-const pending = ref(false)
-const error = ref('')
-const uid = useId()
-const emailInputId = `email-${uid}`
-const passwordInputId = `password-${uid}`
-const isPopup = computed(() => props.variant === 'popup')
+const email = ref('');
+const password = ref('');
+const pending = ref(false);
+const error = ref('');
+const uid = useId();
+const emailInputId = `email-${uid}`;
+const passwordInputId = `password-${uid}`;
+const isPopup = computed(() => props.variant === 'popup');
 const canPassAccessCheck = computed(() => {
   if (!props.requireAdminAccess) {
-    return true
+    return true;
   }
 
-  return canAccessAdminPanel.value
-})
+  return canAccessAdminPanel.value;
+});
 const nextPath = computed(() =>
   canPassAccessCheck.value ? props.successRedirectTo : props.deniedRedirectTo
-)
+);
 const descriptionText = computed(() => {
   if (props.description) {
-    return props.description
+    return props.description;
   }
 
   return isPopup.value
     ? 'Авторизуйтесь, чтобы продолжить.'
-    : 'Авторизуйтесь, чтобы открыть административный раздел.'
-})
+    : 'Авторизуйтесь, чтобы открыть административный раздел.';
+});
 const authenticatedDescriptionText = computed(() => {
   if (props.requireAdminAccess && !canAccessAdminPanel.value) {
-    return 'Вы авторизованы, но у вас нет доступа к административному разделу.'
+    return 'Вы авторизованы, но у вас нет доступа к административному разделу.';
   }
 
-  return 'Вы уже авторизованы.'
-})
+  return 'Вы уже авторизованы.';
+});
 
 const onSubmit = async () => {
   if (isAuthenticated.value) {
-    return
+    return;
   }
 
-  pending.value = true
-  error.value = ''
+  pending.value = true;
+  error.value = '';
 
   try {
-    await login(email.value, password.value)
-    await navigateTo(nextPath.value)
+    await login(email.value, password.value);
+    await navigateTo(nextPath.value);
   } catch {
-    error.value = 'Не удалось авторизоваться. Проверьте email и пароль.'
+    error.value = 'Не удалось авторизоваться. Проверьте email и пароль.';
   } finally {
-    pending.value = false
+    pending.value = false;
   }
-}
+};
 </script>

@@ -66,5 +66,7 @@ body,
 body {
   background: var(--page-background);
   color: var(--text);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }

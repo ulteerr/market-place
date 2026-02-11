@@ -17,8 +17,16 @@
   max-width: 24rem;
   border-radius: 1.25rem;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface) 88%, transparent)),
-    radial-gradient(circle at 0 0, color-mix(in srgb, var(--accent) 18%, transparent), transparent 56%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 95%, transparent),
+      color-mix(in srgb, var(--surface) 88%, transparent)
+    ),
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      transparent 56%
+    );
   box-shadow:
     0 10px 32px rgba(15, 23, 42, 0.3),
     0 1px 2px rgba(15, 23, 42, 0.12);
@@ -75,7 +83,9 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  transition:
+    filter 0.2s ease,
+    opacity 0.2s ease;
   cursor: pointer;
 
   &:hover {

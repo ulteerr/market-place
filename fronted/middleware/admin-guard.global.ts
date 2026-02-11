@@ -1,12 +1,12 @@
 export default defineNuxtRouteMiddleware((to) => {
   if (!to.path.startsWith('/admin')) {
-    return
+    return;
   }
 
-  const { isAuthenticated, canAccessAdminPanel } = useAuth()
+  const { isAuthenticated, canAccessAdminPanel } = useAuth();
 
   if (!isAuthenticated.value) {
-    return navigateTo('/login')
+    return navigateTo('/login');
   }
 
   if (!canAccessAdminPanel.value) {
@@ -14,8 +14,8 @@ export default defineNuxtRouteMiddleware((to) => {
       createError({
         statusCode: 403,
         statusMessage: 'Доступ запрещен',
-        message: 'У вас нет доступа к этому разделу.'
+        message: 'У вас нет доступа к этому разделу.',
       })
-    )
+    );
   }
-})
+});

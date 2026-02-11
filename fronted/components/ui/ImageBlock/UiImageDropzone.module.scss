@@ -6,7 +6,9 @@
   text-align: center;
   display: grid;
   gap: 0.45rem;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .zoneDragging {

@@ -23,20 +23,20 @@
 </template>
 
 <script setup lang="ts">
-import styles from './UiTextarea.module.scss'
+import styles from './UiTextarea.module.scss';
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: string | null
-    id?: string
-    name?: string
-    label?: string
-    placeholder?: string
-    hint?: string
-    error?: string
-    rows?: number
-    required?: boolean
-    disabled?: boolean
+    modelValue?: string | null;
+    id?: string;
+    name?: string;
+    label?: string;
+    placeholder?: string;
+    hint?: string;
+    error?: string;
+    rows?: number;
+    required?: boolean;
+    disabled?: boolean;
   }>(),
   {
     modelValue: '',
@@ -48,20 +48,20 @@ const props = withDefaults(
     error: '',
     rows: 4,
     required: false,
-    disabled: false
+    disabled: false,
   }
-)
+);
 
 const emit = defineEmits<{
-  (event: 'update:modelValue', value: string): void
-}>()
+  (event: 'update:modelValue', value: string): void;
+}>();
 
-const uid = useId()
-const resolvedId = computed(() => props.id || `ui-textarea-${uid}`)
-const normalizedValue = computed(() => props.modelValue ?? '')
+const uid = useId();
+const resolvedId = computed(() => props.id || `ui-textarea-${uid}`);
+const normalizedValue = computed(() => props.modelValue ?? '');
 
 const onInput = (event: Event) => {
-  const target = event.target as HTMLTextAreaElement | null
-  emit('update:modelValue', target?.value ?? '')
-}
+  const target = event.target as HTMLTextAreaElement | null;
+  emit('update:modelValue', target?.value ?? '');
+};
 </script>

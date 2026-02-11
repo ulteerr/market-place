@@ -37,35 +37,35 @@
 </template>
 
 <script setup lang="ts">
-import styles from './UiImageBlock.module.scss'
+import styles from './UiImageBlock.module.scss';
 
 interface ImageBlockItem {
-  id?: string | number
-  src: string
-  alt?: string
-  caption?: string
+  id?: string | number;
+  src: string;
+  alt?: string;
+  caption?: string;
 }
 
 withDefaults(
   defineProps<{
-    title?: string
-    description?: string
-    images: ImageBlockItem[]
-    removable?: boolean
-    showAddButton?: boolean
-    addButtonText?: string
+    title?: string;
+    description?: string;
+    images: ImageBlockItem[];
+    removable?: boolean;
+    showAddButton?: boolean;
+    addButtonText?: string;
   }>(),
   {
     title: 'Изображения',
     description: '',
     removable: true,
     showAddButton: true,
-    addButtonText: 'Добавить'
+    addButtonText: 'Добавить',
   }
-)
+);
 
 const emit = defineEmits<{
-  (event: 'add'): void
-  (event: 'remove', index: number): void
-}>()
+  (event: 'add'): void;
+  (event: 'remove', index: number): void;
+}>();
 </script>

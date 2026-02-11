@@ -42,7 +42,11 @@
       </div>
 
       <div v-if="tableOnDesktop" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 md:hidden">
-        <article v-for="card in cardItems" :key="`card-mobile-${card}`" class="skeleton-card rounded-xl p-4">
+        <article
+          v-for="card in cardItems"
+          :key="`card-mobile-${card}`"
+          class="skeleton-card rounded-xl p-4"
+        >
           <span class="skeleton-line is-title" />
           <span class="skeleton-line" />
           <span class="skeleton-line" />
@@ -74,7 +78,11 @@
       </div>
 
       <div v-if="!tableOnDesktop" class="hidden md:grid md:grid-cols-3 gap-3">
-        <article v-for="card in cardItems" :key="`card-desktop-${card}`" class="skeleton-card rounded-xl p-4">
+        <article
+          v-for="card in cardItems"
+          :key="`card-desktop-${card}`"
+          class="skeleton-card rounded-xl p-4"
+        >
           <span class="skeleton-line is-title" />
           <span class="skeleton-line" />
           <span class="skeleton-line" />
@@ -89,7 +97,11 @@
 
     <template v-else>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <article v-for="card in cardItems" :key="`card-${card}`" class="skeleton-card rounded-xl p-4">
+        <article
+          v-for="card in cardItems"
+          :key="`card-${card}`"
+          class="skeleton-card rounded-xl p-4"
+        >
           <span class="skeleton-line is-title" />
           <span class="skeleton-line" />
           <span class="skeleton-line" />
@@ -105,25 +117,25 @@
 </template>
 
 <script setup lang="ts">
-type ContentMode = 'table' | 'table-cards' | 'cards'
+type ContentMode = 'table' | 'table-cards' | 'cards';
 
 const props = withDefaults(
   defineProps<{
-    mode: ContentMode
-    tableOnDesktop?: boolean
-    tableColumns?: number
-    tableRows?: number
-    cardItems?: number
+    mode: ContentMode;
+    tableOnDesktop?: boolean;
+    tableColumns?: number;
+    tableRows?: number;
+    cardItems?: number;
   }>(),
   {
     tableOnDesktop: true,
     tableColumns: 4,
     tableRows: 5,
-    cardItems: 6
+    cardItems: 6,
   }
-)
+);
 
-const normalizedTableColumns = computed(() => Math.max(1, props.tableColumns))
+const normalizedTableColumns = computed(() => Math.max(1, props.tableColumns));
 </script>
 
 <style lang="scss" scoped src="./AdminCrudSkeleton.scss"></style>

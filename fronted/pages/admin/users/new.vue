@@ -1,25 +1,70 @@
 <template>
   <section class="users-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
-      <h2 class="text-2xl font-semibold">Новый пользователь</h2>
-      <p class="admin-muted mt-2 text-sm">Создание пользователя в `/api/admin/users`.</p>
+      <h2 class="text-2xl font-semibold">{{ t('admin.users.new.title') }}</h2>
+      <p class="admin-muted mt-2 text-sm">{{ t('admin.users.new.subtitle') }}</p>
     </div>
 
     <article class="admin-card rounded-2xl p-5 lg:p-6">
       <form class="space-y-3" @submit.prevent="submitForm">
-        <UiInput v-model="form.first_name" label="Имя" required :disabled="saving" :error="fieldErrors.first_name" />
-        <UiInput v-model="form.last_name" label="Фамилия" required :disabled="saving" :error="fieldErrors.last_name" />
-        <UiInput v-model="form.middle_name" label="Отчество" :disabled="saving" :error="fieldErrors.middle_name" />
-        <UiInput v-model="form.email" preset="email" label="Email" required :disabled="saving" :error="fieldErrors.email" />
-        <UiInput v-model="form.phone" preset="phone" label="Телефон" :disabled="saving" :error="fieldErrors.phone" />
-        <UiInput v-model="form.password" preset="password" password-toggle label="Пароль" required :disabled="saving" :error="fieldErrors.password" />
-        <UiInput v-model="form.password_confirmation" preset="password" password-toggle label="Подтверждение пароля" required :disabled="saving" />
+        <UiInput
+          v-model="form.first_name"
+          :label="t('admin.users.new.fields.firstName')"
+          required
+          :disabled="saving"
+          :error="fieldErrors.first_name"
+        />
+        <UiInput
+          v-model="form.last_name"
+          :label="t('admin.users.new.fields.lastName')"
+          required
+          :disabled="saving"
+          :error="fieldErrors.last_name"
+        />
+        <UiInput
+          v-model="form.middle_name"
+          :label="t('admin.users.new.fields.middleName')"
+          :disabled="saving"
+          :error="fieldErrors.middle_name"
+        />
+        <UiInput
+          v-model="form.email"
+          preset="email"
+          :label="t('admin.users.new.fields.email')"
+          required
+          :disabled="saving"
+          :error="fieldErrors.email"
+        />
+        <UiInput
+          v-model="form.phone"
+          preset="phone"
+          :label="t('admin.users.new.fields.phone')"
+          :disabled="saving"
+          :error="fieldErrors.phone"
+        />
+        <UiInput
+          v-model="form.password"
+          preset="password"
+          password-toggle
+          :label="t('admin.users.new.fields.password')"
+          required
+          :disabled="saving"
+          :error="fieldErrors.password"
+        />
+        <UiInput
+          v-model="form.password_confirmation"
+          preset="password"
+          password-toggle
+          :label="t('admin.users.new.fields.passwordConfirmation')"
+          required
+          :disabled="saving"
+        />
 
         <UiSelect
           v-model="form.roles"
-          label="Роли"
+          :label="t('admin.users.new.fields.roles')"
           :options="roleOptions"
-          placeholder="Выберите роли"
+          :placeholder="t('admin.users.new.rolesPlaceholder')"
           multiple
           searchable
           :disabled="saving || loadingRoles"
@@ -29,10 +74,16 @@
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
         <div class="flex gap-2">
-          <button type="submit" class="admin-button rounded-lg px-4 py-2 text-sm" :disabled="saving">
-            {{ saving ? 'Сохраняем...' : 'Создать' }}
+          <button
+            type="submit"
+            class="admin-button rounded-lg px-4 py-2 text-sm"
+            :disabled="saving"
+          >
+            {{ saving ? t('admin.users.new.saving') : t('common.create') }}
           </button>
-          <NuxtLink to="/admin/users" class="admin-button-secondary rounded-lg px-4 py-2 text-sm">Отмена</NuxtLink>
+          <NuxtLink to="/admin/users" class="admin-button-secondary rounded-lg px-4 py-2 text-sm">{{
+            t('common.cancel')
+          }}</NuxtLink>
         </div>
       </form>
     </article>
@@ -40,23 +91,28 @@
 </template>
 
 <script setup lang="ts">
-import UiInput from '~/components/ui/FormControls/UiInput.vue'
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue'
-import type { AdminRole } from '~/composables/useAdminRoles'
-import type { CreateUserPayload } from '~/composables/useAdminUsers'
-import { getApiErrorPayload, getApiErrorMessage, getFieldError } from '~/composables/useAdminCrudCommon'
+import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import type { AdminRole } from '~/composables/useAdminRoles';
+import type { CreateUserPayload } from '~/composables/useAdminUsers';
+import {
+  getApiErrorPayload,
+  getApiErrorMessage,
+  getFieldError,
+} from '~/composables/useAdminCrudCommon';
+const { t } = useI18n();
 
 definePageMeta({
-  layout: 'admin'
-})
+  layout: 'admin',
+});
 
-const usersApi = useAdminUsers()
-const rolesApi = useAdminRoles()
+const usersApi = useAdminUsers();
+const rolesApi = useAdminRoles();
 
-const saving = ref(false)
-const loadingRoles = ref(false)
-const formError = ref('')
-const roles = ref<AdminRole[]>([])
+const saving = ref(false);
+const loadingRoles = ref(false);
+const formError = ref('');
+const roles = ref<AdminRole[]>([]);
 
 const form = reactive({
   first_name: '',
@@ -66,8 +122,8 @@ const form = reactive({
   phone: '',
   password: '',
   password_confirmation: '',
-  roles: [] as string[]
-})
+  roles: [] as string[],
+});
 
 const fieldErrors = reactive<Record<string, string>>({
   first_name: '',
@@ -76,45 +132,45 @@ const fieldErrors = reactive<Record<string, string>>({
   email: '',
   phone: '',
   password: '',
-  roles: ''
-})
+  roles: '',
+});
 
 const roleOptions = computed(() => {
   return roles.value.map((role) => ({
     label: role.label ? `${role.code} (${role.label})` : role.code,
-    value: role.code
-  }))
-})
+    value: role.code,
+  }));
+});
 
 const resetErrors = () => {
-  formError.value = ''
-  fieldErrors.first_name = ''
-  fieldErrors.last_name = ''
-  fieldErrors.middle_name = ''
-  fieldErrors.email = ''
-  fieldErrors.phone = ''
-  fieldErrors.password = ''
-  fieldErrors.roles = ''
-}
+  formError.value = '';
+  fieldErrors.first_name = '';
+  fieldErrors.last_name = '';
+  fieldErrors.middle_name = '';
+  fieldErrors.email = '';
+  fieldErrors.phone = '';
+  fieldErrors.password = '';
+  fieldErrors.roles = '';
+};
 
 const fetchRoles = async () => {
-  loadingRoles.value = true
+  loadingRoles.value = true;
 
   try {
     const page = await rolesApi.list({
       per_page: 100,
       sort_by: 'code',
-      sort_dir: 'asc'
-    })
-    roles.value = page.data
+      sort_dir: 'asc',
+    });
+    roles.value = page.data;
   } finally {
-    loadingRoles.value = false
+    loadingRoles.value = false;
   }
-}
+};
 
 const submitForm = async () => {
-  saving.value = true
-  resetErrors()
+  saving.value = true;
+  resetErrors();
 
   try {
     const payload: CreateUserPayload = {
@@ -125,27 +181,28 @@ const submitForm = async () => {
       phone: form.phone.trim() || null,
       password: form.password,
       password_confirmation: form.password_confirmation,
-      roles: [...form.roles]
-    }
+      roles: [...form.roles],
+    };
 
-    await usersApi.create(payload)
-    await navigateTo('/admin/users')
+    await usersApi.create(payload);
+    await navigateTo('/admin/users');
   } catch (error) {
-    const payload = getApiErrorPayload(error)
-    formError.value = getApiErrorMessage(error, 'Не удалось создать пользователя.')
-    fieldErrors.first_name = getFieldError(payload.errors, 'first_name')
-    fieldErrors.last_name = getFieldError(payload.errors, 'last_name')
-    fieldErrors.middle_name = getFieldError(payload.errors, 'middle_name')
-    fieldErrors.email = getFieldError(payload.errors, 'email')
-    fieldErrors.phone = getFieldError(payload.errors, 'phone')
-    fieldErrors.password = getFieldError(payload.errors, 'password')
-    fieldErrors.roles = getFieldError(payload.errors, 'roles') || getFieldError(payload.errors, 'roles.0')
+    const payload = getApiErrorPayload(error);
+    formError.value = getApiErrorMessage(error, t('admin.users.new.errors.create'));
+    fieldErrors.first_name = getFieldError(payload.errors, 'first_name');
+    fieldErrors.last_name = getFieldError(payload.errors, 'last_name');
+    fieldErrors.middle_name = getFieldError(payload.errors, 'middle_name');
+    fieldErrors.email = getFieldError(payload.errors, 'email');
+    fieldErrors.phone = getFieldError(payload.errors, 'phone');
+    fieldErrors.password = getFieldError(payload.errors, 'password');
+    fieldErrors.roles =
+      getFieldError(payload.errors, 'roles') || getFieldError(payload.errors, 'roles.0');
   } finally {
-    saving.value = false
+    saving.value = false;
   }
-}
+};
 
-onMounted(fetchRoles)
+onMounted(fetchRoles);
 </script>
 
 <style lang="scss" scoped src="./new.scss"></style>

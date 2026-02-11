@@ -1,5 +1,6 @@
 type ThemeMode = 'light' | 'dark';
 export type AdminCrudContentMode = 'table' | 'table-cards' | 'cards';
+export type LocaleCode = 'ru' | 'en';
 
 interface AdminCrudPreference {
   contentMode?: AdminCrudContentMode;
@@ -7,6 +8,7 @@ interface AdminCrudPreference {
 }
 
 interface UserSettings {
+  locale: LocaleCode | null;
   theme: ThemeMode;
   collapse_menu: boolean;
   admin_crud_preferences: Record<string, AdminCrudPreference>;
@@ -27,6 +29,7 @@ let syncQueued = false;
 let lastSyncedSettingsSnapshot = '';
 
 const isThemeMode = (value: unknown): value is ThemeMode => value === 'light' || value === 'dark';
+const isLocaleCode = (value: unknown): value is LocaleCode => value === 'ru' || value === 'en';
 
 const isContentMode = (value: unknown): value is AdminCrudContentMode => {
   return value === 'table' || value === 'table-cards' || value === 'cards';
@@ -100,6 +103,7 @@ const buildApiUrl = (baseUrl: string, path: string): string => {
 };
 
 const mergeSettings = (remoteSettings: Partial<UserSettings> | null): UserSettings => ({
+  locale: isLocaleCode(remoteSettings?.locale) ? remoteSettings.locale : null,
   theme: isThemeMode(remoteSettings?.theme) ? remoteSettings.theme : getSystemTheme(),
   collapse_menu: resolveCollapseMenu(remoteSettings?.collapse_menu) ?? DEFAULT_COLLAPSE_MENU,
   admin_crud_preferences: normalizeAdminCrudPreferences(remoteSettings?.admin_crud_preferences),
@@ -107,6 +111,7 @@ const mergeSettings = (remoteSettings: Partial<UserSettings> | null): UserSettin
 
 const settingsAreSame = (left: UserSettings, right: UserSettings): boolean => {
   return (
+    left.locale === right.locale &&
     left.theme === right.theme &&
     left.collapse_menu === right.collapse_menu &&
     JSON.stringify(left.admin_crud_preferences) === JSON.stringify(right.admin_crud_preferences)
@@ -114,6 +119,7 @@ const settingsAreSame = (left: UserSettings, right: UserSettings): boolean => {
 };
 
 const cloneSettings = (value: UserSettings): UserSettings => ({
+  locale: value.locale,
   theme: value.theme,
   collapse_menu: value.collapse_menu,
   admin_crud_preferences: { ...value.admin_crud_preferences },
@@ -124,6 +130,7 @@ export const useUserSettings = () => {
   const config = useRuntimeConfig();
 
   const settings = useState<UserSettings>('user_settings', () => ({
+    locale: null,
     theme: DEFAULT_THEME,
     collapse_menu: DEFAULT_COLLAPSE_MENU,
     admin_crud_preferences: {},
@@ -197,6 +204,7 @@ export const useUserSettings = () => {
 
     if (hasChanges) {
       settings.value = {
+        locale: nextSettings.locale,
         theme: nextSettings.theme,
         collapse_menu: nextSettings.collapse_menu,
         admin_crud_preferences: { ...nextSettings.admin_crud_preferences },
@@ -216,6 +224,7 @@ export const useUserSettings = () => {
   const applyRemoteSettings = (remote: unknown) => {
     const payload = (remote ?? {}) as Partial<UserSettings>;
     const normalized: UserSettings = {
+      locale: isLocaleCode(payload.locale) ? payload.locale : settings.value.locale,
       theme: isThemeMode(payload.theme) ? payload.theme : settings.value.theme,
       collapse_menu: resolveCollapseMenu(payload.collapse_menu) ?? settings.value.collapse_menu,
       admin_crud_preferences: {
@@ -235,6 +244,12 @@ export const useUserSettings = () => {
   };
 
   const updateSettings = (patch: Partial<UserSettings>, syncRemote = true) => {
+    const nextLocale =
+      patch.locale === null
+        ? null
+        : isLocaleCode(patch.locale)
+          ? patch.locale
+          : settings.value.locale;
     const nextTheme = isThemeMode(patch.theme) ? patch.theme : settings.value.theme;
     const nextCollapseMenu =
       resolveCollapseMenu(patch.collapse_menu) ?? settings.value.collapse_menu;
@@ -248,6 +263,7 @@ export const useUserSettings = () => {
 
     applySettings(
       {
+        locale: nextLocale,
         theme: nextTheme,
         collapse_menu: nextCollapseMenu,
         admin_crud_preferences: nextCrud,

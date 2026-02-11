@@ -15,8 +15,8 @@
       <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 class="text-lg font-semibold">Админ-раздел</h2>
         <p class="mt-2 text-sm text-slate">
-          Переходите в <NuxtLink to="/admin" class="text-ember underline">/admin</NuxtLink>.
-          Для неавторизованных пользователей будет выполнен редирект на <code>/login</code>.
+          Переходите в <NuxtLink to="/admin" class="text-ember underline">/admin</NuxtLink>. Для
+          неавторизованных пользователей будет выполнен редирект на <code>/login</code>.
         </p>
       </article>
     </section>
@@ -24,5 +24,5 @@
 </template>
 
 <script setup lang="ts">
-import PageHero from '~/components/ui/PageHero/PageHero.vue'
+import PageHero from '~/components/ui/PageHero/PageHero.vue';
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div v-if="visible" class="mt-2 flex flex-wrap items-center justify-between gap-3">
     <p class="admin-muted text-sm">
-      Страница {{ currentPage }} / {{ lastPage }}. На странице: {{ perPage }}.
+      {{ t('admin.pagination.summary', { current: currentPage, last: lastPage, perPage }) }}
     </p>
 
     <div class="flex items-center gap-2">
@@ -11,7 +11,7 @@
         :disabled="loading || currentPage <= 1"
         @click="$emit('page', currentPage - 1)"
       >
-        Назад
+        {{ t('admin.pagination.back') }}
       </button>
 
       <template v-for="(item, index) in items" :key="`page-${item}-${index}`">
@@ -34,27 +34,28 @@
         :disabled="loading || currentPage >= lastPage"
         @click="$emit('page', currentPage + 1)"
       >
-        Вперед
+        {{ t('admin.pagination.forward') }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { PaginationItem } from '~/composables/useAdminCrudCommon'
+import type { PaginationItem } from '~/composables/useAdminCrudCommon';
+const { t } = useI18n();
 
 defineProps<{
-  visible: boolean
-  currentPage: number
-  lastPage: number
-  perPage: number
-  items: PaginationItem[]
-  loading?: boolean
-}>()
+  visible: boolean;
+  currentPage: number;
+  lastPage: number;
+  perPage: number;
+  items: PaginationItem[];
+  loading?: boolean;
+}>();
 
 defineEmits<{
-  (event: 'page', value: number): void
-}>()
+  (event: 'page', value: number): void;
+}>();
 </script>
 
 <style lang="scss" scoped src="./AdminPagination.scss"></style>

@@ -2,8 +2,16 @@
   min-height: calc(100vh - 8rem);
   padding: 2rem 1rem 2.5rem;
   background:
-    radial-gradient(circle at 10% -10%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 42%),
-    linear-gradient(180deg, color-mix(in srgb, var(--surface-soft) 90%, #000 10%), var(--surface-soft));
+    radial-gradient(
+      circle at 10% -10%,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-soft) 90%, #000 10%),
+      var(--surface-soft)
+    );
 }
 
 .inner {

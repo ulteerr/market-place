@@ -8,12 +8,17 @@
         <div class="flex h-full flex-col">
           <div class="admin-sidebar-header flex items-center justify-between px-5 py-4">
             <NuxtLink to="/admin" class="admin-title text-lg font-semibold tracking-wide">
-              <span :class="isMenuCollapsed ? 'lg:hidden' : ''">Admin Panel</span>
-              <span :class="isMenuCollapsed ? 'hidden lg:inline' : 'hidden'">AP</span>
+              <span :class="isMenuCollapsed ? 'lg:hidden' : ''">{{
+                t('admin.layout.panelTitle')
+              }}</span>
+              <span :class="isMenuCollapsed ? 'hidden lg:inline' : 'hidden'">{{
+                t('admin.layout.shortPanelTitle')
+              }}</span>
             </NuxtLink>
             <button
               type="button"
               class="admin-icon-button rounded-lg p-2 lg:hidden"
+              :aria-label="t('admin.layout.closeSidebar')"
               @click="isSidebarOpen = false"
             >
               ✕
@@ -55,8 +60,16 @@
       <button
         type="button"
         class="admin-sidebar-toggle"
-        :title="isMenuCollapsed ? 'Expand menu' : 'Collapse menu'"
-        :aria-label="isMenuCollapsed ? 'Expand menu' : 'Collapse menu'"
+        :title="
+          isMenuCollapsed
+            ? t('admin.layout.sidebarToggleExpand')
+            : t('admin.layout.sidebarToggleCollapse')
+        "
+        :aria-label="
+          isMenuCollapsed
+            ? t('admin.layout.sidebarToggleExpand')
+            : t('admin.layout.sidebarToggleCollapse')
+        "
         @click="toggleCollapseMenu"
       >
         <svg
@@ -99,53 +112,74 @@
               <button
                 type="button"
                 class="admin-icon-button rounded-lg p-2 lg:hidden"
+                :aria-label="t('admin.layout.closeSidebar')"
                 @click="isSidebarOpen = true"
               >
                 ☰
               </button>
-              <h1 class="text-sm font-semibold lg:text-base">Административная панель</h1>
+              <h1 class="text-sm font-semibold lg:text-base">{{ t('admin.layout.heading') }}</h1>
             </div>
+            <div class="flex items-center gap-2">
+              <div class="admin-locale-select">
+                <UiSelect
+                  class="admin-locale-ui-select"
+                  :model-value="locale"
+                  :options="localeSelectOptions"
+                  :searchable="false"
+                  :placeholder="String(locale).toUpperCase()"
+                  @update:model-value="onLocaleChange"
+                />
+              </div>
 
-            <button
-              type="button"
-              class="admin-mini-button theme-switcher-btn rounded-md px-2 py-2"
-              :title="resolvedIsDark ? 'Toggle light mode' : 'Toggle dark mode'"
-              :aria-label="resolvedIsDark ? 'Toggle light mode' : 'Toggle dark mode'"
-              @click="toggleTheme"
-            >
-              <svg
-                v-if="!resolvedIsDark"
-                class="theme-switcher-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                aria-hidden="true"
+              <button
+                type="button"
+                class="admin-mini-button theme-switcher-btn rounded-md px-2 py-2"
+                :title="
+                  resolvedIsDark
+                    ? t('admin.layout.toggleLightMode')
+                    : t('admin.layout.toggleDarkMode')
+                "
+                :aria-label="
+                  resolvedIsDark
+                    ? t('admin.layout.toggleLightMode')
+                    : t('admin.layout.toggleDarkMode')
+                "
+                @click="toggleTheme"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-                ></path>
-              </svg>
-              <svg
-                v-else
-                class="theme-switcher-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                ></path>
-              </svg>
-            </button>
+                <svg
+                  v-if="!resolvedIsDark"
+                  class="theme-switcher-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+                  ></path>
+                </svg>
+                <svg
+                  v-else
+                  class="theme-switcher-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                  ></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -159,27 +193,35 @@
 
 <script setup lang="ts">
 import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
 
+const { t, locale, setLocale } = useI18n();
 const route = useRoute();
-const { user, logout } = useAuth();
-const { isDark, toggleTheme, settings, toggleCollapseMenu } = useUserSettings();
+const { user, logout, isAuthenticated } = useAuth();
+const { isDark, toggleTheme, settings, toggleCollapseMenu, updateSettings } = useUserSettings();
 const isThemeUiMounted = ref(false);
+const isApplyingLocaleFromSettings = ref(false);
+const localeStorageKey = 'preferred_locale';
 
 const isSidebarOpen = ref(false);
 const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 const isMenuCollapsed = computed(() => settings.value.collapse_menu);
-
-const menuItems = [
-  { to: '/admin', label: 'Главная', icon: '🏠' },
-  { to: '/admin/users', label: 'Пользователи', icon: '👤' },
-  { to: '/admin/roles', label: 'Роли', icon: '🛡' },
+const localeSelectOptions = [
+  { value: 'ru', label: 'RU' },
+  { value: 'en', label: 'EN' },
 ];
+
+const menuItems = computed(() => [
+  { to: '/admin', label: t('admin.layout.menu.dashboard'), icon: '🏠' },
+  { to: '/admin/users', label: t('admin.layout.menu.users'), icon: '👤' },
+  { to: '/admin/roles', label: t('admin.layout.menu.roles'), icon: '🛡' },
+]);
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`);
 
 const userFullName = computed(() => {
   if (!user.value) {
-    return 'Гость';
+    return t('admin.layout.user.guest');
   }
 
   const first = user.value.first_name?.trim() ?? '';
@@ -190,7 +232,7 @@ const userFullName = computed(() => {
   return fullName || user.value.email;
 });
 
-const userEmail = computed(() => user.value?.email ?? 'Нет email');
+const userEmail = computed(() => user.value?.email ?? t('admin.layout.user.noEmail'));
 
 const userInitials = computed(() => {
   const first = user.value?.first_name?.trim()?.[0] ?? '';
@@ -215,6 +257,48 @@ const handleLogout = async () => {
   await navigateTo('/login');
 };
 
+const onLocaleChange = async (value: string | number | (string | number)[]) => {
+  const nextLocale = Array.isArray(value) ? value[0] : value;
+  if (nextLocale === 'ru' || nextLocale === 'en') {
+    await setLocale(nextLocale);
+  }
+};
+
+const syncLocaleFromSource = async () => {
+  if (!process.client) {
+    return;
+  }
+
+  if (isAuthenticated.value) {
+    window.localStorage.removeItem(localeStorageKey);
+    const savedLocale = settings.value.locale;
+
+    if (savedLocale === 'ru' || savedLocale === 'en') {
+      if (locale.value !== savedLocale) {
+        await setLocale(savedLocale);
+      }
+      return;
+    }
+
+    if (locale.value === 'ru' || locale.value === 'en') {
+      updateSettings({ locale: locale.value });
+    }
+    return;
+  }
+
+  const storedLocale = window.localStorage.getItem(localeStorageKey);
+  if (storedLocale === 'ru' || storedLocale === 'en') {
+    if (locale.value !== storedLocale) {
+      await setLocale(storedLocale);
+    }
+    return;
+  }
+
+  if (locale.value === 'ru' || locale.value === 'en') {
+    window.localStorage.setItem(localeStorageKey, locale.value);
+  }
+};
+
 watch(
   () => route.path,
   () => {
@@ -224,7 +308,63 @@ watch(
 
 onMounted(() => {
   isThemeUiMounted.value = true;
+  void syncLocaleFromSource();
 });
+
+watch(
+  () => locale.value,
+  (nextLocale) => {
+    if (nextLocale !== 'ru' && nextLocale !== 'en') {
+      return;
+    }
+
+    if (isAuthenticated.value) {
+      if (process.client) {
+        window.localStorage.removeItem(localeStorageKey);
+      }
+      if (isApplyingLocaleFromSettings.value) {
+        return;
+      }
+      if (settings.value.locale !== nextLocale) {
+        updateSettings({ locale: nextLocale });
+      }
+      return;
+    }
+
+    if (process.client) {
+      window.localStorage.setItem(localeStorageKey, nextLocale);
+    }
+  }
+);
+
+watch(
+  () => settings.value.locale,
+  async (nextLocale) => {
+    if (!isAuthenticated.value) {
+      return;
+    }
+    if (nextLocale !== 'ru' && nextLocale !== 'en') {
+      return;
+    }
+    if (locale.value === nextLocale) {
+      return;
+    }
+
+    isApplyingLocaleFromSettings.value = true;
+    try {
+      await setLocale(nextLocale);
+    } finally {
+      isApplyingLocaleFromSettings.value = false;
+    }
+  }
+);
+
+watch(
+  () => isAuthenticated.value,
+  () => {
+    void syncLocaleFromSource();
+  }
+);
 </script>
 
 <style lang="scss" scoped src="./admin.scss"></style>

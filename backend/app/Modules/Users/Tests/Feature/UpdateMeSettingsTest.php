@@ -19,6 +19,7 @@ final class UpdateMeSettingsTest extends TestCase
 
         $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
             "settings" => [
+                "locale" => "en",
                 "theme" => "dark",
                 "collapse_menu" => true,
                 "admin_crud_preferences" => [
@@ -32,6 +33,7 @@ final class UpdateMeSettingsTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertJsonPath("user.settings.locale", "en")
             ->assertJsonPath("user.settings.theme", "dark")
             ->assertJsonPath("user.settings.collapse_menu", true)
             ->assertJsonPath("user.settings.admin_crud_preferences.users.contentMode", "cards")
@@ -39,6 +41,7 @@ final class UpdateMeSettingsTest extends TestCase
 
         $auth["user"]->refresh();
 
+        $this->assertSame("en", $auth["user"]->settings["locale"] ?? null);
         $this->assertSame("dark", $auth["user"]->settings["theme"] ?? null);
         $this->assertTrue($auth["user"]->settings["collapse_menu"] ?? false);
         $this->assertSame(
@@ -82,6 +85,20 @@ final class UpdateMeSettingsTest extends TestCase
     }
 
     #[Test]
+    public function invalid_locale_returns_validation_error(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "locale" => "de",
+            ],
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(["settings.locale"]);
+    }
+
+    #[Test]
     public function guest_cannot_update_settings(): void
     {
         $this->patchJson("/api/me/settings", [
@@ -97,6 +114,7 @@ final class UpdateMeSettingsTest extends TestCase
         $auth = $this->actingAsUser();
         $auth["user"]->update([
             "settings" => [
+                "locale" => "ru",
                 "theme" => "light",
                 "collapse_menu" => true,
                 "admin_crud_preferences" => [
@@ -116,6 +134,7 @@ final class UpdateMeSettingsTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertJsonPath("user.settings.locale", "ru")
             ->assertJsonPath("user.settings.theme", "dark")
             ->assertJsonPath("user.settings.collapse_menu", true)
             ->assertJsonPath("user.settings.admin_crud_preferences.users.contentMode", "cards")

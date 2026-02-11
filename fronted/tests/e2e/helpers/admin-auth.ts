@@ -1,6 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 
-export const authOrigin = 'http://127.0.0.1:3000';
+const fallbackPort = process.env.PORT ?? '3000';
+export const authOrigin = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${fallbackPort}`;
 
 export interface AdminAuthUser {
   id: string;
@@ -35,6 +36,11 @@ export const setAdminAuthCookies = async (page: Page, user: AdminAuthUser = defa
     {
       name: 'auth_user',
       value: encodeURIComponent(JSON.stringify(user)),
+      url: authOrigin,
+    },
+    {
+      name: 'i18n_redirected',
+      value: 'ru',
       url: authOrigin,
     },
   ]);

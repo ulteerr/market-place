@@ -29,13 +29,13 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    mode: 'table' | 'table-cards' | 'cards'
-    tableOnDesktop?: boolean
+    mode: 'table' | 'table-cards' | 'cards';
+    tableOnDesktop?: boolean;
   }>(),
   {
-    tableOnDesktop: true
+    tableOnDesktop: true,
   }
-)
+);
 </script>
 
 <style lang="scss" scoped src="./AdminContentView.scss"></style>

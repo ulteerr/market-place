@@ -18,18 +18,18 @@
 </template>
 
 <script setup lang="ts">
-import LoginForm from '~/components/auth/LoginForm/LoginForm.vue'
-import styles from './login.module.scss'
+import LoginForm from '~/components/auth/LoginForm/LoginForm.vue';
+import styles from './login.module.scss';
 
 definePageMeta({
   middleware: () => {
-    const { isAuthenticated, canAccessAdminPanel } = useAuth()
+    const { isAuthenticated, canAccessAdminPanel } = useAuth();
 
     if (!isAuthenticated.value) {
-      return
+      return;
     }
 
-    return navigateTo(canAccessAdminPanel.value ? '/admin' : '/')
-  }
-})
+    return navigateTo(canAccessAdminPanel.value ? '/admin' : '/');
+  },
+});
 </script>

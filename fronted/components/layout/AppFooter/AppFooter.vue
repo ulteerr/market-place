@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import styles from './AppFooter.module.scss'
+import styles from './AppFooter.module.scss';
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
+const config = useRuntimeConfig();
+const apiBase = config.public.apiBase;
 </script>

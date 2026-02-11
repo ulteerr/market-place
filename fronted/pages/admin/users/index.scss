@@ -1,15 +1,50 @@
-
-.users-page { color: var(--text); }
-.admin-muted { color: var(--muted); }
+.users-page {
+  color: var(--text);
+}
+.admin-muted {
+  color: var(--muted);
+}
 .admin-table {
   border-collapse: collapse;
   width: auto;
 }
-.admin-table th, .admin-table td { border-bottom: 1px solid var(--border); padding: 0.7rem 0.5rem; text-align: left; font-size: 0.875rem; white-space: nowrap; }
-.sort-btn { border: none; background: transparent; color: var(--muted); font-weight: 600; cursor: pointer; }
-.user-card { border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 88%, transparent); }
-.access-chip { display: inline-flex; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.75rem; border: 1px solid var(--border); }
-.access-chip.is-admin { color: #0f766e; border-color: color-mix(in srgb, #0f766e 35%, var(--border)); }
-.access-chip.is-basic { color: #6b7280; }
-.access-chip.is-unknown { color: var(--muted); }
-button:disabled { cursor: not-allowed; opacity: .6; }
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 0.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.sort-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+.user-card {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+.access-chip {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+}
+.access-chip.is-admin {
+  color: #0f766e;
+  border-color: color-mix(in srgb, #0f766e 35%, var(--border));
+}
+.access-chip.is-basic {
+  color: #6b7280;
+}
+.access-chip.is-unknown {
+  color: var(--muted);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 export default {
   content: [
@@ -7,7 +7,7 @@ export default {
     './layouts/**/*.vue',
     './pages/**/*.vue',
     './plugins/**/*.{js,ts}',
-    './composables/**/*.{js,ts}'
+    './composables/**/*.{js,ts}',
   ],
   theme: {
     extend: {
@@ -16,9 +16,9 @@ export default {
         slate: '#475569',
         ember: '#ea580c',
         skyline: '#0ea5e9',
-        fog: '#f8fafc'
-      }
-    }
+        fog: '#f8fafc',
+      },
+    },
   },
-  plugins: []
-} satisfies Config
+  plugins: [],
+} satisfies Config;

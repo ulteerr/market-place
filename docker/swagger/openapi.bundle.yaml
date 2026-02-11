@@ -255,12 +255,22 @@ paths:
                 settings:
                   type: object
                   properties:
+                    locale:
+                      type: string
+                      nullable: true
+                      enum:
+                        - ru
+                        - en
+                      example: en
                     theme:
                       type: string
                       enum:
                         - light
                         - dark
                       example: dark
+                    collapse_menu:
+                      type: boolean
+                      example: false
                     admin_crud_preferences:
                       type: object
                       additionalProperties:
@@ -279,7 +289,9 @@ paths:
                         additionalProperties: false
                   additionalProperties: true
                   example:
+                    locale: en
                     theme: dark
+                    collapse_menu: false
                     admin_crud_preferences:
                       users:
                         contentMode: cards

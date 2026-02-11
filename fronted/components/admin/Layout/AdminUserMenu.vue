@@ -14,11 +14,15 @@
     </button>
 
     <div v-if="isOpen" class="admin-user-dropdown">
-      <button type="button" class="admin-user-item" @click="onSelect('profile')">Профиль</button>
-      <button type="button" class="admin-user-item" @click="onSelect('settings')">Настройки</button>
+      <button type="button" class="admin-user-item" @click="onSelect('profile')">
+        {{ t('admin.userMenu.profile') }}
+      </button>
+      <button type="button" class="admin-user-item" @click="onSelect('settings')">
+        {{ t('admin.userMenu.settings') }}
+      </button>
       <div class="admin-user-divider" />
       <button type="button" class="admin-user-item is-danger" @click="onSelect('logout')">
-        Выйти
+        {{ t('admin.userMenu.logout') }}
       </button>
     </div>
   </div>
@@ -26,6 +30,7 @@
 
 <script setup lang="ts">
 type MenuAction = 'profile' | 'settings' | 'logout';
+const { t } = useI18n();
 
 defineProps<{
   initials: string;

@@ -39,9 +39,6 @@ test.describe('Admin roles show page', () => {
     await expect(page.locator('dd', { hasText: /^manager$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^Менеджер$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^Пользовательская$/ })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Edit' })).toHaveAttribute(
-      'href',
-      '/admin/roles/r-2/edit'
-    );
+    await expect(page.locator('a[href="/admin/roles/r-2/edit"]')).toBeVisible();
   });
 });

@@ -47,9 +47,6 @@ test.describe('Admin users show page', () => {
     await expect(page.locator('dd', { hasText: /^ivanov@example\.com$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^\+79990001122$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^admin, manager$/ })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Edit' })).toHaveAttribute(
-      'href',
-      '/admin/users/u-1/edit'
-    );
+    await expect(page.locator('a[href="/admin/users/u-1/edit"]')).toBeVisible();
   });
 });

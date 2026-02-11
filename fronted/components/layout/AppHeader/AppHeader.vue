@@ -16,13 +16,13 @@
 </template>
 
 <script setup lang="ts">
-import styles from './AppHeader.module.scss'
+import styles from './AppHeader.module.scss';
 
-const { isDark, toggleTheme } = useUserSettings()
-const isThemeUiMounted = ref(false)
-const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false))
+const { isDark, toggleTheme } = useUserSettings();
+const isThemeUiMounted = ref(false);
+const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 
 onMounted(() => {
-  isThemeUiMounted.value = true
-})
+  isThemeUiMounted.value = true;
+});
 </script>

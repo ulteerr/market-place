@@ -21,6 +21,7 @@
     "nuxt": "^4.0.3"
   },
   "devDependencies": {
+    "@nuxtjs/i18n": "^10.1.2",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.2.1",

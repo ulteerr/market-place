@@ -1,11 +1,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-02-06',
   devtools: { enabled: true },
+  modules: ['@nuxtjs/i18n'],
   css: ['~/assets/styles/tailwind.css', '~/assets/styles/global.scss'],
   postcss: {
     plugins: {
-      '@tailwindcss/postcss': {}
-    }
+      '@tailwindcss/postcss': {},
+    },
   },
   app: {
     head: {
@@ -13,14 +14,29 @@ export default defineNuxtConfig({
       meta: [
         {
           name: 'description',
-          content: 'Frontend for public and admin pages. Backend is API/Auth only.'
-        }
-      ]
-    }
+          content: 'Frontend for public and admin pages. Backend is API/Auth only.',
+        },
+      ],
+    },
   },
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080'
-    }
-  }
-})
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
+    },
+  },
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'ru',
+    lazy: true,
+    langDir: 'locales',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+    },
+    locales: [
+      { code: 'ru', name: 'Русский', file: 'ru.ts' },
+      { code: 'en', name: 'English', file: 'en.ts' },
+    ],
+  },
+});

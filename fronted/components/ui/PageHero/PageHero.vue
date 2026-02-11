@@ -9,16 +9,16 @@
 </template>
 
 <script setup lang="ts">
-import styles from './PageHero.module.scss'
+import styles from './PageHero.module.scss';
 
 withDefaults(
   defineProps<{
-    eyebrow?: string
-    title: string
-    description: string
+    eyebrow?: string;
+    title: string;
+    description: string;
   }>(),
   {
-    eyebrow: 'Marketplace'
+    eyebrow: 'Marketplace',
   }
-)
+);
 </script>

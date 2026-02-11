@@ -24,7 +24,9 @@
   background-color: var(--form-control-bg);
   min-height: 2.65rem;
   padding: 0.3rem 0.45rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .controlOpen {

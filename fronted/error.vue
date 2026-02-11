@@ -5,7 +5,10 @@
       <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ errorTitle }}</h1>
       <p class="mt-3 text-sm text-slate-600">{{ errorMessage }}</p>
 
-      <NuxtLink to="/" class="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+      <NuxtLink
+        to="/"
+        class="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+      >
         Вернуться на главную
       </NuxtLink>
     </section>
@@ -13,23 +16,23 @@
 </template>
 
 <script setup lang="ts">
-import type { NuxtError } from '#app'
+import type { NuxtError } from '#app';
 
-const props = defineProps<{ error: NuxtError }>()
+const props = defineProps<{ error: NuxtError }>();
 
 const errorTitle = computed(() => {
   if (props.error?.statusCode === 403) {
-    return '403: Доступ запрещен'
+    return '403: Доступ запрещен';
   }
 
-  return `${props.error?.statusCode ?? 500}: Ошибка`
-})
+  return `${props.error?.statusCode ?? 500}: Ошибка`;
+});
 
 const errorMessage = computed(() => {
   if (props.error?.statusCode === 403) {
-    return 'У вас нет доступа к этой странице.'
+    return 'У вас нет доступа к этой странице.';
   }
 
-  return props.error?.message || 'Произошла ошибка при открытии страницы.'
-})
+  return props.error?.message || 'Произошла ошибка при открытии страницы.';
+});
 </script>

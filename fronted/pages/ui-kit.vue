@@ -75,19 +75,19 @@
 </template>
 
 <script setup lang="ts">
-import PageHero from '~/components/ui/PageHero/PageHero.vue'
-import UiInput from '~/components/ui/FormControls/UiInput.vue'
-import UiTextarea from '~/components/ui/FormControls/UiTextarea.vue'
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue'
-import UiDropdown from '~/components/ui/FormControls/UiDropdown.vue'
-import UiSwitch from '~/components/ui/FormControls/UiSwitch.vue'
-import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue'
-import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue'
-import styles from './ui-kit.module.scss'
+import PageHero from '~/components/ui/PageHero/PageHero.vue';
+import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiTextarea from '~/components/ui/FormControls/UiTextarea.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiDropdown from '~/components/ui/FormControls/UiDropdown.vue';
+import UiSwitch from '~/components/ui/FormControls/UiSwitch.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
+import styles from './ui-kit.module.scss';
 
 interface SelectOption {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 const form = reactive({
@@ -95,72 +95,72 @@ const form = reactive({
   description: '',
   category: '',
   tags: [] as string[],
-  status: ''
-})
+  status: '',
+});
 
-const { isDark, setTheme } = useUserSettings()
+const { isDark, setTheme } = useUserSettings();
 
 const categoryOptions = [
   { label: 'Одежда', value: 'fashion' },
   { label: 'Электроника', value: 'electronics' },
-  { label: 'Дом и интерьер', value: 'home' }
-]
+  { label: 'Дом и интерьер', value: 'home' },
+];
 
 const tagOptions = ref<SelectOption[]>([
   { label: 'Новинка', value: 'new' },
   { label: 'Хит', value: 'hit' },
-  { label: 'Скидка', value: 'sale' }
-])
+  { label: 'Скидка', value: 'sale' },
+]);
 
 const statusOptions = [
   { label: 'Черновик', value: 'draft' },
   { label: 'На проверке', value: 'review' },
-  { label: 'Опубликовано', value: 'published' }
-]
+  { label: 'Опубликовано', value: 'published' },
+];
 
 const images = ref([
   {
     id: 1,
     src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
-    caption: 'Обложка'
+    caption: 'Обложка',
   },
   {
     id: 2,
     src: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=800&q=80',
-    caption: 'Деталь'
-  }
-])
+    caption: 'Деталь',
+  },
+]);
 
-const uploadedFiles = ref<File[]>([])
+const uploadedFiles = ref<File[]>([]);
 
 const onFilesAdded = (files: File[]) => {
   files.forEach((file) => {
     images.value.push({
       id: `${file.name}-${file.size}-${Date.now()}`,
       src: URL.createObjectURL(file),
-      caption: file.name
-    })
-  })
-}
+      caption: file.name,
+    });
+  });
+};
 
 const onRemoveImage = (index: number) => {
-  const image = images.value[index]
+  const image = images.value[index];
   if (typeof image?.src === 'string' && image.src.startsWith('blob:')) {
-    URL.revokeObjectURL(image.src)
+    URL.revokeObjectURL(image.src);
   }
 
-  images.value.splice(index, 1)
-}
+  images.value.splice(index, 1);
+};
 
 const onAddImage = () => {
   images.value.push({
     id: Date.now(),
     src: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
-    caption: 'Новое фото'
-  })
-}
+    caption: 'Новое фото',
+  });
+};
 
 const onThemeToggle = (value: boolean) => {
-  setTheme(value ? 'dark' : 'light')
-}
+  setTheme(value ? 'dark' : 'light');
+};
 </script>

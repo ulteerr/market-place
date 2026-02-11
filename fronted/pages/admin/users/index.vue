@@ -2,12 +2,12 @@
   <AdminEntityIndex
     page-class="users-page"
     max-width-class="max-w-7xl"
-    title="Пользователи"
-    subtitle="Поиск, сортировка, limit и серверная пагинация."
+    :title="t('admin.users.index.title')"
+    :subtitle="t('admin.users.index.subtitle')"
     create-to="/admin/users/new"
-    create-label="Новый пользователь"
+    :create-label="t('admin.users.index.createLabel')"
     :search-value="listState.searchInput.value"
-    search-placeholder="Поиск: фамилия, имя, отчество, email, телефон, роль"
+    :search-placeholder="t('admin.users.index.searchPlaceholder')"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
     :loading="loading"
@@ -40,40 +40,44 @@
           <tr>
             <th>
               <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
-                Фамилия {{ listState.sortMark('last_name') }}
+                {{ t('admin.users.index.headers.lastName') }} {{ listState.sortMark('last_name') }}
               </button>
             </th>
             <th>
               <button type="button" class="sort-btn" @click="onToggleSort('first_name')">
-                Имя {{ listState.sortMark('first_name') }}
+                {{ t('admin.users.index.headers.firstName') }}
+                {{ listState.sortMark('first_name') }}
               </button>
             </th>
             <th>
               <button type="button" class="sort-btn" @click="onToggleSort('middle_name')">
-                Отчество {{ listState.sortMark('middle_name') }}
+                {{ t('admin.users.index.headers.middleName') }}
+                {{ listState.sortMark('middle_name') }}
               </button>
             </th>
             <th>
               <button type="button" class="sort-btn" @click="onToggleSort('access')">
-                Доступ {{ listState.sortMark('access') }}
+                {{ t('admin.users.index.headers.access') }} {{ listState.sortMark('access') }}
               </button>
             </th>
-            <th class="text-right">Действия</th>
+            <th class="text-right">{{ t('admin.users.index.headers.actions') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="5" class="admin-muted py-5 text-center text-sm">Загрузка...</td>
+            <td colspan="5" class="admin-muted py-5 text-center text-sm">
+              {{ t('common.loading') }}
+            </td>
           </tr>
           <tr v-else-if="!users.length">
             <td colspan="5" class="admin-muted py-5 text-center text-sm">
-              Пользователи не найдены.
+              {{ t('admin.users.index.empty') }}
             </td>
           </tr>
           <tr v-for="item in users" :key="item.id">
-            <td>{{ item.last_name || '—' }}</td>
-            <td>{{ item.first_name || '—' }}</td>
-            <td>{{ item.middle_name || '—' }}</td>
+            <td>{{ item.last_name || t('common.dash') }}</td>
+            <td>{{ item.first_name || t('common.dash') }}</td>
+            <td>{{ item.middle_name || t('common.dash') }}</td>
             <td>
               <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
             </td>
@@ -97,9 +101,23 @@
           <h4 class="text-sm font-semibold">
             {{ getAdminUserFullName(item) }}
           </h4>
-          <p class="admin-muted text-xs">Фамилия: {{ item.last_name || '—' }}</p>
-          <p class="admin-muted mt-1 text-xs">Имя: {{ item.first_name || '—' }}</p>
-          <p class="admin-muted text-xs">Отчество: {{ item.middle_name || '—' }}</p>
+          <p class="admin-muted text-xs">
+            {{
+              t('admin.users.index.card.lastName', { value: item.last_name || t('common.dash') })
+            }}
+          </p>
+          <p class="admin-muted mt-1 text-xs">
+            {{
+              t('admin.users.index.card.firstName', { value: item.first_name || t('common.dash') })
+            }}
+          </p>
+          <p class="admin-muted text-xs">
+            {{
+              t('admin.users.index.card.middleName', {
+                value: item.middle_name || t('common.dash'),
+              })
+            }}
+          </p>
           <div class="mt-2">
             <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
           </div>
@@ -121,6 +139,7 @@ import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import { getAdminUserFullName, resolveAdminUserPanelAccess } from '~/composables/useAdminUsers';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
@@ -149,19 +168,19 @@ const {
   useViewPreference: true,
   defaultSortBy: 'last_name',
   defaultPerPage: 10,
-  listErrorMessage: 'Не удалось загрузить пользователей.',
-  deleteErrorMessage: 'Не удалось удалить пользователя.',
+  listErrorMessage: t('admin.errors.users.loadList'),
+  deleteErrorMessage: t('admin.errors.users.delete'),
   list: usersApi.list,
   remove: usersApi.remove,
   getItemId: (user) => user.id,
 });
 
-const cardSortFields = [
-  { value: 'last_name', label: 'Фамилия' },
-  { value: 'first_name', label: 'Имя' },
-  { value: 'middle_name', label: 'Отчество' },
-  { value: 'access', label: 'Доступ' },
-];
+const cardSortFields = computed(() => [
+  { value: 'last_name', label: t('admin.users.index.sort.lastName') },
+  { value: 'first_name', label: t('admin.users.index.sort.firstName') },
+  { value: 'middle_name', label: t('admin.users.index.sort.middleName') },
+  { value: 'access', label: t('admin.users.index.sort.access') },
+]);
 
 const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
   contentMode.value = mode;
@@ -175,10 +194,10 @@ const accessLabel = (item: AdminUser): string => {
   const access = resolveAdminUserPanelAccess(item);
 
   if (access === null) {
-    return 'Неизвестно';
+    return t('admin.users.index.access.unknown');
   }
 
-  return access ? 'Админ-панель' : 'Без админ-доступа';
+  return access ? t('admin.users.index.access.admin') : t('admin.users.index.access.basic');
 };
 
 const accessClass = (item: AdminUser): string => {
@@ -193,7 +212,7 @@ const accessClass = (item: AdminUser): string => {
 
 const removeUser = async (user: AdminUser) => {
   await removeItem(user, {
-    confirmMessage: `Удалить пользователя ${getAdminUserFullName(user)}?`,
+    confirmMessage: t('admin.users.confirmDelete', { name: getAdminUserFullName(user) }),
   });
 };
 </script>

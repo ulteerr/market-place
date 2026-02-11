@@ -2,12 +2,12 @@
   <AdminEntityIndex
     page-class="roles-page"
     max-width-class="max-w-6xl"
-    title="Роли"
-    subtitle="Поиск, сортировка, limit и серверная пагинация."
+    :title="t('admin.roles.index.title')"
+    :subtitle="t('admin.roles.index.subtitle')"
     create-to="/admin/roles/new"
-    create-label="Новая роль"
+    :create-label="t('admin.roles.index.createLabel')"
     :search-value="listState.searchInput.value"
-    search-placeholder="Поиск: code или label"
+    :search-placeholder="t('admin.roles.index.searchPlaceholder')"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
     :loading="loading"
@@ -39,57 +39,44 @@
         <thead>
           <tr>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('code')"
-              >
-                Code {{ listState.sortMark("code") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('code')">
+                {{ t('admin.roles.index.headers.code') }} {{ listState.sortMark('code') }}
               </button>
             </th>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('label')"
-              >
-                Label {{ listState.sortMark("label") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('label')">
+                {{ t('admin.roles.index.headers.label') }} {{ listState.sortMark('label') }}
               </button>
             </th>
             <th>
-              <button
-                type="button"
-                class="sort-btn"
-                @click="onToggleSort('is_system')"
-              >
-                Тип {{ listState.sortMark("is_system") }}
+              <button type="button" class="sort-btn" @click="onToggleSort('is_system')">
+                {{ t('admin.roles.index.headers.type') }} {{ listState.sortMark('is_system') }}
               </button>
             </th>
-            <th class="text-right">Действия</th>
+            <th class="text-right">{{ t('admin.roles.index.headers.actions') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
             <td colspan="4" class="admin-muted py-5 text-center text-sm">
-              Загрузка...
+              {{ t('common.loading') }}
             </td>
           </tr>
           <tr v-else-if="!roles.length">
             <td colspan="4" class="admin-muted py-5 text-center text-sm">
-              Роли не найдены.
+              {{ t('admin.roles.index.empty') }}
             </td>
           </tr>
           <tr v-for="role in roles" :key="role.id">
             <td class="font-mono text-xs">{{ role.code }}</td>
-            <td>{{ role.label || "—" }}</td>
+            <td>{{ role.label || '—' }}</td>
             <td>
-              <span
-                :class="[
-                  'role-chip',
-                  role.is_system ? 'is-system' : 'is-custom',
-                ]"
-              >
-                {{ role.is_system ? "Системная" : "Пользовательская" }}
+              <span :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']">
+                {{
+                  role.is_system
+                    ? t('admin.roles.index.type.system')
+                    : t('admin.roles.index.type.custom')
+                }}
               </span>
             </td>
             <td>
@@ -109,20 +96,18 @@
 
     <template #cards>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <article
-          v-for="role in roles"
-          :key="role.id"
-          class="role-card rounded-xl p-4"
-        >
+        <article v-for="role in roles" :key="role.id" class="role-card rounded-xl p-4">
           <h4 class="font-mono text-xs">{{ role.code }}</h4>
           <p class="admin-muted mt-1 text-xs">
-            {{ role.label || "Без label" }}
+            {{ role.label || t('admin.roles.index.cardLabelFallback') }}
           </p>
           <div class="mt-2">
-            <span
-              :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']"
-            >
-              {{ role.is_system ? "Системная" : "Пользовательская" }}
+            <span :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']">
+              {{
+                role.is_system
+                  ? t('admin.roles.index.type.system')
+                  : t('admin.roles.index.type.custom')
+              }}
             </span>
           </div>
           <div class="mt-3">
@@ -140,12 +125,13 @@
 </template>
 
 <script setup lang="ts">
-import AdminCrudActions from "~/components/admin/Listing/AdminCrudActions.vue";
-import AdminEntityIndex from "~/components/admin/Listing/AdminEntityIndex.vue";
-import type { AdminRole } from "~/composables/useAdminRoles";
+import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
+import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import type { AdminRole } from '~/composables/useAdminRoles';
+const { t } = useI18n();
 
 definePageMeta({
-  layout: "admin",
+  layout: 'admin',
 });
 
 const rolesApi = useAdminRoles();
@@ -167,23 +153,23 @@ const {
   onUpdatePerPage,
   removeItem,
 } = useAdminCrudIndex<AdminRole>({
-  settingsKey: "roles",
-  defaultSortBy: "code",
+  settingsKey: 'roles',
+  defaultSortBy: 'code',
   defaultPerPage: 10,
-  listErrorMessage: "Не удалось загрузить роли.",
-  deleteErrorMessage: "Не удалось удалить роль.",
+  listErrorMessage: t('admin.roles.errors.loadList'),
+  deleteErrorMessage: t('admin.roles.errors.delete'),
   list: rolesApi.list,
   remove: rolesApi.remove,
   getItemId: (role) => role.id,
 });
 
-const cardSortFields = [
-  { value: "code", label: "Code" },
-  { value: "label", label: "Label" },
-  { value: "is_system", label: "Тип" },
-];
+const cardSortFields = computed(() => [
+  { value: 'code', label: t('admin.roles.index.sort.code') },
+  { value: 'label', label: t('admin.roles.index.sort.label') },
+  { value: 'is_system', label: t('admin.roles.index.sort.type') },
+]);
 
-const onModeChange = (mode: "table" | "table-cards" | "cards") => {
+const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
   contentMode.value = mode;
 };
 
@@ -194,7 +180,7 @@ const onToggleDesktopMode = () => {
 const removeRole = async (role: AdminRole) => {
   await removeItem(role, {
     canDelete: !role.is_system,
-    confirmMessage: `Удалить роль ${role.code}?`,
+    confirmMessage: t('admin.roles.confirmDelete', { code: role.code }),
   });
 };
 </script>

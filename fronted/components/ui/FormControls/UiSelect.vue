@@ -5,7 +5,9 @@
       <span v-if="required" :class="styles.required">*</span>
     </label>
 
-    <div :class="[styles.control, isOpen ? styles.controlOpen : '', error ? styles.controlError : '']">
+    <div
+      :class="[styles.control, isOpen ? styles.controlOpen : '', error ? styles.controlError : '']"
+    >
       <div v-if="multiple && selectedOptions.length" :class="styles.tags">
         <button
           v-for="option in selectedOptions"
@@ -31,6 +33,7 @@
         autocomplete="off"
         @input="onInput"
         @focus="open"
+        @click="open"
         @keydown.down.prevent="open"
         @keydown.esc="close"
         @keydown.enter.prevent="onEnter"
@@ -71,31 +74,31 @@
 </template>
 
 <script setup lang="ts">
-import styles from './UiSelect.module.scss'
+import styles from './UiSelect.module.scss';
 
-type SelectValue = string | number
+type SelectValue = string | number;
 
 interface SelectOption {
-  label: string
-  value: SelectValue
-  disabled?: boolean
+  label: string;
+  value: SelectValue;
+  disabled?: boolean;
 }
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: SelectValue | SelectValue[] | null
-    id?: string
-    name?: string
-    label?: string
-    placeholder?: string
-    hint?: string
-    error?: string
-    options: SelectOption[]
-    required?: boolean
-    disabled?: boolean
-    searchable?: boolean
-    multiple?: boolean
-    allowCreate?: boolean
+    modelValue?: SelectValue | SelectValue[] | null;
+    id?: string;
+    name?: string;
+    label?: string;
+    placeholder?: string;
+    hint?: string;
+    error?: string;
+    options: SelectOption[];
+    required?: boolean;
+    disabled?: boolean;
+    searchable?: boolean;
+    multiple?: boolean;
+    allowCreate?: boolean;
   }>(),
   {
     modelValue: null,
@@ -109,204 +112,204 @@ const props = withDefaults(
     disabled: false,
     searchable: true,
     multiple: false,
-    allowCreate: false
+    allowCreate: false,
   }
-)
+);
 
 const emit = defineEmits<{
-  (event: 'update:modelValue', value: SelectValue | SelectValue[]): void
-  (event: 'create', value: SelectOption): void
-}>()
+  (event: 'update:modelValue', value: SelectValue | SelectValue[]): void;
+  (event: 'create', value: SelectOption): void;
+}>();
 
-const uid = useId()
-const resolvedId = computed(() => props.id || `ui-select-${uid}`)
-const rootRef = ref<HTMLElement | null>(null)
-const isOpen = ref(false)
-const query = ref('')
-const createdOptions = ref<SelectOption[]>([])
+const uid = useId();
+const resolvedId = computed(() => props.id || `ui-select-${uid}`);
+const rootRef = ref<HTMLElement | null>(null);
+const isOpen = ref(false);
+const query = ref('');
+const createdOptions = ref<SelectOption[]>([]);
 
-const allOptions = computed(() => [...props.options, ...createdOptions.value])
+const allOptions = computed(() => [...props.options, ...createdOptions.value]);
 
 const selectedValues = computed<SelectValue[]>(() => {
   if (props.multiple) {
-    return Array.isArray(props.modelValue) ? props.modelValue : []
+    return Array.isArray(props.modelValue) ? props.modelValue : [];
   }
 
   if (props.modelValue === null || Array.isArray(props.modelValue)) {
-    return []
+    return [];
   }
 
-  return [props.modelValue]
-})
+  return [props.modelValue];
+});
 
 const selectedOptions = computed(() => {
-  return allOptions.value.filter((option) => selectedValues.value.includes(option.value))
-})
+  return allOptions.value.filter((option) => selectedValues.value.includes(option.value));
+});
 
-const normalizedQuery = computed(() => query.value.trim())
+const normalizedQuery = computed(() => query.value.trim());
 
 const inputPlaceholder = computed(() => {
   if (props.multiple) {
-    return selectedValues.value.length ? 'Добавить еще...' : props.placeholder
+    return selectedValues.value.length ? 'Добавить еще...' : props.placeholder;
   }
 
   if (!isOpen.value && selectedOptions.value[0]) {
-    return selectedOptions.value[0].label
+    return selectedOptions.value[0].label;
   }
 
-  return props.placeholder
-})
+  return props.placeholder;
+});
 
 const inputValue = computed(() => {
   if (!props.searchable && !props.multiple) {
-    return selectedOptions.value[0]?.label ?? ''
+    return selectedOptions.value[0]?.label ?? '';
   }
 
-  return query.value
-})
+  return query.value;
+});
 
 const filteredOptions = computed(() => {
-  const currentQuery = normalizedQuery.value.toLowerCase()
+  const currentQuery = normalizedQuery.value.toLowerCase();
 
   return allOptions.value.filter((option) => {
     if (props.multiple && selectedValues.value.includes(option.value)) {
-      return false
+      return false;
     }
 
     if (!currentQuery || !props.searchable) {
-      return true
+      return true;
     }
 
-    return option.label.toLowerCase().includes(currentQuery)
-  })
-})
+    return option.label.toLowerCase().includes(currentQuery);
+  });
+});
 
 const canCreateTag = computed(() => {
   if (!props.allowCreate || !normalizedQuery.value) {
-    return false
+    return false;
   }
 
-  const queryLower = normalizedQuery.value.toLowerCase()
-  return !allOptions.value.some((option) => option.label.toLowerCase() === queryLower)
-})
+  const queryLower = normalizedQuery.value.toLowerCase();
+  return !allOptions.value.some((option) => option.label.toLowerCase() === queryLower);
+});
 
-const isSelected = (value: SelectValue) => selectedValues.value.includes(value)
+const isSelected = (value: SelectValue) => selectedValues.value.includes(value);
 
 const onInput = (event: Event) => {
   if (!props.searchable) {
-    return
+    return;
   }
 
-  const target = event.target as HTMLInputElement | null
-  query.value = target?.value ?? ''
-}
+  const target = event.target as HTMLInputElement | null;
+  query.value = target?.value ?? '';
+};
 
 const open = () => {
   if (props.disabled) {
-    return
+    return;
   }
 
-  isOpen.value = true
-}
+  isOpen.value = true;
+};
 
 const close = () => {
-  isOpen.value = false
+  isOpen.value = false;
 
   if (!props.multiple && selectedOptions.value[0] && !query.value.trim()) {
-    query.value = ''
+    query.value = '';
   }
-}
+};
 
 const toggle = () => {
   if (isOpen.value) {
-    close()
-    return
+    close();
+    return;
   }
 
-  open()
-}
+  open();
+};
 
 const emitSingleValue = (value: SelectValue) => {
-  emit('update:modelValue', value)
-}
+  emit('update:modelValue', value);
+};
 
 const emitMultipleValue = (values: SelectValue[]) => {
-  emit('update:modelValue', values)
-}
+  emit('update:modelValue', values);
+};
 
 const selectOption = (value: SelectValue) => {
   if (props.multiple) {
     if (!selectedValues.value.includes(value)) {
-      emitMultipleValue([...selectedValues.value, value])
+      emitMultipleValue([...selectedValues.value, value]);
     }
 
-    query.value = ''
-    return
+    query.value = '';
+    return;
   }
 
-  emitSingleValue(value)
-  query.value = ''
-  close()
-}
+  emitSingleValue(value);
+  query.value = '';
+  close();
+};
 
 const removeTag = (value: SelectValue) => {
   if (!props.multiple) {
-    return
+    return;
   }
 
-  emitMultipleValue(selectedValues.value.filter((item) => item !== value))
-}
+  emitMultipleValue(selectedValues.value.filter((item) => item !== value));
+};
 
 const createTag = () => {
-  const label = normalizedQuery.value
+  const label = normalizedQuery.value;
   if (!label) {
-    return
+    return;
   }
 
   const newOption: SelectOption = {
     label,
-    value: `tag-${label.toLowerCase().replace(/\s+/g, '-')}`
-  }
+    value: `tag-${label.toLowerCase().replace(/\s+/g, '-')}`,
+  };
 
-  createdOptions.value.push(newOption)
-  emit('create', newOption)
-  selectOption(newOption.value)
-}
+  createdOptions.value.push(newOption);
+  emit('create', newOption);
+  selectOption(newOption.value);
+};
 
 const onEnter = () => {
   if (canCreateTag.value) {
-    createTag()
-    return
+    createTag();
+    return;
   }
 
   if (filteredOptions.value[0]) {
-    selectOption(filteredOptions.value[0].value)
+    selectOption(filteredOptions.value[0].value);
   }
-}
+};
 
 const onClickOutside = (event: MouseEvent) => {
-  const target = event.target as Node | null
+  const target = event.target as Node | null;
   if (!target || !rootRef.value || rootRef.value.contains(target)) {
-    return
+    return;
   }
 
-  close()
-}
+  close();
+};
 
 watch(
   () => props.modelValue,
   () => {
     if (!props.multiple && !isOpen.value) {
-      query.value = ''
+      query.value = '';
     }
   }
-)
+);
 
 onMounted(() => {
-  document.addEventListener('mousedown', onClickOutside)
-})
+  document.addEventListener('mousedown', onClickOutside);
+});
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', onClickOutside)
-})
+  document.removeEventListener('mousedown', onClickOutside);
+});
 </script>
