@@ -1,16 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-
-const authOrigin = 'http://127.0.0.1:3000';
-
-const adminUser = {
-  id: '1',
-  email: 'admin@example.com',
-  first_name: 'Админ',
-  last_name: 'Системный',
-  middle_name: 'Тестовый',
-  can_access_admin_panel: true,
-};
+import { setupAdminAuth } from '../../helpers/admin-auth';
 
 const users = [
   {
@@ -31,31 +21,8 @@ const users = [
   },
 ];
 
-const setupAdminAuth = async (page: Page) => {
-  await page.context().addCookies([
-    {
-      name: 'auth_token',
-      value: 'test-admin-token',
-      url: authOrigin,
-    },
-    {
-      name: 'auth_user',
-      value: encodeURIComponent(JSON.stringify(adminUser)),
-      url: authOrigin,
-    },
-  ]);
-
-  await page.route('**/api/me', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        status: 'ok',
-        user: adminUser,
-      }),
-    });
-  });
-
+const setupUsersPage = async (page: Page) => {
+  await setupAdminAuth(page);
   await page.route('**/api/admin/users**', async (route) => {
     const url = new URL(route.request().url());
     const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
@@ -109,7 +76,7 @@ test.describe('Admin users page', () => {
   });
 
   test('shows users table for authenticated admin', async ({ page }) => {
-    await setupAdminAuth(page);
+    await setupUsersPage(page);
     await page.goto('/admin/users');
 
     await expect(page.getByRole('heading', { level: 2, name: 'Пользователи' })).toBeVisible();
@@ -119,7 +86,7 @@ test.describe('Admin users page', () => {
   });
 
   test('sorts users by last name', async ({ page }) => {
-    await setupAdminAuth(page);
+    await setupUsersPage(page);
     await page.goto('/admin/users');
 
     const firstLastNameCell = page.locator('tbody tr').nth(0).locator('td').nth(0);

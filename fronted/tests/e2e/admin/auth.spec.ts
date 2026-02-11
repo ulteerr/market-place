@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { setAdminAuthCookies } from '../helpers/admin-auth';
 
 test.describe('Admin authorization', () => {
   test('redirects unauthenticated user from /admin to /login', async ({ page }) => {
@@ -11,26 +12,11 @@ test.describe('Admin authorization', () => {
   });
 
   test('allows authenticated admin to open /admin', async ({ page }) => {
-    const authUser = encodeURIComponent(
-      JSON.stringify({
-        id: '1',
-        email: 'admin@example.com',
-        can_access_admin_panel: true,
-      })
-    );
-
-    await page.context().addCookies([
-      {
-        name: 'auth_token',
-        value: 'test-admin-token',
-        url: 'http://127.0.0.1:3000',
-      },
-      {
-        name: 'auth_user',
-        value: authUser,
-        url: 'http://127.0.0.1:3000',
-      },
-    ]);
+    await setAdminAuthCookies(page, {
+      id: '1',
+      email: 'admin@example.com',
+      can_access_admin_panel: true,
+    });
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/admin$/);

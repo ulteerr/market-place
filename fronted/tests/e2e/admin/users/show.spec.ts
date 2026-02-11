@@ -1,16 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-
-const authOrigin = 'http://127.0.0.1:3000';
-
-const adminUser = {
-  id: '1',
-  email: 'admin@example.com',
-  first_name: 'Админ',
-  last_name: 'Системный',
-  middle_name: 'Тестовый',
-  can_access_admin_panel: true,
-};
+import { setupAdminAuth } from '../../helpers/admin-auth';
 
 const shownUser = {
   id: 'u-1',
@@ -20,32 +10,6 @@ const shownUser = {
   middle_name: 'Иванович',
   phone: '+79990001122',
   roles: ['admin', 'manager'],
-};
-
-const setupAdminAuth = async (page: Page) => {
-  await page.context().addCookies([
-    {
-      name: 'auth_token',
-      value: 'test-admin-token',
-      url: authOrigin,
-    },
-    {
-      name: 'auth_user',
-      value: encodeURIComponent(JSON.stringify(adminUser)),
-      url: authOrigin,
-    },
-  ]);
-
-  await page.route('**/api/me', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        status: 'ok',
-        user: adminUser,
-      }),
-    });
-  });
 };
 
 test.describe('Admin users show page', () => {

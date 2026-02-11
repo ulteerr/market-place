@@ -1,16 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-
-const authOrigin = 'http://127.0.0.1:3000';
-
-const adminUser = {
-  id: '1',
-  email: 'admin@example.com',
-  first_name: 'Админ',
-  last_name: 'Системный',
-  middle_name: 'Тестовый',
-  can_access_admin_panel: true,
-};
+import { setupAdminAuth } from '../../helpers/admin-auth';
+import { readJsonBody } from '../../helpers/http';
 
 const existingUser = {
   id: 'u-1',
@@ -37,31 +28,8 @@ const rolesResponse = {
   },
 };
 
-const setupAdminAuth = async (page: Page) => {
-  await page.context().addCookies([
-    {
-      name: 'auth_token',
-      value: 'test-admin-token',
-      url: authOrigin,
-    },
-    {
-      name: 'auth_user',
-      value: encodeURIComponent(JSON.stringify(adminUser)),
-      url: authOrigin,
-    },
-  ]);
-
-  await page.route('**/api/me', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        status: 'ok',
-        user: adminUser,
-      }),
-    });
-  });
-
+const setupUsersForm = async (page: Page) => {
+  await setupAdminAuth(page);
   await page.route('**/api/admin/roles**', async (route) => {
     await route.fulfill({
       status: 200,
@@ -71,13 +39,9 @@ const setupAdminAuth = async (page: Page) => {
   });
 };
 
-const readJsonBody = (route: Route): Record<string, unknown> => {
-  return (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
-};
-
 test.describe('Admin users form pages', () => {
   test('shows create form on /admin/users/new', async ({ page }) => {
-    await setupAdminAuth(page);
+    await setupUsersForm(page);
 
     await page.goto('/admin/users/new');
     await expect(page.getByRole('heading', { level: 2, name: 'Новый пользователь' })).toBeVisible();
@@ -94,7 +58,7 @@ test.describe('Admin users form pages', () => {
   });
 
   test('updates user on /admin/users/[id]/edit', async ({ page }) => {
-    await setupAdminAuth(page);
+    await setupUsersForm(page);
 
     let capturedUpdatePayload: Record<string, unknown> | null = null;
 

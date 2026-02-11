@@ -1,47 +1,5 @@
-import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-
-const authOrigin = 'http://127.0.0.1:3000';
-
-const adminUser = {
-  id: '1',
-  email: 'admin@example.com',
-  first_name: 'Админ',
-  last_name: 'Системный',
-  middle_name: 'Тестовый',
-  can_access_admin_panel: true,
-  settings: {
-    theme: 'light',
-    collapse_menu: false,
-    admin_crud_preferences: {},
-  },
-};
-
-const setupAdminAuth = async (page: Page) => {
-  await page.context().addCookies([
-    {
-      name: 'auth_token',
-      value: 'test-admin-token',
-      url: authOrigin,
-    },
-    {
-      name: 'auth_user',
-      value: encodeURIComponent(JSON.stringify(adminUser)),
-      url: authOrigin,
-    },
-  ]);
-
-  await page.route('**/api/me', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        status: 'ok',
-        user: adminUser,
-      }),
-    });
-  });
-};
+import { defaultAdminUser, setupAdminAuth } from '../helpers/admin-auth';
 
 test.describe('Admin settings page', () => {
   test('redirects unauthenticated user from /admin/settings to /login', async ({ page }) => {
@@ -54,7 +12,14 @@ test.describe('Admin settings page', () => {
   });
 
   test('shows settings switches for authenticated admin', async ({ page }) => {
-    await setupAdminAuth(page);
+    await setupAdminAuth(page, {
+      ...defaultAdminUser,
+      settings: {
+        theme: 'light',
+        collapse_menu: false,
+        admin_crud_preferences: {},
+      },
+    });
 
     await page.goto('/admin/settings');
 
