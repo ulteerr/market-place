@@ -44,6 +44,26 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
+.admin-topbar-row {
+  min-width: 0;
+}
+
+.admin-topbar-left {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.admin-topbar-heading {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-topbar-right {
+  flex: 0 0 auto;
+}
+
 .admin-nav-link {
   width: 100%;
   justify-content: flex-start;
@@ -291,4 +311,38 @@
 
 .admin-locale-select :deep(.admin-locale-ui-select > div > button) {
   padding: 0.15rem;
+}
+
+@media (max-width: 340px) {
+  .admin-topbar-row {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .admin-topbar-left {
+    gap: 0.45rem;
+  }
+
+  .admin-topbar-right {
+    gap: 0.35rem;
+  }
+
+  .admin-locale-select {
+    min-width: 3.5rem;
+    width: 3.5rem;
+  }
+
+  .admin-locale-select :deep(.admin-locale-ui-select > div) {
+    min-height: 2rem;
+    padding: 0.15rem 0.22rem;
+  }
+
+  .admin-locale-select :deep(.admin-locale-ui-select > div > button) {
+    padding: 0.1rem;
+  }
+
+  .theme-switcher-btn {
+    min-width: 2rem;
+    padding: 0.45rem;
+  }
 }

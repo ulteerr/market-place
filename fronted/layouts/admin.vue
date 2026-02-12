@@ -203,8 +203,8 @@
 
       <div class="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-0">
         <header class="admin-topbar sticky top-0 z-20">
-          <div class="flex h-16 items-center justify-between px-4 lg:px-8">
-            <div class="flex items-center gap-3">
+          <div class="admin-topbar-row flex h-16 items-center justify-between px-4 lg:px-8">
+            <div class="admin-topbar-left flex items-center gap-3">
               <button
                 type="button"
                 class="admin-icon-button rounded-lg p-2 lg:hidden"
@@ -213,9 +213,11 @@
               >
                 ☰
               </button>
-              <h1 class="text-sm font-semibold lg:text-base">{{ t('admin.layout.heading') }}</h1>
+              <h1 class="admin-topbar-heading text-sm font-semibold lg:text-base">
+                {{ t('admin.layout.heading') }}
+              </h1>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="admin-topbar-right flex items-center gap-2">
               <div class="admin-locale-select">
                 <UiSelect
                   class="admin-locale-ui-select"

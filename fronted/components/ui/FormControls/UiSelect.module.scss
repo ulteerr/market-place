@@ -18,6 +18,7 @@
 .control {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.4rem;
   border: 1px solid var(--form-control-border);
   border-radius: 0.75rem;
@@ -42,6 +43,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .tag {
@@ -56,6 +59,11 @@
   font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tagClose {
@@ -65,7 +73,7 @@
 
 .input {
   flex: 1;
-  min-width: 7rem;
+  min-width: 0;
   border: 0;
   background: transparent;
   font-size: 0.92rem;
@@ -91,6 +99,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .arrow {

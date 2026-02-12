@@ -1,7 +1,6 @@
-import type { Page, Route } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { setupAdminAuth } from '../../helpers/admin-auth';
-import { readJsonBody } from '../../helpers/http';
+import { setupRoleEditApi } from '../../helpers/crud/roles';
 
 const existingRole = {
   id: 'r-2',
@@ -26,38 +25,8 @@ test.describe('Admin roles form pages', () => {
 
     let capturedUpdatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/roles/r-2', async (route) => {
-      const method = route.request().method();
-
-      if (method === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            status: 'ok',
-            role: existingRole,
-          }),
-        });
-        return;
-      }
-
-      if (method === 'PATCH') {
-        capturedUpdatePayload = readJsonBody(route);
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            status: 'ok',
-            data: {
-              ...existingRole,
-              ...capturedUpdatePayload,
-            },
-          }),
-        });
-        return;
-      }
-
-      await route.fallback();
+    await setupRoleEditApi(page, existingRole, (payload) => {
+      capturedUpdatePayload = payload;
     });
 
     await page.goto('/admin/roles/r-2/edit');

@@ -1,6 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { setupAdminAuth } from '../../helpers/admin-auth';
+import { setupRolesCollectionApi } from '../../helpers/crud/roles';
 import { readJsonBody } from '../../helpers/http';
 
 const existingUser = {
@@ -14,29 +15,9 @@ const existingUser = {
   can_access_admin_panel: true,
 };
 
-const rolesResponse = {
-  status: 'ok',
-  data: {
-    data: [
-      { id: 'r-1', code: 'admin', label: 'Администратор', is_system: true },
-      { id: 'r-2', code: 'participant', label: 'Участник', is_system: true },
-    ],
-    current_page: 1,
-    last_page: 1,
-    per_page: 100,
-    total: 2,
-  },
-};
-
 const setupUsersForm = async (page: Page) => {
   await setupAdminAuth(page);
-  await page.route('**/api/admin/roles**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(rolesResponse),
-    });
-  });
+  await setupRolesCollectionApi(page);
 };
 
 test.describe('Admin users form pages', () => {

@@ -1,6 +1,6 @@
-import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { setupAdminAuth } from '../../helpers/admin-auth';
+import { setupRoleShowApi } from '../../helpers/crud/roles';
 
 const shownRole = {
   id: 'r-2',
@@ -21,17 +21,7 @@ test.describe('Admin roles show page', () => {
 
   test('shows role data for authenticated admin', async ({ page }) => {
     await setupAdminAuth(page);
-
-    await page.route('**/api/admin/roles/r-2', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          status: 'ok',
-          role: shownRole,
-        }),
-      });
-    });
+    await setupRoleShowApi(page, shownRole);
 
     await page.goto('/admin/roles/r-2');
 

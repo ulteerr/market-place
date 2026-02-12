@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { defaultAdminUser, setupAdminAuth } from '../helpers/admin-auth';
+import { E2E_VIEWPORTS } from '../helpers/viewports';
 
 test.describe('Admin navigation mobile', () => {
-  test.use({ viewport: { width: 390, height: 844 } });
+  test.use({ viewport: E2E_VIEWPORTS.mobile390 });
 
   test('does not use collapsed sidebar mode on mobile', async ({ page }) => {
     await setupAdminAuth(page, {

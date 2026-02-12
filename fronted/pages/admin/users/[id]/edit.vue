@@ -74,17 +74,17 @@
 
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row">
           <button
             type="submit"
-            class="admin-button rounded-lg px-4 py-2 text-sm"
+            class="admin-button w-full rounded-lg px-4 py-2 text-sm sm:w-auto"
             :disabled="saving"
           >
             {{ saving ? t('admin.users.edit.saving') : t('common.save') }}
           </button>
           <NuxtLink
             :to="`/admin/users/${route.params.id}`"
-            class="admin-button-secondary rounded-lg px-4 py-2 text-sm"
+            class="admin-button-secondary w-full rounded-lg px-4 py-2 text-center text-sm sm:w-auto"
             >{{ t('common.cancel') }}</NuxtLink
           >
         </div>
