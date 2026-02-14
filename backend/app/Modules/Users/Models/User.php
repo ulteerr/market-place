@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
+use App\Shared\Traits\HasChangeLog;
 use Modules\Children\Models\Child;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,7 +18,7 @@ use Modules\Files\Traits\HasFiles;
 
 final class User extends Authenticatable
 {
-    use Notifiable, HasUuid, HasApiTokens, HasFactory, HasFiles;
+    use Notifiable, HasUuid, HasApiTokens, HasFactory, HasFiles, HasChangeLog;
 
     protected $keyType = "string";
     public $incrementing = false;
@@ -83,5 +84,10 @@ final class User extends Authenticatable
     public function canAccessAdminPanel(): bool
     {
         return $this->roles->where("code", "!=", "participant")->isNotEmpty();
+    }
+
+    public function changeLogExcludedAttributes(): array
+    {
+        return ["password", "remember_token"];
     }
 }

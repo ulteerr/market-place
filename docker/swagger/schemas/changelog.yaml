@@ -1,0 +1,153 @@
+components:
+  schemas:
+    ChangeLogEntry:
+      type: object
+      required:
+        - id
+        - auditable_type
+        - auditable_id
+        - event
+        - version
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        auditable_type:
+          type: string
+          example: Modules\\Users\\Models\\User
+        auditable_id:
+          type: string
+          format: uuid
+        event:
+          type: string
+          enum: [create, update, delete, restore]
+        version:
+          type: integer
+          minimum: 1
+          example: 3
+        before:
+          type: object
+          nullable: true
+          additionalProperties: true
+        after:
+          type: object
+          nullable: true
+          additionalProperties: true
+        changed_fields:
+          type: array
+          nullable: true
+          items:
+            type: string
+          example: [first_name, last_name]
+        actor_type:
+          type: string
+          nullable: true
+          example: Modules\\Users\\Models\\User
+        actor_id:
+          type: string
+          nullable: true
+          format: uuid
+        batch_id:
+          type: string
+          nullable: true
+          format: uuid
+        rolled_back_from_id:
+          type: string
+          nullable: true
+          format: uuid
+        meta:
+          type: object
+          nullable: true
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+
+    ChangeLogPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, per_page]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChangeLogEntry"
+            first_page_url:
+              type: string
+              nullable: true
+            from:
+              type: integer
+              nullable: true
+            last_page:
+              type: integer
+              example: 1
+            last_page_url:
+              type: string
+              nullable: true
+            links:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            next_page_url:
+              type: string
+              nullable: true
+            path:
+              type: string
+            per_page:
+              type: integer
+              example: 30
+            prev_page_url:
+              type: string
+              nullable: true
+            to:
+              type: integer
+              nullable: true
+            total:
+              type: integer
+              example: 8
+
+    ChangeLogSingleResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: "#/components/schemas/ChangeLogEntry"
+
+    ChangeLogRollbackResponse:
+      type: object
+      required: [status, message, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Rollback completed.
+        data:
+          type: object
+          required: [model_type, model_id, rolled_back_from_id]
+          properties:
+            model_type:
+              type: string
+              example: Modules\\Users\\Models\\Role
+            model_id:
+              type: string
+              format: uuid
+            rolled_back_from_id:
+              type: string
+              format: uuid
+

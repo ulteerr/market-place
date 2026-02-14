@@ -51,3 +51,12 @@ paths:
 
   /api/admin/roles/{id}:
     $ref: ./modules/users.yaml#/admin_roles_by_id
+
+  /api/admin/changelog:
+    $ref: ./modules/changelog.yaml#/admin_changelog
+
+  /api/admin/changelog/{id}:
+    $ref: ./modules/changelog.yaml#/admin_changelog_by_id
+
+  /api/admin/changelog/{id}/rollback:
+    $ref: ./modules/changelog.yaml#/admin_changelog_rollback

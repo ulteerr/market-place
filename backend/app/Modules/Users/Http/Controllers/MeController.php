@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\ChangeLog\Services\ChangeLogContext;
 use Modules\Files\Services\FilesService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -23,6 +24,7 @@ final class MeController extends Controller
     public function __construct(
         private readonly UsersService $usersService,
         private readonly FilesService $filesService,
+        private readonly ChangeLogContext $changeLogContext,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -32,7 +34,10 @@ final class MeController extends Controller
 
     public function updateProfile(UpdateMeProfileRequest $request): JsonResponse
     {
-        $user = $this->usersService->updateUser($request->user(), $request->validated());
+        $user = $this->changeLogContext->withMeta(
+            ["scope" => "profile"],
+            fn() => $this->usersService->updateUser($request->user(), $request->validated()),
+        );
 
         return UserResponseFactory::success($user);
     }
