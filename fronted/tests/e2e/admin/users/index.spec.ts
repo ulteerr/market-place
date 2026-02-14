@@ -9,6 +9,12 @@ const users = [
     first_name: 'Иван',
     last_name: 'Иванов',
     middle_name: 'Иванович',
+    avatar: {
+      id: 'file-u-1',
+      url: 'https://example.com/users/u-1-avatar.png',
+      original_name: 'u-1-avatar.png',
+      collection: 'avatar',
+    },
     can_access_admin_panel: true,
   },
   {
@@ -78,6 +84,11 @@ const setupUsersPage = async (page: Page) => {
   });
 };
 
+const setUsersMode = async (page: Page, label: 'Таблица' | 'Таблица + карточки' | 'Карточки') => {
+  await page.locator('.mode-select-wrap input').first().click();
+  await page.getByRole('button', { name: label, exact: true }).click();
+};
+
 test.describe('Admin users page', () => {
   test('redirects unauthenticated user from /admin/users to /login', async ({ page }) => {
     await page.goto('/admin/users');
@@ -93,21 +104,66 @@ test.describe('Admin users page', () => {
     await page.goto('/admin/users');
 
     await expect(page.getByRole('heading', { level: 2, name: 'Пользователи' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Иванов', exact: true })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Петрова', exact: true })).toBeVisible();
+    await expect(page.getByText('Иванов', { exact: true })).toBeVisible();
+    await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
+    await expect(page.locator('thead th').first()).toBeVisible();
+    await expect(page.locator('img[src="https://example.com/users/u-1-avatar.png"]')).toBeVisible();
+  });
+
+  test('opens full image from thumbnail in modal', async ({ page }) => {
+    await setupUsersPage(page);
+    await page.goto('/admin/users');
+
+    await page.getByRole('button', { name: 'Открыть изображение' }).first().click();
+
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('img', { name: 'Иванов Иван Иванович' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
+
+  test('renders image preview controls in table/cards/table-cards modes', async ({ page }) => {
+    await setupUsersPage(page);
+    await page.goto('/admin/users');
+
+    await setUsersMode(page, 'Таблица');
+    await expect(page.locator('table.admin-table')).toBeVisible();
+    await expect(page.locator('.user-card')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Открыть изображение' })).toHaveCount(1);
+
+    await setUsersMode(page, 'Карточки');
+    await expect(page.locator('table.admin-table:visible')).toHaveCount(0);
+    await expect(page.locator('.user-card')).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'Открыть изображение' })).toHaveCount(1);
+
+    await setUsersMode(page, 'Таблица + карточки');
+    await expect(page.locator('table.admin-table')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Desktop: таблица' })).toBeVisible();
+    await page.getByRole('button', { name: 'Desktop: таблица' }).click();
+    await expect(page.getByRole('button', { name: 'Desktop: карточки' })).toBeVisible();
+    await expect(page.locator('.user-card')).toHaveCount(2);
+  });
+
+  test('shows fallback thumbnail for users without avatar', async ({ page }) => {
+    await setupUsersPage(page);
+    await page.goto('/admin/users');
+
+    const secondRowThumbnailCell = page.locator('tbody tr').nth(1).locator('td').nth(0);
+    await expect(secondRowThumbnailCell).toContainText('—');
   });
 
   test('sorts users by last name', async ({ page }) => {
     await setupUsersPage(page);
     await page.goto('/admin/users');
 
-    const firstLastNameCell = page.locator('tbody tr').nth(0).locator('td').nth(0);
-    await expect(firstLastNameCell).toHaveText('Иванов');
+    const firstLastNameCell = page.locator('tbody tr').nth(0).locator('td').nth(1);
+    await expect(firstLastNameCell).toContainText('Иванов');
 
     await page.getByRole('button', { name: 'Фамилия ↑' }).click();
 
-    await expect(firstLastNameCell).toHaveText('Петрова');
+    await expect(firstLastNameCell).toContainText('Петрова');
     await expect(page.getByRole('button', { name: 'Фамилия ↓' })).toBeVisible();
   });
 
@@ -120,8 +176,8 @@ test.describe('Admin users page', () => {
     await expect(page.getByText('Удалить пользователя Иванов Иван Иванович?')).toBeVisible();
     await page.locator('[role="dialog"]').getByRole('button', { name: 'Удалить' }).click();
 
-    await expect(page.getByRole('cell', { name: 'Иванов', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('cell', { name: 'Петрова', exact: true })).toBeVisible();
+    await expect(page.getByText('Иванов', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
     await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
   });
 });

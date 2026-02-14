@@ -32,3 +32,28 @@
   background: transparent;
   color: var(--muted);
 }
+
+.user-show-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.user-show-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-show-avatar-fallback {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}

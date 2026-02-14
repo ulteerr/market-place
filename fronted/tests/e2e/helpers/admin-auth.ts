@@ -9,6 +9,14 @@ export interface AdminAuthUser {
   first_name?: string;
   last_name?: string;
   middle_name?: string;
+  avatar?: {
+    id: string;
+    url: string;
+    original_name: string;
+    collection: string;
+    mime_type?: string | null;
+    size?: number;
+  } | null;
   can_access_admin_panel: boolean;
   settings?: {
     theme: 'light' | 'dark';

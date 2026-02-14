@@ -23,4 +23,21 @@ test.describe('Admin profile page', () => {
     await expect(page.getByLabel('Email')).toHaveValue(defaultAdminUser.email);
     await expect(page.getByRole('button', { name: 'Сохранить' })).toBeVisible();
   });
+
+  test('shows user avatar in profile and sidebar menu when present', async ({ page }) => {
+    await setupAdminAuth(page, {
+      ...defaultAdminUser,
+      avatar: {
+        id: 'file-1',
+        url: 'https://example.com/avatar.png',
+        original_name: 'avatar.png',
+        collection: 'avatar',
+      },
+    });
+
+    await page.goto('/admin/profile');
+
+    await expect(page.locator('img[src="https://example.com/avatar.png"]').first()).toBeVisible();
+    await expect(page.locator('.admin-user-menu .admin-avatar-image')).toBeVisible();
+  });
 });

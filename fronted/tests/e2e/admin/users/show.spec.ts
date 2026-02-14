@@ -10,6 +10,12 @@ const shownUser = {
   middle_name: 'Иванович',
   phone: '+79990001122',
   roles: ['admin', 'manager'],
+  avatar: {
+    id: 'file-u-1',
+    url: 'https://example.com/users/u-1-avatar.png',
+    original_name: 'u-1-avatar.png',
+    collection: 'avatar',
+  },
 };
 
 test.describe('Admin users show page', () => {
@@ -48,5 +54,6 @@ test.describe('Admin users show page', () => {
     await expect(page.locator('dd', { hasText: /^\+79990001122$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^admin, manager$/ })).toBeVisible();
     await expect(page.locator('a[href="/admin/users/u-1/edit"]')).toBeVisible();
+    await expect(page.locator('img[src="https://example.com/users/u-1-avatar.png"]')).toBeVisible();
   });
 });

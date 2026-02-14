@@ -6,6 +6,33 @@
     </div>
 
     <article class="profile-card rounded-2xl p-5 lg:p-6">
+      <div class="mb-5 rounded-xl border border-[var(--border)] p-4">
+        <p class="mb-2 text-sm font-medium">{{ t('admin.profile.avatar.title') }}</p>
+        <p class="profile-muted mb-3 text-sm">{{ t('admin.profile.avatar.hint') }}</p>
+        <UiImageBlock
+          v-if="avatarImages.length"
+          title=""
+          :images="avatarImages"
+          empty-text=""
+          caption-prefix=""
+          :remove-button-text="t('admin.actions.delete')"
+          :show-add-button="false"
+          :removable="!avatarUploading"
+          @remove="onDeleteAvatar"
+        />
+        <UiImageDropzone
+          v-model="avatarDraftFiles"
+          :title="t('admin.profile.avatar.upload')"
+          :description="t('admin.profile.avatar.hint')"
+          :browse-button-text="t('admin.profile.avatar.upload')"
+          :disabled="avatarUploading"
+          accept="image/png,image/jpeg,image/webp"
+          :multiple="false"
+          @files-added="onAvatarFilesAdded"
+        />
+        <p v-if="avatarError" class="admin-error mt-2 text-sm">{{ avatarError }}</p>
+      </div>
+
       <form class="space-y-3" @submit.prevent="submitForm">
         <UiInput
           v-model="form.first_name"
@@ -57,6 +84,8 @@
 
 <script setup lang="ts">
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
 import {
   getApiErrorPayload,
   getApiErrorMessage,
@@ -68,10 +97,13 @@ definePageMeta({
   layout: 'admin',
 });
 
-const { user, updateProfile } = useAuth();
+const { user, updateProfile, uploadAvatar, deleteAvatar } = useAuth();
 
 const saving = ref(false);
 const formError = ref('');
+const avatarUploading = ref(false);
+const avatarError = ref('');
+const avatarDraftFiles = ref<File[]>([]);
 
 const form = reactive({
   first_name: user.value?.first_name ?? '',
@@ -86,6 +118,20 @@ const fieldErrors = reactive<Record<string, string>>({
   middle_name: '',
   email: '',
 });
+
+const avatarUrl = computed(() => user.value?.avatar?.url ?? null);
+const avatarImages = computed(() =>
+  avatarUrl.value
+    ? [
+        {
+          id: user.value?.avatar?.id ?? 'avatar',
+          src: avatarUrl.value,
+          alt: t('admin.profile.avatar.previewAlt'),
+          caption: t('admin.profile.avatar.previewAlt'),
+        },
+      ]
+    : []
+);
 
 const resetErrors = () => {
   formError.value = '';
@@ -115,6 +161,38 @@ const submitForm = async () => {
     fieldErrors.email = getFieldError(payload.errors, 'email');
   } finally {
     saving.value = false;
+  }
+};
+
+const onAvatarFilesAdded = async (files: File[]) => {
+  const file = files[0] ?? null;
+  if (!file) {
+    return;
+  }
+
+  avatarUploading.value = true;
+  avatarError.value = '';
+
+  try {
+    await uploadAvatar(file);
+  } catch (error) {
+    avatarError.value = getApiErrorMessage(error, t('admin.profile.avatar.errors.upload'));
+  } finally {
+    avatarUploading.value = false;
+    avatarDraftFiles.value = [];
+  }
+};
+
+const onDeleteAvatar = async () => {
+  avatarUploading.value = true;
+  avatarError.value = '';
+
+  try {
+    await deleteAvatar();
+  } catch (error) {
+    avatarError.value = getApiErrorMessage(error, t('admin.profile.avatar.errors.delete'));
+  } finally {
+    avatarUploading.value = false;
   }
 };
 </script>

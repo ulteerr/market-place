@@ -12,24 +12,22 @@ use Modules\Users\Validation\RolesRules;
 
 final class CreateAdminUserRequest extends FormRequest
 {
-	public function authorize(): bool
-	{
-		return true;
-	}
+    public function authorize(): bool
+    {
+        return true;
+    }
 
-	public function rules(): array
-	{
-		return array_merge(
-			[
-				'email'    => EmailRules::requiredUnique(),
-				'password' => array_merge(
-					['required'],
-					PasswordRules::default()
-				),
-			],
-			UserProfileRules::base(),
-			UserProfileRules::required(),
-			RolesRules::optional()
-		);
-	}
+    public function rules(): array
+    {
+        return array_merge(
+            [
+                "email" => EmailRules::requiredUnique(),
+                "password" => array_merge(["required"], PasswordRules::default()),
+                "avatar" => ["sometimes", "file", "image", "mimes:jpg,jpeg,png,webp", "max:5120"],
+            ],
+            UserProfileRules::base(),
+            UserProfileRules::required(),
+            RolesRules::optional(),
+        );
+    }
 }

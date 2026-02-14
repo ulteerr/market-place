@@ -6,7 +6,10 @@
       :title="compact ? fullName : undefined"
       @click="toggleMenu"
     >
-      <span class="admin-avatar">{{ initials }}</span>
+      <span class="admin-avatar">
+        <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="admin-avatar-image" />
+        <span v-else>{{ initials }}</span>
+      </span>
       <span class="admin-user-text">
         <span class="admin-user-name">{{ fullName }}</span>
         <span class="admin-user-email">{{ email }}</span>
@@ -36,6 +39,7 @@ defineProps<{
   initials: string;
   fullName: string;
   email: string;
+  avatarUrl?: string | null;
   compact?: boolean;
 }>();
 

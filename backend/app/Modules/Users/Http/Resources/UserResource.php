@@ -6,6 +6,7 @@ namespace Modules\Users\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Files\Http\Resources\FileResource;
 
 final class UserResource extends JsonResource
 {
@@ -15,19 +16,24 @@ final class UserResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            'id'         => $this->id,
-            'email'      => $this->email,
-            'first_name' => $this->first_name,
-            'last_name'  => $this->last_name,
-            'middle_name' => $this->middle_name,
-            'settings' => $this->settings ?? (object) [],
-            'roles' => $this->whenLoaded('roles', function () {
-                return $this->roles->pluck('code')->values();
+            "id" => $this->id,
+            "email" => $this->email,
+            "first_name" => $this->first_name,
+            "last_name" => $this->last_name,
+            "middle_name" => $this->middle_name,
+            "settings" => $this->settings ?? (object) [],
+            "avatar" => $this->relationLoaded("avatar")
+                ? ($this->avatar
+                    ? new FileResource($this->avatar)
+                    : null)
+                : null,
+            "roles" => $this->whenLoaded("roles", function () {
+                return $this->roles->pluck("code")->values();
             }),
-            'is_admin' => $this->whenLoaded('roles', fn() => $this->isAdmin()),
-            'can_access_admin_panel' => $this->whenLoaded(
-                'roles',
-                fn() => $this->canAccessAdminPanel()
+            "is_admin" => $this->whenLoaded("roles", fn() => $this->isAdmin()),
+            "can_access_admin_panel" => $this->whenLoaded(
+                "roles",
+                fn() => $this->canAccessAdminPanel(),
             ),
         ];
     }

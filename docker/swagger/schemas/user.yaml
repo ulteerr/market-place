@@ -43,6 +43,10 @@ components:
           example: true
         settings:
           $ref: '#/components/schemas/UserSettings'
+        avatar:
+          allOf:
+            - $ref: '#/components/schemas/UserFile'
+          nullable: true
 
 
     UserResponse:
@@ -278,6 +282,10 @@ components:
           type: boolean
           nullable: true
           example: true
+        avatar:
+          allOf:
+            - $ref: '#/components/schemas/UserFile'
+          nullable: true
 
     AdminUsersPaginatedResponse:
       type: object
@@ -306,3 +314,29 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/AdminUserListItem'
+
+    UserFile:
+      type: object
+      required: [id, url, original_name, collection]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        url:
+          type: string
+          format: uri
+          example: http://localhost:8080/storage/uploads/2026/02/avatar.png
+        original_name:
+          type: string
+          example: avatar.png
+        mime_type:
+          type: string
+          nullable: true
+          example: image/png
+        size:
+          type: integer
+          example: 48231
+        collection:
+          type: string
+          example: avatar

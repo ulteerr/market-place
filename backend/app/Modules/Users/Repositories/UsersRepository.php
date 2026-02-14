@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Users\Repositories;
 
+use Illuminate\Support\Arr;
 use Modules\Users\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,12 +13,12 @@ final class UsersRepository implements UsersRepositoryInterface
 {
     public function create(array $data): User
     {
-        return User::create($data);
+        return User::create(Arr::except($data, ["roles", "avatar", "avatar_delete"]));
     }
 
     public function update(User $user, array $data): User
     {
-        $user->update($data);
+        $user->update(Arr::except($data, ["roles", "avatar", "avatar_delete"]));
         return $user;
     }
 
@@ -52,7 +53,10 @@ final class UsersRepository implements UsersRepositoryInterface
                 "created_at",
                 "updated_at",
             ])
-            ->with("roles:id,code");
+            ->with([
+                "roles:id,code",
+                "avatar:id,fileable_id,fileable_type,disk,path,original_name,mime_type,size,collection",
+            ]);
 
         if (!empty($with)) {
             $query->with($with);

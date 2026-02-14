@@ -1,4 +1,14 @@
+import { resolveAssetUrl } from '~/composables/asset-url';
+
 interface AuthUser {
+  avatar?: {
+    id: string;
+    url: string;
+    original_name: string;
+    mime_type?: string | null;
+    size?: number;
+    collection: string;
+  } | null;
   id: string;
   email: string;
   first_name?: string;
@@ -38,6 +48,8 @@ interface MeResponse {
 }
 
 export const useAuth = () => {
+  const config = useRuntimeConfig();
+
   const token = useCookie<string | null>('auth_token', {
     sameSite: 'lax',
   });
@@ -49,8 +61,28 @@ export const useAuth = () => {
   const isAuthenticated = computed(() => Boolean(token.value));
   const canAccessAdminPanel = computed(() => Boolean(user.value?.can_access_admin_panel));
 
+  const normalizeUserAssets = (nextUser: AuthUser | null): AuthUser | null => {
+    if (!nextUser) {
+      return null;
+    }
+
+    const avatarUrl = resolveAssetUrl(config.public.apiBase, nextUser.avatar?.url ?? null);
+
+    if (!nextUser.avatar || !avatarUrl) {
+      return nextUser;
+    }
+
+    return {
+      ...nextUser,
+      avatar: {
+        ...nextUser.avatar,
+        url: avatarUrl,
+      },
+    };
+  };
+
   const setUser = (nextUser: AuthUser | null) => {
-    user.value = nextUser;
+    user.value = normalizeUserAssets(nextUser);
   };
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -113,6 +145,30 @@ export const useAuth = () => {
     });
   };
 
+  const uploadAvatar = async (avatar: File): Promise<AuthUser> => {
+    const api = useApi();
+    const body = new FormData();
+    body.append('avatar', avatar);
+
+    const response = await api<MeResponse>('/api/me/avatar', {
+      method: 'POST',
+      body,
+    });
+
+    setUser(response.user);
+    return response.user;
+  };
+
+  const deleteAvatar = async (): Promise<AuthUser> => {
+    const api = useApi();
+    const response = await api<MeResponse>('/api/me/avatar', {
+      method: 'DELETE',
+    });
+
+    setUser(response.user);
+    return response.user;
+  };
+
   const logout = async (): Promise<void> => {
     try {
       const api = useApi();
@@ -135,6 +191,8 @@ export const useAuth = () => {
     updateProfile,
     updatePassword,
     updateSettings,
+    uploadAvatar,
+    deleteAvatar,
     logout,
   };
 };

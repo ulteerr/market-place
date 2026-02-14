@@ -3,6 +3,7 @@
 use App\Providers\AdminRoutesServiceProvider;
 use Modules\Auth\AuthServiceProvider;
 use Modules\Children\ChildrenServiceProvider;
+use Modules\Files\FilesServiceProvider;
 use Modules\Users\UsersServiceProvider;
 
 return [
@@ -10,5 +11,6 @@ return [
     AdminRoutesServiceProvider::class,
     AuthServiceProvider::class,
     UsersServiceProvider::class,
-    ChildrenServiceProvider::class
+    ChildrenServiceProvider::class,
+    FilesServiceProvider::class,
 ];

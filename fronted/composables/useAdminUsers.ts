@@ -3,8 +3,17 @@ import type {
   PaginationPayload,
   SortDirection,
 } from '~/composables/useAdminCrudCommon';
+import { resolveAssetUrl } from '~/composables/asset-url';
 
 export interface AdminUser {
+  avatar?: {
+    id: string;
+    url: string;
+    original_name: string;
+    mime_type?: string | null;
+    size?: number;
+    collection: string;
+  } | null;
   id: string;
   email: string;
   first_name: string;
@@ -35,6 +44,7 @@ export interface CreateUserPayload {
   middle_name?: string | null;
   phone?: string | null;
   roles?: string[];
+  avatar?: File | null;
 }
 
 export interface UpdateUserPayload {
@@ -46,6 +56,8 @@ export interface UpdateUserPayload {
   middle_name?: string | null;
   phone?: string | null;
   roles?: string[];
+  avatar?: File | null;
+  avatar_delete?: boolean;
 }
 
 export interface AdminUsersListParams {
@@ -82,32 +94,83 @@ export const resolveAdminUserPanelAccess = (user: AdminUser): boolean | null => 
 
 export const useAdminUsers = () => {
   const api = useApi();
+  const config = useRuntimeConfig();
+
+  const normalizeUserAssets = (user: AdminUser): AdminUser => {
+    const avatarUrl = resolveAssetUrl(config.public.apiBase, user.avatar?.url ?? null);
+
+    if (!user.avatar || !avatarUrl) {
+      return user;
+    }
+
+    return {
+      ...user,
+      avatar: {
+        ...user.avatar,
+        url: avatarUrl,
+      },
+    };
+  };
 
   const list = async (params: AdminUsersListParams = {}): Promise<PaginationPayload<AdminUser>> => {
     const response = await api<IndexResponse<AdminUser>>('/api/admin/users', {
       query: params,
     });
 
-    return response.data;
+    return {
+      ...response.data,
+      data: response.data.data.map(normalizeUserAssets),
+    };
   };
 
   const show = async (id: string): Promise<AdminUser> => {
     const response = await api<UserShowResponse>(`/api/admin/users/${id}`);
 
-    return response.user;
+    return normalizeUserAssets(response.user);
+  };
+
+  const buildMutationBody = (payload: CreateUserPayload | UpdateUserPayload): FormData => {
+    const body = new FormData();
+
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+
+      if (key === 'roles' && Array.isArray(value)) {
+        value.forEach((role) => {
+          body.append('roles[]', role);
+        });
+        return;
+      }
+
+      if (key === 'avatar' && value instanceof File) {
+        body.append('avatar', value);
+        return;
+      }
+
+      if (typeof value === 'boolean') {
+        body.append(key, value ? '1' : '0');
+        return;
+      }
+
+      body.append(key, String(value));
+    });
+
+    return body;
   };
 
   const create = async (payload: CreateUserPayload): Promise<void> => {
     await api<UserMutationResponse>('/api/admin/users', {
       method: 'POST',
-      body: payload,
+      body: buildMutationBody(payload),
     });
   };
 
   const update = async (id: string, payload: UpdateUserPayload): Promise<void> => {
     await api<UserMutationResponse>(`/api/admin/users/${id}`, {
       method: 'PATCH',
-      body: payload,
+      body: buildMutationBody(payload),
     });
   };
 

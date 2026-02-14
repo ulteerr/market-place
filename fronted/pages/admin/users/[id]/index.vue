@@ -10,6 +10,19 @@
       <p v-else-if="loadError" class="admin-error text-sm">{{ loadError }}</p>
 
       <template v-else-if="user">
+        <div class="mb-4 flex items-center gap-3">
+          <div class="user-show-avatar">
+            <img
+              v-if="user.avatar?.url"
+              :src="user.avatar.url"
+              :alt="getAdminUserFullName(user)"
+              class="user-show-avatar-image"
+            />
+            <span v-else class="user-show-avatar-fallback">{{ userInitials }}</span>
+          </div>
+          <p class="text-sm font-medium">{{ getAdminUserFullName(user) }}</p>
+        </div>
+
         <dl class="grid gap-3 sm:grid-cols-2">
           <div>
             <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.firstName') }}</dt>
@@ -54,6 +67,7 @@
 
 <script setup lang="ts">
 import type { AdminUser } from '~/composables/useAdminUsers';
+import { getAdminUserFullName } from '~/composables/useAdminUsers';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
 
@@ -87,6 +101,18 @@ const fetchUser = async () => {
     loading.value = false;
   }
 };
+
+const userInitials = computed(() => {
+  if (!user.value) {
+    return 'US';
+  }
+
+  const first = user.value.first_name?.trim()?.[0] ?? '';
+  const last = user.value.last_name?.trim()?.[0] ?? '';
+  const initials = `${first}${last}`.toUpperCase();
+
+  return initials || user.value.email?.[0]?.toUpperCase() || 'US';
+});
 
 onMounted(fetchUser);
 </script>

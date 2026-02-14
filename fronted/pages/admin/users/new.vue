@@ -71,6 +71,29 @@
           :error="fieldErrors.roles"
         />
 
+        <UiImageDropzone
+          v-model="avatarDraftFiles"
+          :title="t('admin.users.new.fields.avatar')"
+          :description="t('admin.users.new.avatarHint')"
+          :browse-button-text="t('admin.users.new.fields.avatar')"
+          accept="image/png,image/jpeg,image/webp"
+          :multiple="false"
+          :disabled="saving"
+          @files-added="onAvatarFilesAdded"
+        />
+        <UiImageBlock
+          v-if="avatarImages.length"
+          title=""
+          :images="avatarImages"
+          :show-add-button="false"
+          :removable="!saving"
+          :remove-button-text="t('admin.actions.delete')"
+          :empty-text="t('common.dash')"
+          :caption-prefix="t('admin.profile.avatar.previewAlt')"
+          @remove="clearAvatar"
+        />
+        <p v-if="avatarError" class="admin-error text-sm">{{ avatarError }}</p>
+
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
         <div class="flex gap-2">
@@ -93,6 +116,8 @@
 <script setup lang="ts">
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
 import type { AdminRole } from '~/composables/useAdminRoles';
 import type { CreateUserPayload } from '~/composables/useAdminUsers';
 import {
@@ -112,7 +137,11 @@ const rolesApi = useAdminRoles();
 const saving = ref(false);
 const loadingRoles = ref(false);
 const formError = ref('');
+const avatarError = ref('');
 const roles = ref<AdminRole[]>([]);
+const avatarDraftFiles = ref<File[]>([]);
+const avatarFile = ref<File | null>(null);
+const avatarPreviewUrl = ref<string | null>(null);
 
 const form = reactive({
   first_name: '',
@@ -142,8 +171,36 @@ const roleOptions = computed(() => {
   }));
 });
 
+const avatarImages = computed(() =>
+  avatarPreviewUrl.value
+    ? [
+        {
+          id: 'new-avatar',
+          src: avatarPreviewUrl.value,
+          alt: t('admin.profile.avatar.previewAlt'),
+          caption: t('admin.profile.avatar.previewAlt'),
+        },
+      ]
+    : []
+);
+
+const setAvatarDraft = (file: File | null) => {
+  if (avatarPreviewUrl.value) {
+    URL.revokeObjectURL(avatarPreviewUrl.value);
+    avatarPreviewUrl.value = null;
+  }
+
+  avatarFile.value = file;
+  avatarDraftFiles.value = file ? [file] : [];
+
+  if (file) {
+    avatarPreviewUrl.value = URL.createObjectURL(file);
+  }
+};
+
 const resetErrors = () => {
   formError.value = '';
+  avatarError.value = '';
   fieldErrors.first_name = '';
   fieldErrors.last_name = '';
   fieldErrors.middle_name = '';
@@ -152,6 +209,23 @@ const resetErrors = () => {
   fieldErrors.password = '';
   fieldErrors.roles = '';
 };
+
+const onAvatarFilesAdded = (files: File[]) => {
+  avatarError.value = '';
+  setAvatarDraft(files[0] ?? null);
+};
+
+const clearAvatar = () => {
+  setAvatarDraft(null);
+  avatarError.value = '';
+};
+
+watch(avatarDraftFiles, (nextFiles) => {
+  const nextFile = nextFiles[0] ?? null;
+  if (nextFile !== avatarFile.value) {
+    setAvatarDraft(nextFile);
+  }
+});
 
 const fetchRoles = async () => {
   loadingRoles.value = true;
@@ -182,6 +256,7 @@ const submitForm = async () => {
       password: form.password,
       password_confirmation: form.password_confirmation,
       roles: [...form.roles],
+      avatar: avatarFile.value,
     };
 
     await usersApi.create(payload);
@@ -197,12 +272,19 @@ const submitForm = async () => {
     fieldErrors.password = getFieldError(payload.errors, 'password');
     fieldErrors.roles =
       getFieldError(payload.errors, 'roles') || getFieldError(payload.errors, 'roles.0');
+    avatarError.value = getFieldError(payload.errors, 'avatar');
   } finally {
     saving.value = false;
   }
 };
 
 onMounted(fetchRoles);
+
+onBeforeUnmount(() => {
+  if (avatarPreviewUrl.value) {
+    URL.revokeObjectURL(avatarPreviewUrl.value);
+  }
+});
 </script>
 
 <style lang="scss" scoped src="./new.scss"></style>

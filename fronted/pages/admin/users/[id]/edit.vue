@@ -72,6 +72,29 @@
           :error="fieldErrors.roles"
         />
 
+        <UiImageBlock
+          v-if="avatarImages.length"
+          title=""
+          :images="avatarImages"
+          :show-add-button="false"
+          :removable="!saving"
+          :remove-button-text="t('admin.actions.delete')"
+          :empty-text="t('common.dash')"
+          :caption-prefix="t('admin.profile.avatar.previewAlt')"
+          @remove="clearAvatar"
+        />
+        <UiImageDropzone
+          v-model="avatarDraftFiles"
+          :title="t('admin.users.edit.fields.avatar')"
+          :description="t('admin.users.edit.avatarHint')"
+          :browse-button-text="t('admin.users.edit.fields.avatar')"
+          accept="image/png,image/jpeg,image/webp"
+          :multiple="false"
+          :disabled="saving"
+          @files-added="onAvatarFilesAdded"
+        />
+        <p v-if="avatarError" class="admin-error text-sm">{{ avatarError }}</p>
+
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
         <div class="flex flex-col gap-2 sm:flex-row">
@@ -96,6 +119,8 @@
 <script setup lang="ts">
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
 import type { AdminRole } from '~/composables/useAdminRoles';
 import type { UpdateUserPayload } from '~/composables/useAdminUsers';
 import {
@@ -118,7 +143,13 @@ const loadError = ref('');
 const saving = ref(false);
 const loadingRoles = ref(false);
 const formError = ref('');
+const avatarError = ref('');
 const roles = ref<AdminRole[]>([]);
+const avatarDraftFiles = ref<File[]>([]);
+const avatarFile = ref<File | null>(null);
+const avatarPreviewUrl = ref<string | null>(null);
+const avatarDeleted = ref(false);
+const existingAvatar = ref<{ id: string; url: string } | null>(null);
 
 const form = reactive({
   first_name: '',
@@ -148,8 +179,45 @@ const roleOptions = computed(() => {
   }));
 });
 
+const avatarImages = computed(() =>
+  avatarPreviewUrl.value
+    ? [
+        {
+          id: 'draft-avatar',
+          src: avatarPreviewUrl.value,
+          alt: t('admin.profile.avatar.previewAlt'),
+          caption: t('admin.profile.avatar.previewAlt'),
+        },
+      ]
+    : existingAvatar.value
+      ? [
+          {
+            id: existingAvatar.value.id,
+            src: existingAvatar.value.url,
+            alt: t('admin.profile.avatar.previewAlt'),
+            caption: t('admin.profile.avatar.previewAlt'),
+          },
+        ]
+      : []
+);
+
+const setAvatarDraft = (file: File | null) => {
+  if (avatarPreviewUrl.value) {
+    URL.revokeObjectURL(avatarPreviewUrl.value);
+    avatarPreviewUrl.value = null;
+  }
+
+  avatarFile.value = file;
+  avatarDraftFiles.value = file ? [file] : [];
+
+  if (file) {
+    avatarPreviewUrl.value = URL.createObjectURL(file);
+  }
+};
+
 const resetErrors = () => {
   formError.value = '';
+  avatarError.value = '';
   fieldErrors.first_name = '';
   fieldErrors.last_name = '';
   fieldErrors.middle_name = '';
@@ -158,6 +226,32 @@ const resetErrors = () => {
   fieldErrors.password = '';
   fieldErrors.roles = '';
 };
+
+const onAvatarFilesAdded = (files: File[]) => {
+  avatarError.value = '';
+  avatarDeleted.value = false;
+  setAvatarDraft(files[0] ?? null);
+};
+
+const clearAvatar = () => {
+  if (avatarFile.value) {
+    setAvatarDraft(null);
+    return;
+  }
+
+  if (existingAvatar.value) {
+    existingAvatar.value = null;
+    avatarDeleted.value = true;
+  }
+};
+
+watch(avatarDraftFiles, (nextFiles) => {
+  const nextFile = nextFiles[0] ?? null;
+  if (nextFile !== avatarFile.value) {
+    avatarDeleted.value = false;
+    setAvatarDraft(nextFile);
+  }
+});
 
 const fetchRoles = async () => {
   loadingRoles.value = true;
@@ -187,12 +281,14 @@ const fetchUser = async () => {
 
   try {
     const user = await usersApi.show(id);
+    avatarDeleted.value = false;
     form.first_name = user.first_name || '';
     form.last_name = user.last_name || '';
     form.middle_name = user.middle_name || '';
     form.email = user.email || '';
     form.phone = user.phone || '';
     form.roles = [...(user.roles || [])];
+    existingAvatar.value = user.avatar ? { id: user.avatar.id, url: user.avatar.url } : null;
   } catch (error) {
     loadError.value = getApiErrorMessage(error, t('admin.users.edit.errors.load'));
   } finally {
@@ -215,6 +311,12 @@ const submitForm = async () => {
       roles: [...form.roles],
     };
 
+    if (avatarFile.value) {
+      payload.avatar = avatarFile.value;
+    } else if (avatarDeleted.value) {
+      payload.avatar_delete = true;
+    }
+
     if (form.password.trim()) {
       payload.password = form.password;
       payload.password_confirmation = form.password_confirmation;
@@ -233,6 +335,7 @@ const submitForm = async () => {
     fieldErrors.password = getFieldError(payload.errors, 'password');
     fieldErrors.roles =
       getFieldError(payload.errors, 'roles') || getFieldError(payload.errors, 'roles.0');
+    avatarError.value = getFieldError(payload.errors, 'avatar');
   } finally {
     saving.value = false;
   }
@@ -240,6 +343,12 @@ const submitForm = async () => {
 
 onMounted(async () => {
   await Promise.all([fetchUser(), fetchRoles()]);
+});
+
+onBeforeUnmount(() => {
+  if (avatarPreviewUrl.value) {
+    URL.revokeObjectURL(avatarPreviewUrl.value);
+  }
 });
 </script>
 

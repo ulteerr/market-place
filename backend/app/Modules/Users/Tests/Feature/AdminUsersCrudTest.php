@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Users\Tests\Feature;
 
 use App\Shared\Testing\AdminCrudTestCase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
@@ -208,5 +210,111 @@ final class AdminUsersCrudTest extends AdminCrudTestCase
             ->assertOk()
             ->assertJsonCount(2, "data.data")
             ->assertJsonPath("data.data.0.middle_name", "SortCaseA");
+    }
+
+    #[Test]
+    public function admin_can_create_user_with_avatar(): void
+    {
+        Storage::fake("public");
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+
+        $this->withHeaders($auth["headers"])
+            ->post($this->endpoint(), [
+                "first_name" => "Avatar",
+                "last_name" => "Create",
+                "email" => "avatar.create@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "avatar" => $this->fakePng("create-avatar.png"),
+            ])
+            ->assertCreated();
+
+        $user = User::where("email", "avatar.create@example.com")->firstOrFail();
+        $this->assertDatabaseHas("files", [
+            "fileable_id" => (string) $user->id,
+            "fileable_type" => User::class,
+            "collection" => "avatar",
+            "original_name" => "create-avatar.png",
+        ]);
+    }
+
+    #[Test]
+    public function admin_can_update_user_avatar(): void
+    {
+        Storage::fake("public");
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+        $user = User::factory()->create([
+            "email" => "avatar.update@example.com",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->patch($this->endpoint() . "/" . $user->id, [
+                "first_name" => $user->first_name,
+                "last_name" => $user->last_name,
+                "email" => $user->email,
+                "avatar" => $this->fakePng("update-avatar.png"),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas("files", [
+            "fileable_id" => (string) $user->id,
+            "fileable_type" => User::class,
+            "collection" => "avatar",
+            "original_name" => "update-avatar.png",
+        ]);
+    }
+
+    #[Test]
+    public function admin_can_delete_user_avatar_via_update_payload(): void
+    {
+        Storage::fake("public");
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+        $user = User::factory()->create([
+            "email" => "avatar.delete@example.com",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->patch($this->endpoint() . "/" . $user->id, [
+                "first_name" => $user->first_name,
+                "last_name" => $user->last_name,
+                "email" => $user->email,
+                "avatar" => $this->fakePng("delete-avatar.png"),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas("files", [
+            "fileable_id" => (string) $user->id,
+            "fileable_type" => User::class,
+            "collection" => "avatar",
+            "original_name" => "delete-avatar.png",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->patchJson($this->endpoint() . "/" . $user->id, [
+                "first_name" => $user->first_name,
+                "last_name" => $user->last_name,
+                "email" => $user->email,
+                "avatar_delete" => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseMissing("files", [
+            "fileable_id" => (string) $user->id,
+            "fileable_type" => User::class,
+            "collection" => "avatar",
+        ]);
+    }
+
+    private function fakePng(string $name = "avatar.png"): UploadedFile
+    {
+        $pngBinary = base64_decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6W1k8AAAAASUVORK5CYII=",
+            true,
+        );
+
+        return UploadedFile::fake()->createWithContent($name, $pngBinary ?: "");
     }
 }

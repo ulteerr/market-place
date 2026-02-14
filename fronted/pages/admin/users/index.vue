@@ -24,7 +24,7 @@
     :last-page="pagination.last_page"
     :pagination-per-page="pagination.per_page"
     :pagination-items="paginationItems"
-    :table-skeleton-columns="5"
+    :table-skeleton-columns="6"
     @update:search-value="(value) => (listState.searchInput.value = value)"
     @update:per-page="onUpdatePerPage"
     @update:mode="onModeChange"
@@ -38,6 +38,7 @@
       <table class="admin-table">
         <thead>
           <tr>
+            <th>{{ t('admin.users.index.headers.thumbnail') }}</th>
             <th>
               <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
                 {{ t('admin.users.index.headers.lastName') }} {{ listState.sortMark('last_name') }}
@@ -65,17 +66,30 @@
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="5" class="admin-muted py-5 text-center text-sm">
+            <td colspan="6" class="admin-muted py-5 text-center text-sm">
               {{ t('common.loading') }}
             </td>
           </tr>
           <tr v-else-if="!users.length">
-            <td colspan="5" class="admin-muted py-5 text-center text-sm">
+            <td colspan="6" class="admin-muted py-5 text-center text-sm">
               {{ t('admin.users.index.empty') }}
             </td>
           </tr>
           <tr v-for="item in users" :key="item.id">
-            <td>{{ item.last_name || t('common.dash') }}</td>
+            <td>
+              <UiImagePreview
+                :src="item.avatar?.url ?? null"
+                :alt="getAdminUserFullName(item)"
+                :preview-alt="getAdminUserFullName(item)"
+                variant="table"
+                :fallback-text="t('common.dash')"
+                :preview-title="t('admin.users.index.preview.title')"
+                :open-aria-label="t('admin.users.index.preview.open')"
+              />
+            </td>
+            <td>
+              <span>{{ item.last_name || t('common.dash') }}</span>
+            </td>
             <td>{{ item.first_name || t('common.dash') }}</td>
             <td>{{ item.middle_name || t('common.dash') }}</td>
             <td>
@@ -98,7 +112,16 @@
     <template #cards>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <article v-for="item in users" :key="item.id" class="user-card rounded-xl p-4">
-          <h4 class="text-sm font-semibold">
+          <UiImagePreview
+            :src="item.avatar?.url ?? null"
+            :alt="getAdminUserFullName(item)"
+            :preview-alt="getAdminUserFullName(item)"
+            variant="card"
+            :fallback-text="t('common.dash')"
+            :preview-title="t('admin.users.index.preview.title')"
+            :open-aria-label="t('admin.users.index.preview.open')"
+          />
+          <h4 class="mt-2 text-sm font-semibold">
             {{ getAdminUserFullName(item) }}
           </h4>
           <p class="admin-muted text-xs">
@@ -152,6 +175,7 @@
 <script setup lang="ts">
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import { getAdminUserFullName, resolveAdminUserPanelAccess } from '~/composables/useAdminUsers';

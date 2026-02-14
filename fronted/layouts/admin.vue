@@ -165,6 +165,7 @@
               :initials="userInitials"
               :full-name="userFullName"
               :email="userEmail"
+              :avatar-url="userAvatarUrl"
               :compact="isCollapsedNavigation"
               @select="onUserMenuSelect"
             />
@@ -386,6 +387,7 @@ const userFullName = computed(() => {
 });
 
 const userEmail = computed(() => user.value?.email ?? t('admin.layout.user.noEmail'));
+const userAvatarUrl = computed(() => user.value?.avatar?.url ?? null);
 
 const userInitials = computed(() => {
   const first = user.value?.first_name?.trim()?.[0] ?? '';

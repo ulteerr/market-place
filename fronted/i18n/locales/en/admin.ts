@@ -65,6 +65,17 @@ export default {
   profile: {
     title: 'My profile',
     subtitle: 'Edit personal data of the current user.',
+    avatar: {
+      title: 'Avatar',
+      hint: 'PNG/JPG/WEBP, up to 5MB',
+      upload: 'Upload',
+      delete: 'Delete avatar',
+      previewAlt: 'User avatar',
+      errors: {
+        upload: 'Failed to upload avatar.',
+        delete: 'Failed to delete avatar.',
+      },
+    },
     fields: {
       firstName: 'First name',
       lastName: 'Last name',
@@ -98,11 +109,16 @@ export default {
       searchPlaceholder: 'Search: last name, first name, middle name, email, phone, role',
       empty: 'No users found.',
       headers: {
+        thumbnail: 'Avatar',
         lastName: 'Last name',
         firstName: 'First name',
         middleName: 'Middle name',
         access: 'Access',
         actions: 'Actions',
+      },
+      preview: {
+        title: 'Image',
+        open: 'Open image',
       },
       card: {
         lastName: 'Last name: {value}',
@@ -133,7 +149,9 @@ export default {
         password: 'Password',
         passwordConfirmation: 'Password confirmation',
         roles: 'Roles',
+        avatar: 'Avatar',
       },
+      avatarHint: 'PNG/JPG/WEBP, up to 5MB',
       rolesPlaceholder: 'Select roles',
       saving: 'Saving...',
       errors: {
@@ -168,7 +186,9 @@ export default {
         newPassword: 'New password',
         newPasswordConfirmation: 'New password confirmation',
         roles: 'Roles',
+        avatar: 'Avatar',
       },
+      avatarHint: 'PNG/JPG/WEBP, up to 5MB',
       rolesPlaceholder: 'Select roles',
       saving: 'Saving...',
       errors: {

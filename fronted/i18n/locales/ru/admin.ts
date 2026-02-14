@@ -65,6 +65,17 @@ export default {
   profile: {
     title: 'Мой профиль',
     subtitle: 'Редактирование личных данных текущего пользователя.',
+    avatar: {
+      title: 'Аватар',
+      hint: 'PNG/JPG/WEBP, до 5MB',
+      upload: 'Загрузить',
+      delete: 'Удалить аватар',
+      previewAlt: 'Аватар пользователя',
+      errors: {
+        upload: 'Не удалось загрузить аватар.',
+        delete: 'Не удалось удалить аватар.',
+      },
+    },
     fields: {
       firstName: 'Имя',
       lastName: 'Фамилия',
@@ -98,11 +109,16 @@ export default {
       searchPlaceholder: 'Поиск: фамилия, имя, отчество, email, телефон, роль',
       empty: 'Пользователи не найдены.',
       headers: {
+        thumbnail: 'Аватар',
         lastName: 'Фамилия',
         firstName: 'Имя',
         middleName: 'Отчество',
         access: 'Доступ',
         actions: 'Действия',
+      },
+      preview: {
+        title: 'Изображение',
+        open: 'Открыть изображение',
       },
       card: {
         lastName: 'Фамилия: {value}',
@@ -133,7 +149,9 @@ export default {
         password: 'Пароль',
         passwordConfirmation: 'Подтверждение пароля',
         roles: 'Роли',
+        avatar: 'Аватар',
       },
+      avatarHint: 'PNG/JPG/WEBP, до 5MB',
       rolesPlaceholder: 'Выберите роли',
       saving: 'Сохраняем...',
       errors: {
@@ -168,7 +186,9 @@ export default {
         newPassword: 'Новый пароль',
         newPasswordConfirmation: 'Подтверждение нового пароля',
         roles: 'Роли',
+        avatar: 'Аватар',
       },
+      avatarHint: 'PNG/JPG/WEBP, до 5MB',
       rolesPlaceholder: 'Выберите роли',
       saving: 'Сохраняем...',
       errors: {

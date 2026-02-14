@@ -12,11 +12,18 @@
     </header>
 
     <div :class="styles.grid">
-      <article v-for="(image, index) in images" :key="image.id || image.src" :class="styles.item">
+      <article
+        v-for="(image, index) in images"
+        :key="image.id || image.src"
+        :class="styles.item"
+        data-testid="ui-image-block-item"
+      >
         <img :src="image.src" :alt="image.alt || `image-${index + 1}`" :class="styles.image" />
 
         <div :class="styles.overlay">
-          <span :class="styles.caption">{{ image.caption || `Изображение ${index + 1}` }}</span>
+          <span :class="styles.caption">{{
+            image.caption || `${captionPrefix} ${index + 1}`
+          }}</span>
 
           <button
             v-if="removable"
@@ -24,13 +31,13 @@
             :class="styles.removeButton"
             @click="emit('remove', index)"
           >
-            Удалить
+            {{ removeButtonText }}
           </button>
         </div>
       </article>
 
       <article v-if="!images.length" :class="styles.empty">
-        <p>Пока нет изображений</p>
+        <p>{{ emptyText }}</p>
       </article>
     </div>
   </section>
@@ -54,6 +61,9 @@ withDefaults(
     removable?: boolean;
     showAddButton?: boolean;
     addButtonText?: string;
+    removeButtonText?: string;
+    emptyText?: string;
+    captionPrefix?: string;
   }>(),
   {
     title: 'Изображения',
@@ -61,6 +71,9 @@ withDefaults(
     removable: true,
     showAddButton: true,
     addButtonText: 'Добавить',
+    removeButtonText: 'Удалить',
+    emptyText: 'Пока нет изображений',
+    captionPrefix: 'Изображение',
   }
 );
 

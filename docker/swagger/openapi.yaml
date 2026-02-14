@@ -37,6 +37,9 @@ paths:
   /api/me/settings/stream:
     $ref: ./modules/users.yaml#/me_settings_stream
 
+  /api/me/avatar:
+    $ref: ./modules/users.yaml#/me_avatar
+
   /api/admin/users:
     $ref: ./modules/users.yaml#/admin_users
 

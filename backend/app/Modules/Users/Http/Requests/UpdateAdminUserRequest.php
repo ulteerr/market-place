@@ -12,25 +12,41 @@ use Modules\Users\Validation\RolesRules;
 
 final class UpdateAdminUserRequest extends FormRequest
 {
-	public function authorize(): bool
-	{
-		return true;
-	}
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has("avatar_delete")) {
+            return;
+        }
 
-	public function rules(): array
-	{
-		$userId = (string) $this->route('id');
+        $value = $this->input("avatar_delete");
+        if (is_string($value)) {
+            $normalized = strtolower(trim($value));
+            if (in_array($normalized, ["true", "false"], true)) {
+                $this->merge([
+                    "avatar_delete" => $normalized === "true",
+                ]);
+            }
+        }
+    }
 
-		return array_merge(
-			[
-				'email'    => EmailRules::sometimesUnique($userId),
-				'password' => array_merge(
-					['sometimes'],
-					PasswordRules::default()
-				),
-			],
-			UserProfileRules::base(),
-			RolesRules::optional()
-		);
-	}
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        $userId = (string) $this->route("id");
+
+        return array_merge(
+            [
+                "email" => EmailRules::sometimesUnique($userId),
+                "password" => array_merge(["sometimes"], PasswordRules::default()),
+                "avatar" => ["sometimes", "file", "image", "mimes:jpg,jpeg,png,webp", "max:5120"],
+                "avatar_delete" => ["sometimes", "boolean"],
+            ],
+            UserProfileRules::base(),
+            RolesRules::optional(),
+        );
+    }
 }
