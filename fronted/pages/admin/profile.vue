@@ -8,7 +8,7 @@
     <article class="profile-card rounded-2xl p-5 lg:p-6">
       <div class="mb-5 rounded-xl border border-[var(--border)] p-4">
         <p class="mb-2 text-sm font-medium">{{ t('admin.profile.avatar.title') }}</p>
-        <p class="profile-muted mb-3 text-sm">{{ t('admin.profile.avatar.hint') }}</p>
+        <p class="profile-muted mb-3 text-sm">{{ t('admin.files.avatarHint') }}</p>
         <UiImageBlock
           v-if="avatarImages.length"
           title=""
@@ -23,7 +23,7 @@
         <UiImageDropzone
           v-model="avatarDraftFiles"
           :title="t('admin.profile.avatar.upload')"
-          :description="t('admin.profile.avatar.hint')"
+          :description="t('admin.files.avatarHint')"
           :browse-button-text="t('admin.profile.avatar.upload')"
           :disabled="avatarUploading"
           accept="image/png,image/jpeg,image/webp"

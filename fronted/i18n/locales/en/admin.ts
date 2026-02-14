@@ -54,6 +54,9 @@ export default {
     edit: 'Edit',
     delete: 'Delete',
   },
+  files: {
+    avatarHint: 'PNG/JPG/WEBP, up to 5MB',
+  },
   dashboard: {
     title: 'Dashboard',
     subtitle: 'Select a module in the left menu. The selected section content is shown here.',
@@ -67,7 +70,6 @@ export default {
     subtitle: 'Edit personal data of the current user.',
     avatar: {
       title: 'Avatar',
-      hint: 'PNG/JPG/WEBP, up to 5MB',
       upload: 'Upload',
       delete: 'Delete avatar',
       previewAlt: 'User avatar',
@@ -151,7 +153,6 @@ export default {
         roles: 'Roles',
         avatar: 'Avatar',
       },
-      avatarHint: 'PNG/JPG/WEBP, up to 5MB',
       rolesPlaceholder: 'Select roles',
       saving: 'Saving...',
       errors: {
@@ -188,7 +189,6 @@ export default {
         roles: 'Roles',
         avatar: 'Avatar',
       },
-      avatarHint: 'PNG/JPG/WEBP, up to 5MB',
       rolesPlaceholder: 'Select roles',
       saving: 'Saving...',
       errors: {

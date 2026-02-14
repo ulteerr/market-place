@@ -74,7 +74,7 @@
         <UiImageDropzone
           v-model="avatarDraftFiles"
           :title="t('admin.users.new.fields.avatar')"
-          :description="t('admin.users.new.avatarHint')"
+          :description="t('admin.files.avatarHint')"
           :browse-button-text="t('admin.users.new.fields.avatar')"
           accept="image/png,image/jpeg,image/webp"
           :multiple="false"

@@ -34,8 +34,8 @@
 }
 
 .user-show-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--user-avatar-size-show);
+  height: var(--user-avatar-size-show);
   border-radius: 999px;
   border: 1px solid var(--border);
   overflow: hidden;

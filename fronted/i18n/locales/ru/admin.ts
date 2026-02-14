@@ -54,6 +54,9 @@ export default {
     edit: 'Редактировать',
     delete: 'Удалить',
   },
+  files: {
+    avatarHint: 'PNG/JPG/WEBP, до 5MB',
+  },
   dashboard: {
     title: 'Панель управления',
     subtitle: 'Выберите модуль в левом меню. Здесь отображается контент выбранного раздела.',
@@ -67,7 +70,6 @@ export default {
     subtitle: 'Редактирование личных данных текущего пользователя.',
     avatar: {
       title: 'Аватар',
-      hint: 'PNG/JPG/WEBP, до 5MB',
       upload: 'Загрузить',
       delete: 'Удалить аватар',
       previewAlt: 'Аватар пользователя',
@@ -151,7 +153,6 @@ export default {
         roles: 'Роли',
         avatar: 'Аватар',
       },
-      avatarHint: 'PNG/JPG/WEBP, до 5MB',
       rolesPlaceholder: 'Выберите роли',
       saving: 'Сохраняем...',
       errors: {
@@ -188,7 +189,6 @@ export default {
         roles: 'Роли',
         avatar: 'Аватар',
       },
-      avatarHint: 'PNG/JPG/WEBP, до 5MB',
       rolesPlaceholder: 'Выберите роли',
       saving: 'Сохраняем...',
       errors: {

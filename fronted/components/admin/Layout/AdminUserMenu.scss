@@ -44,8 +44,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: var(--user-avatar-size-menu);
+  height: var(--user-avatar-size-menu);
   border-radius: 999px;
   font-size: 0.72rem;
   color: #f8fafc;

@@ -12,8 +12,8 @@
 }
 
 .profile-avatar-wrap {
-  width: 4rem;
-  height: 4rem;
+  width: var(--user-avatar-size-profile);
+  height: var(--user-avatar-size-profile);
   border-radius: 999px;
   border: 1px solid var(--border);
   overflow: hidden;

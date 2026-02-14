@@ -3,7 +3,7 @@
 }
 
 .rootTable {
-  width: 2.5rem;
+  width: var(--user-avatar-size-table);
 }
 
 .trigger {
@@ -15,8 +15,8 @@
 }
 
 .triggerTable {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--user-avatar-size-table);
+  height: var(--user-avatar-size-table);
   border-radius: 0.55rem;
 }
 
@@ -52,8 +52,8 @@
 }
 
 .rootTable .placeholder {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--user-avatar-size-table);
+  height: var(--user-avatar-size-table);
   border-radius: 0.55rem;
   font-size: 0.72rem;
 }
