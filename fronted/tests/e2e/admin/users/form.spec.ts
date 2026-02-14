@@ -107,6 +107,137 @@ test.describe('Admin users form pages', () => {
     expect(capturedUpdatePayload).toContain('\r\nadmin\r\n');
   });
 
+  test('creates single changelog entry when user and roles change together', async ({ page }) => {
+    await setupUsersForm(page);
+
+    let currentUser = { ...existingUser };
+    let changeLogPage = {
+      status: 'ok',
+      data: {
+        list_mode: 'latest',
+        current_page: 1,
+        data: [
+          {
+            id: 'log-1',
+            auditable_type: 'Modules\\\\Users\\\\Models\\\\User',
+            auditable_id: 'u-1',
+            event: 'update',
+            version: 1,
+            before: { first_name: 'Иван' },
+            after: { first_name: 'Иван' },
+            changed_fields: ['first_name'],
+            actor_type: 'Modules\\\\Users\\\\Models\\\\User',
+            actor_id: '1',
+            batch_id: 'b-1',
+            rolled_back_from_id: null,
+            meta: null,
+            created_at: '2026-02-14T18:00:00.000000Z',
+          },
+        ],
+        last_page: 1,
+        per_page: 20,
+        total: 1,
+      },
+    };
+
+    await page.route('**/api/admin/users/u-1', async (route) => {
+      const method = route.request().method();
+
+      if (method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'ok',
+            user: currentUser,
+          }),
+        });
+        return;
+      }
+
+      if (method === 'PATCH') {
+        currentUser = {
+          ...currentUser,
+          last_name: 'Петров',
+          roles: ['admin', 'manager'],
+        };
+
+        changeLogPage = {
+          status: 'ok',
+          data: {
+            ...changeLogPage.data,
+            data: [
+              {
+                id: 'log-2',
+                auditable_type: 'Modules\\\\Users\\\\Models\\\\User',
+                auditable_id: 'u-1',
+                event: 'update',
+                version: 2,
+                before: { last_name: 'Иванов', roles: ['admin'] },
+                after: { last_name: 'Петров', roles: ['admin', 'manager'] },
+                changed_fields: ['last_name', 'roles'],
+                actor_type: 'Modules\\\\Users\\\\Models\\\\User',
+                actor_id: '1',
+                batch_id: 'b-2',
+                rolled_back_from_id: null,
+                meta: null,
+                created_at: '2026-02-14T18:05:00.000000Z',
+              },
+              ...changeLogPage.data.data,
+            ],
+            total: 2,
+          },
+        };
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'ok',
+            data: currentUser,
+          }),
+        });
+        return;
+      }
+
+      await route.fallback();
+    });
+
+    await page.route('**/api/admin/changelog**', async (route) => {
+      const url = route.request().url();
+      if (!url.includes('model=user') || !url.includes('entity_id=u-1')) {
+        await route.fallback();
+        return;
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(changeLogPage),
+      });
+    });
+
+    await page.goto('/admin/users/u-1/edit');
+
+    await page.getByLabel('Фамилия').fill('Петров');
+
+    await page.getByLabel('Роли').click();
+    await page
+      .getByText(/manager\s*\(Менеджер\)/i)
+      .first()
+      .click();
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name: 'Сохранить' }).click();
+    await expect(page).toHaveURL(/\/admin\/users\/u-1$/);
+
+    await expect(page.locator('text=Версия #2')).toBeVisible();
+    await expect(page.locator('text=Изменённые поля: Фамилия, Роли')).toBeVisible();
+    await expect(page.locator('text=Фамилия:')).toHaveCount(1);
+    await expect(page.locator('text=Роли:')).toHaveCount(1);
+    await expect(page.locator('text=Версия #3')).toHaveCount(0);
+  });
+
   test('creates user with avatar on /admin/users/new', async ({ page }) => {
     await setupUsersForm(page);
 

@@ -78,7 +78,7 @@ export default {
     rollback: {
       title: 'Rollback changes',
       confirm: 'Rollback to version #{version} ({event})?',
-      toVersion: 'Restored to version #{version}',
+      fromVersion: 'Rolled back from version #{version}',
     },
     fields: {
       common: {

@@ -48,9 +48,9 @@
               {{ resolveActorLabel(entry) }}
             </NuxtLink>
             <span v-else class="admin-muted">{{ resolveActorLabel(entry) }}</span>
-            <span v-if="rollbackTargetVersion(entry) !== null" class="admin-muted">
+            <span v-if="rollbackSourceVersion(entry) !== null" class="admin-muted">
               {{
-                t('admin.changelog.rollback.toVersion', { version: rollbackTargetVersion(entry) })
+                t('admin.changelog.rollback.fromVersion', { version: rollbackSourceVersion(entry) })
               }}
             </span>
           </div>
@@ -220,7 +220,7 @@ const rollbackLoading = ref(false);
 const rollbackEntry = ref<AdminChangeLogEntry | null>(null);
 
 const resolveEntryEvent = (entry: AdminChangeLogEntry): ChangeLogEvent => {
-  if (rollbackTargetVersion(entry) !== null) {
+  if (rollbackSourceVersion(entry) !== null) {
     return 'restore';
   }
 
@@ -231,9 +231,9 @@ const eventLabel = (entry: AdminChangeLogEntry): string => {
   return t(`admin.changelog.events.${resolveEntryEvent(entry)}`);
 };
 
-const rollbackTargetVersion = (entry: AdminChangeLogEntry): number | null => {
+const rollbackSourceVersion = (entry: AdminChangeLogEntry): number | null => {
   const meta = entry.meta ?? {};
-  const fromMeta = Number(meta.rolled_back_to_version);
+  const fromMeta = Number(meta.rolled_back_from_version);
 
   if (Number.isFinite(fromMeta) && fromMeta >= 1) {
     return Math.floor(fromMeta);
@@ -248,7 +248,7 @@ const rollbackTargetVersion = (entry: AdminChangeLogEntry): number | null => {
     return null;
   }
 
-  return Math.max(1, sourceEntry.version - 1);
+  return sourceEntry.version;
 };
 
 const isCurrentActor = (entry: AdminChangeLogEntry): boolean => {
@@ -338,6 +338,47 @@ const formatScalar = (value: unknown): string => {
   }
 
   return String(value);
+};
+
+const formatArrayValue = (value: unknown[]): string => {
+  if (!value.length) {
+    return t('common.dash');
+  }
+
+  const allPrimitive = value.every(
+    (item) =>
+      item === null ||
+      item === undefined ||
+      typeof item === 'string' ||
+      typeof item === 'number' ||
+      typeof item === 'boolean'
+  );
+
+  if (allPrimitive) {
+    return value
+      .map((item) => {
+        if (item === null || item === undefined || item === '') {
+          return t('common.dash');
+        }
+
+        if (typeof item === 'boolean') {
+          return item ? 'true' : 'false';
+        }
+
+        return String(item);
+      })
+      .join(', ');
+  }
+
+  return t('admin.changelog.complexChanged');
+};
+
+const formatDiffValue = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return formatArrayValue(value);
+  }
+
+  return formatScalar(value);
 };
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
@@ -487,8 +528,8 @@ const getChangedRows = (
         rows.push({
           key: `${field}.${nestedRow.path}`,
           label: `${fieldLabel} · ${prettifyFieldName(nestedRow.path)}`,
-          before: formatScalar(nestedRow.before),
-          after: isInitialSet ? formatSetValue(nestedRow.after) : formatScalar(nestedRow.after),
+          before: formatDiffValue(nestedRow.before),
+          after: isInitialSet ? formatSetValue(nestedRow.after) : formatDiffValue(nestedRow.after),
           hideBefore: isInitialSet,
         });
       }
@@ -506,8 +547,8 @@ const getChangedRows = (
       rows.push({
         key: field,
         label: fieldLabel,
-        before: formatScalar(beforeValue),
-        after: isInitialSet ? formatSetValue(afterValue) : formatScalar(afterValue),
+        before: formatDiffValue(beforeValue),
+        after: isInitialSet ? formatSetValue(afterValue) : formatDiffValue(afterValue),
         hideBefore: isInitialSet,
       });
       continue;
@@ -518,8 +559,8 @@ const getChangedRows = (
     rows.push({
       key: field,
       label: fieldLabel,
-      before: formatScalar(beforeValue),
-      after: isInitialSet ? formatSetValue(afterValue) : formatScalar(afterValue),
+      before: formatDiffValue(beforeValue),
+      after: isInitialSet ? formatSetValue(afterValue) : formatDiffValue(afterValue),
       hideBefore: isInitialSet,
     });
   }

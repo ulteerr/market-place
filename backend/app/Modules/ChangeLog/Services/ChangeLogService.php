@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Modules\ChangeLog\Models\ChangeLog;
+use Modules\Users\Models\Role;
+use Modules\Users\Models\User;
 use RuntimeException;
 
 final class ChangeLogService
@@ -19,7 +21,7 @@ final class ChangeLogService
         ?int $perPage = null,
         ?int $page = null,
     ): LengthAwarePaginator {
-        $query = ChangeLog::query()->with("actor")->orderByDesc("created_at");
+        $query = ChangeLog::query()->with("actor");
 
         $model = trim((string) ($filters["model"] ?? ""));
         $entityId = trim((string) ($filters["entity_id"] ?? ""));
@@ -36,6 +38,12 @@ final class ChangeLogService
 
         if ($event !== "") {
             $query->where("event", $event);
+        }
+
+        if ($model !== "" && $entityId !== "") {
+            $query->orderByDesc("version");
+        } else {
+            $query->orderByDesc("created_at");
         }
 
         $mode = $this->listMode();
@@ -105,6 +113,8 @@ final class ChangeLogService
                     "rollback" => true,
                 ],
                 function () use ($modelClass, $model, $targetState, $keyName, $entityId): Model {
+                    $batchId = app(ChangeLogContext::class)->currentBatchId();
+
                     if ($targetState === null) {
                         if ($model !== null) {
                             $model->delete();
@@ -117,6 +127,7 @@ final class ChangeLogService
                     }
 
                     $instance = $model ?? new $modelClass();
+                    $beforeRelatedState = $this->buildRelatedSnapshot($instance);
                     $payload = $this->prepareRollbackPayload($instance, $targetState);
 
                     $payload[$keyName] = $entityId;
@@ -130,6 +141,16 @@ final class ChangeLogService
                     ) {
                         $instance->restore();
                     }
+
+                    $this->applyRelatedRollbackState($instance, $targetState);
+                    $afterRelatedState = $this->buildRelatedSnapshot($instance);
+                    $this->upsertRelatedRollbackLogIfNeeded(
+                        $instance,
+                        $beforeRelatedState,
+                        $afterRelatedState,
+                        $batchId,
+                        app(ChangeLogContext::class)->meta(),
+                    );
 
                     return $instance->refresh();
                 },
@@ -211,5 +232,144 @@ final class ChangeLogService
             class_uses_recursive($model),
             true,
         );
+    }
+
+    private function applyRelatedRollbackState(Model $model, array $targetState): void
+    {
+        if ($model instanceof User && array_key_exists("roles", $targetState)) {
+            $this->syncUserRolesFromSnapshot($model, $targetState["roles"]);
+        }
+    }
+
+    private function syncUserRolesFromSnapshot(User $user, mixed $rolesSnapshot): void
+    {
+        if (!is_array($rolesSnapshot)) {
+            return;
+        }
+
+        $roleCodes = array_values(
+            array_unique(
+                array_filter(
+                    array_map(fn($code) => is_string($code) ? trim($code) : "", $rolesSnapshot),
+                ),
+            ),
+        );
+
+        if (empty($roleCodes)) {
+            $user->roles()->sync([]);
+            return;
+        }
+
+        $roles = Role::query()
+            ->whereIn("code", $roleCodes)
+            ->get(["id", "code"]);
+        if ($roles->count() !== count($roleCodes)) {
+            throw new RuntimeException(
+                "Cannot rollback user roles: one or more role codes not found.",
+            );
+        }
+
+        $user->roles()->sync($roles->pluck("id")->all());
+    }
+
+    private function buildRelatedSnapshot(Model $model): array
+    {
+        if (!$model instanceof User || !$model->exists) {
+            return [];
+        }
+
+        $fresh = $model->fresh()?->load(["roles:id,code"]) ?? $model->load(["roles:id,code"]);
+        $roles = $fresh->roles->pluck("code")->filter()->values()->all();
+        sort($roles);
+
+        return [
+            "roles" => $roles,
+        ];
+    }
+
+    private function upsertRelatedRollbackLogIfNeeded(
+        Model $model,
+        array $beforeRelatedState,
+        array $afterRelatedState,
+        string $batchId,
+        array $contextMeta,
+    ): void {
+        if (!$model instanceof User) {
+            return;
+        }
+
+        $changedFields = [];
+        foreach (
+            array_unique(
+                array_merge(array_keys($beforeRelatedState), array_keys($afterRelatedState)),
+            )
+            as $key
+        ) {
+            if (($beforeRelatedState[$key] ?? null) !== ($afterRelatedState[$key] ?? null)) {
+                $changedFields[] = $key;
+            }
+        }
+
+        if (empty($changedFields)) {
+            return;
+        }
+
+        $beforePayload = [];
+        $afterPayload = [];
+        foreach ($changedFields as $field) {
+            $beforePayload[$field] = $beforeRelatedState[$field] ?? null;
+            $afterPayload[$field] = $afterRelatedState[$field] ?? null;
+        }
+
+        $entry = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", (string) $model->id)
+            ->where("event", "update")
+            ->where("batch_id", $batchId)
+            ->latest("created_at")
+            ->first();
+
+        if ($entry) {
+            $existingBefore = is_array($entry->before) ? $entry->before : [];
+            $existingAfter = is_array($entry->after) ? $entry->after : [];
+            $existingChanged = is_array($entry->changed_fields) ? $entry->changed_fields : [];
+            $existingMeta = is_array($entry->meta) ? $entry->meta : [];
+
+            $entry->before = [...$existingBefore, ...$beforePayload];
+            $entry->after = [...$existingAfter, ...$afterPayload];
+            $entry->changed_fields = array_values(
+                array_unique([...$existingChanged, ...$changedFields]),
+            );
+            $entry->meta = [
+                ...$existingMeta,
+                ...$contextMeta,
+                "schema_signature" => $model->changeLogSchemaSignature(),
+            ];
+            $entry->rolled_back_from_id =
+                $entry->rolled_back_from_id ?? ($contextMeta["rolled_back_from_id"] ?? null);
+            $entry->save();
+            return;
+        }
+
+        $actor = auth()->user();
+        $lastVersion = (int) ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", (string) $model->id)
+            ->max("version");
+
+        ChangeLog::query()->create([
+            "auditable_type" => User::class,
+            "auditable_id" => (string) $model->id,
+            "event" => "update",
+            "version" => $lastVersion + 1,
+            "before" => $beforePayload,
+            "after" => $afterPayload,
+            "changed_fields" => array_values($changedFields),
+            "actor_type" => $actor ? $actor::class : null,
+            "actor_id" => $actor?->getKey(),
+            "batch_id" => $batchId,
+            "rolled_back_from_id" => $contextMeta["rolled_back_from_id"] ?? null,
+            "meta" => [...$contextMeta, "schema_signature" => $model->changeLogSchemaSignature()],
+        ]);
     }
 }

@@ -103,6 +103,169 @@ final class ChangeLogFeatureTest extends TestCase
     }
 
     #[Test]
+    public function it_logs_related_user_changes_for_roles(): void
+    {
+        $auth = $this->actingAsAdmin();
+
+        Role::query()->firstOrCreate(
+            ["code" => "participant"],
+            ["label" => "Participant", "is_system" => true],
+        );
+        Role::query()->firstOrCreate(
+            ["code" => "admin"],
+            ["label" => "Admin", "is_system" => true],
+        );
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/users", [
+                "first_name" => "Related",
+                "last_name" => "Audit",
+                "email" => "related-audit@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/users/{$userId}", [
+                "roles" => ["admin"],
+            ])
+            ->assertOk();
+
+        $relatedLog = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->whereJsonContains("changed_fields", "roles")
+            ->latest("created_at")
+            ->first();
+
+        $this->assertNotNull($relatedLog);
+        $this->assertSame("user-related", $relatedLog->meta["scope"] ?? null);
+        $this->assertSame(["participant"], $relatedLog->before["roles"] ?? null);
+        $this->assertSame(["admin", "participant"], $relatedLog->after["roles"] ?? null);
+    }
+
+    #[Test]
+    public function it_merges_user_and_roles_changes_into_single_update_log(): void
+    {
+        $auth = $this->actingAsAdmin();
+
+        Role::query()->firstOrCreate(
+            ["code" => "participant"],
+            ["label" => "Participant", "is_system" => true],
+        );
+        Role::query()->firstOrCreate(
+            ["code" => "admin"],
+            ["label" => "Admin", "is_system" => true],
+        );
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/users", [
+                "first_name" => "Merge",
+                "last_name" => "Target",
+                "email" => "merge-target@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/users/{$userId}", [
+                "last_name" => "Target2",
+                "roles" => ["admin"],
+            ])
+            ->assertOk();
+
+        $updateLogs = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->orderByDesc("version")
+            ->get();
+
+        $this->assertCount(1, $updateLogs);
+
+        $log = $updateLogs->first();
+        $this->assertContains("last_name", $log->changed_fields ?? []);
+        $this->assertContains("roles", $log->changed_fields ?? []);
+        $this->assertSame("Target", $log->before["last_name"] ?? null);
+        $this->assertSame("Target2", $log->after["last_name"] ?? null);
+        $this->assertSame(["participant"], $log->before["roles"] ?? null);
+        $this->assertSame(["admin", "participant"], $log->after["roles"] ?? null);
+    }
+
+    #[Test]
+    public function admin_can_rollback_user_roles_from_related_log(): void
+    {
+        $auth = $this->actingAsAdmin();
+
+        Role::query()->firstOrCreate(
+            ["code" => "participant"],
+            ["label" => "Participant", "is_system" => true],
+        );
+        Role::query()->firstOrCreate(
+            ["code" => "admin"],
+            ["label" => "Admin", "is_system" => true],
+        );
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/users", [
+                "first_name" => "Rollback",
+                "last_name" => "Roles",
+                "email" => "rollback-roles@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/users/{$userId}", [
+                "roles" => ["admin"],
+            ])
+            ->assertOk();
+
+        $rolesLog = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->whereJsonContains("changed_fields", "roles")
+            ->latest("created_at")
+            ->firstOrFail();
+
+        $this->withHeaders($auth["headers"])
+            ->post("/api/admin/changelog/{$rolesLog->id}/rollback")
+            ->assertOk();
+
+        $user = User::query()->with("roles:id,code")->findOrFail($userId);
+        $codes = $user->roles->pluck("code")->sort()->values()->all();
+
+        $this->assertSame(["participant"], $codes);
+
+        $restoreLog = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->where("rolled_back_from_id", $rolesLog->id)
+            ->latest("version")
+            ->first();
+
+        $this->assertNotNull($restoreLog);
+        $this->assertContains("roles", $restoreLog->changed_fields ?? []);
+        $this->assertSame(["admin", "participant"], $restoreLog->before["roles"] ?? null);
+        $this->assertSame(["participant"], $restoreLog->after["roles"] ?? null);
+    }
+
+    #[Test]
     public function admin_can_rollback_role_to_previous_version(): void
     {
         $auth = $this->actingAsAdmin();

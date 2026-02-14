@@ -244,6 +244,135 @@ test.describe('Admin users show page', () => {
     await expect(page.locator('dd', { hasText: /^InitialLastName$/ })).toBeVisible();
   });
 
+  test('refreshes changelog entries after rollback', async ({ page }) => {
+    await setupAdminAuth(page);
+
+    let currentLastName = 'Moderator1';
+    let rollbackCalled = false;
+
+    await page.route('**/api/admin/users/u-1', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          user: {
+            ...shownUser,
+            last_name: currentLastName,
+          },
+        }),
+      });
+    });
+
+    await page.route('**/api/admin/changelog**', async (route) => {
+      const url = route.request().url();
+      if (!url.includes('model=user') || !url.includes('entity_id=u-1')) {
+        await route.fallback();
+        return;
+      }
+
+      const items = rollbackCalled
+        ? [
+            {
+              id: 'log-2',
+              auditable_type: 'Modules\\\\Users\\\\Models\\\\User',
+              auditable_id: 'u-1',
+              event: 'update',
+              version: 2,
+              before: { last_name: 'Moderator1' },
+              after: { last_name: 'Moderator' },
+              changed_fields: ['last_name'],
+              actor_type: 'Modules\\\\Users\\\\Models\\\\User',
+              actor_id: 'admin-1',
+              batch_id: 'b-2',
+              rolled_back_from_id: 'log-1',
+              meta: { rolled_back_to_version: 1 },
+              created_at: '2026-02-14T18:57:00.000000Z',
+            },
+            {
+              id: 'log-1',
+              auditable_type: 'Modules\\\\Users\\\\Models\\\\User',
+              auditable_id: 'u-1',
+              event: 'update',
+              version: 1,
+              before: { last_name: 'Moderator' },
+              after: { last_name: 'Moderator1' },
+              changed_fields: ['last_name'],
+              actor_type: 'Modules\\\\Users\\\\Models\\\\User',
+              actor_id: 'admin-1',
+              batch_id: 'b-1',
+              rolled_back_from_id: null,
+              meta: null,
+              created_at: '2026-02-14T18:56:29.000000Z',
+            },
+          ]
+        : [
+            {
+              id: 'log-1',
+              auditable_type: 'Modules\\\\Users\\\\Models\\\\User',
+              auditable_id: 'u-1',
+              event: 'update',
+              version: 1,
+              before: { last_name: 'Moderator' },
+              after: { last_name: 'Moderator1' },
+              changed_fields: ['last_name'],
+              actor_type: 'Modules\\\\Users\\\\Models\\\\User',
+              actor_id: 'admin-1',
+              batch_id: 'b-1',
+              rolled_back_from_id: null,
+              meta: null,
+              created_at: '2026-02-14T18:56:29.000000Z',
+            },
+          ];
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          data: {
+            list_mode: 'latest',
+            current_page: 1,
+            data: items,
+            last_page: 1,
+            per_page: 20,
+            total: items.length,
+          },
+        }),
+      });
+    });
+
+    await page.route('**/api/admin/changelog/log-1/rollback', async (route) => {
+      rollbackCalled = true;
+      currentLastName = 'Moderator';
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          message: 'Rollback completed.',
+          data: {
+            model_type: 'Modules\\\\Users\\\\Models\\\\User',
+            model_id: 'u-1',
+            rolled_back_from_id: 'log-1',
+          },
+        }),
+      });
+    });
+
+    await page.goto('/admin/users/u-1');
+    await expect(page.locator('text=Версия #1')).toBeVisible();
+    await expect(page.locator('text=Версия #2')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Откатить' }).first().click();
+    await page.locator('[role="dialog"]').getByRole('button', { name: 'Откатить' }).click();
+
+    await expect.poll(() => rollbackCalled).toBeTruthy();
+    await expect(page.locator('text=Версия #2')).toBeVisible();
+    await expect(page.locator('text=Откат из версии #1')).toBeVisible();
+  });
+
   test('shows actor name links in changelog', async ({ page }) => {
     await setupAdminAuth(page);
 

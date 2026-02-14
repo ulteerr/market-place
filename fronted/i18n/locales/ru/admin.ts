@@ -78,7 +78,7 @@ export default {
     rollback: {
       title: 'Откат изменений',
       confirm: 'Откатить к версии #{version} ({event})?',
-      toVersion: 'Восстановлено к версии #{version}',
+      fromVersion: 'Откат из версии #{version}',
     },
     fields: {
       common: {
