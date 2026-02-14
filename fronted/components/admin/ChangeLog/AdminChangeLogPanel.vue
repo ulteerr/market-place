@@ -6,7 +6,27 @@
     </div>
 
     <p v-if="!entityId" class="admin-muted text-sm">{{ t('common.dash') }}</p>
-    <p v-else-if="loading" class="admin-muted text-sm">{{ t('common.loading') }}</p>
+    <div v-else-if="loading" class="admin-changelog-skeleton space-y-3" aria-hidden="true">
+      <div v-for="item in 3" :key="item" class="admin-changelog-item rounded-xl p-3">
+        <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+          <div class="skeleton-meta-wrap">
+            <div class="skeleton-line is-badge" />
+            <div class="skeleton-line is-meta-short" />
+            <div class="skeleton-line is-meta-short" />
+            <div class="skeleton-line is-meta-short" />
+          </div>
+          <div class="skeleton-actions">
+            <div class="skeleton-line is-action" />
+            <div class="skeleton-line is-action" />
+          </div>
+        </div>
+        <div class="space-y-2.5">
+          <div class="skeleton-line is-meta" />
+          <div class="skeleton-line is-meta medium" />
+          <div class="skeleton-line is-meta long" />
+        </div>
+      </div>
+    </div>
     <p v-else-if="loadError" class="admin-error text-sm">{{ loadError }}</p>
     <p v-else-if="!entries.length" class="admin-muted text-sm">{{ t('admin.changelog.empty') }}</p>
 
@@ -14,7 +34,9 @@
       <li v-for="entry in entries" :key="entry.id" class="admin-changelog-item rounded-xl p-3">
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div class="flex flex-wrap items-center gap-2 text-xs">
-            <span class="admin-changelog-badge">{{ eventLabel(entry.event) }}</span>
+            <span :class="['admin-changelog-badge', `is-${resolveEntryEvent(entry)}`]">
+              {{ eventLabel(entry) }}
+            </span>
             <span class="admin-muted">{{ t('admin.changelog.version') }} #{{ entry.version }}</span>
             <span class="admin-muted">{{ formatDate(entry.created_at) }}</span>
             <span class="admin-muted">{{ t('admin.changelog.actor') }}:</span>
@@ -26,6 +48,11 @@
               {{ resolveActorLabel(entry) }}
             </NuxtLink>
             <span v-else class="admin-muted">{{ resolveActorLabel(entry) }}</span>
+            <span v-if="rollbackTargetVersion(entry) !== null" class="admin-muted">
+              {{
+                t('admin.changelog.rollback.toVersion', { version: rollbackTargetVersion(entry) })
+              }}
+            </span>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <button
@@ -62,24 +89,35 @@
             class="admin-diff-row text-xs"
           >
             <span class="admin-muted admin-diff-label">{{ row.label }}:</span>
-            <span class="admin-diff-before admin-diff-value">
+            <span v-if="!row.hideBefore" class="admin-diff-before admin-diff-value">
               {{ t('admin.changelog.was') }} {{ row.before }}
             </span>
-            <span class="admin-muted admin-diff-arrow">→</span>
+            <span v-if="!row.hideBefore" class="admin-muted admin-diff-arrow">→</span>
             <span class="admin-diff-after admin-diff-value">
-              {{ t('admin.changelog.now') }} {{ row.after }}
+              {{ row.hideBefore ? row.after : `${t('admin.changelog.now')} ${row.after}` }}
             </span>
           </li>
         </ul>
 
-        <div v-if="expandedEntryIds.has(entry.id)" class="mt-2 grid gap-2 md:grid-cols-2">
-          <div class="admin-changelog-side admin-changelog-side-before rounded-lg p-2">
-            <p class="admin-changelog-label mb-1 text-xs">{{ t('admin.changelog.before') }}</p>
-            <pre class="admin-changelog-json">{{ toJson(entry.before) }}</pre>
-          </div>
-          <div class="admin-changelog-side admin-changelog-side-after rounded-lg p-2">
-            <p class="admin-changelog-label mb-1 text-xs">{{ t('admin.changelog.after') }}</p>
+        <div v-if="expandedEntryIds.has(entry.id)" class="mt-2">
+          <div
+            v-if="entry.event === 'create'"
+            class="admin-changelog-side admin-changelog-side-after rounded-lg p-2"
+          >
+            <p class="admin-changelog-label mb-1 text-xs">
+              {{ t('admin.changelog.createdData') }}
+            </p>
             <pre class="admin-changelog-json">{{ toJson(entry.after) }}</pre>
+          </div>
+          <div v-else class="grid gap-2 md:grid-cols-2">
+            <div class="admin-changelog-side admin-changelog-side-before rounded-lg p-2">
+              <p class="admin-changelog-label mb-1 text-xs">{{ t('admin.changelog.before') }}</p>
+              <pre class="admin-changelog-json">{{ toJson(entry.before) }}</pre>
+            </div>
+            <div class="admin-changelog-side admin-changelog-side-after rounded-lg p-2">
+              <p class="admin-changelog-label mb-1 text-xs">{{ t('admin.changelog.after') }}</p>
+              <pre class="admin-changelog-json">{{ toJson(entry.after) }}</pre>
+            </div>
           </div>
         </div>
       </li>
@@ -90,9 +128,10 @@
       class="mt-4 flex flex-wrap items-center gap-2"
     >
       <button
+        v-if="page > 1"
         type="button"
         class="admin-button-secondary rounded-md px-3 py-1.5 text-xs"
-        :disabled="page <= 1 || loading"
+        :disabled="loading"
         @click="goToPage(page - 1)"
       >
         {{ t('admin.pagination.back') }}
@@ -107,9 +146,10 @@
         }}
       </span>
       <button
+        v-if="page < lastPage"
         type="button"
         class="admin-button-secondary rounded-md px-3 py-1.5 text-xs"
-        :disabled="page >= lastPage || loading"
+        :disabled="loading"
         @click="goToPage(page + 1)"
       >
         {{ t('admin.pagination.forward') }}
@@ -146,11 +186,13 @@ const props = withDefaults(
     entityId?: string | null;
     title?: string;
     perPage?: number;
+    refreshToken?: number | string;
   }>(),
   {
     entityId: null,
     title: '',
     perPage: 20,
+    refreshToken: 0,
   }
 );
 
@@ -177,8 +219,36 @@ const rollbackModalOpen = ref(false);
 const rollbackLoading = ref(false);
 const rollbackEntry = ref<AdminChangeLogEntry | null>(null);
 
-const eventLabel = (event: ChangeLogEvent): string => {
-  return t(`admin.changelog.events.${event}`);
+const resolveEntryEvent = (entry: AdminChangeLogEntry): ChangeLogEvent => {
+  if (rollbackTargetVersion(entry) !== null) {
+    return 'restore';
+  }
+
+  return entry.event;
+};
+
+const eventLabel = (entry: AdminChangeLogEntry): string => {
+  return t(`admin.changelog.events.${resolveEntryEvent(entry)}`);
+};
+
+const rollbackTargetVersion = (entry: AdminChangeLogEntry): number | null => {
+  const meta = entry.meta ?? {};
+  const fromMeta = Number(meta.rolled_back_to_version);
+
+  if (Number.isFinite(fromMeta) && fromMeta >= 1) {
+    return Math.floor(fromMeta);
+  }
+
+  if (!entry.rolled_back_from_id) {
+    return null;
+  }
+
+  const sourceEntry = entries.value.find((item) => item.id === entry.rolled_back_from_id);
+  if (!sourceEntry) {
+    return null;
+  }
+
+  return Math.max(1, sourceEntry.version - 1);
 };
 
 const isCurrentActor = (entry: AdminChangeLogEntry): boolean => {
@@ -274,6 +344,53 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
 
+const isUnsetValue = (value: unknown): boolean => {
+  if (value === null || value === undefined || value === '') {
+    return true;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (isPlainObject(value)) {
+    return Object.keys(value).length === 0;
+  }
+
+  return false;
+};
+
+const isEmptyContainer = (value: unknown): boolean => {
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (isPlainObject(value)) {
+    return Object.keys(value).length === 0;
+  }
+
+  return false;
+};
+
+const areValuesEqual = (left: unknown, right: unknown): boolean => {
+  if (left === right) {
+    return true;
+  }
+
+  if (isEmptyContainer(left) && isEmptyContainer(right)) {
+    return true;
+  }
+
+  const leftIsStructured = Array.isArray(left) || isPlainObject(left);
+  const rightIsStructured = Array.isArray(right) || isPlainObject(right);
+
+  if (leftIsStructured && rightIsStructured) {
+    return JSON.stringify(left) === JSON.stringify(right);
+  }
+
+  return false;
+};
+
 const tryParseJsonString = (value: unknown): unknown => {
   if (typeof value !== 'string') {
     return value;
@@ -293,6 +410,10 @@ const tryParseJsonString = (value: unknown): unknown => {
 
 const normalizeComparableValue = (value: unknown): unknown => {
   return tryParseJsonString(value);
+};
+
+const formatSetValue = (value: unknown): string => {
+  return `${t('admin.changelog.set')} ${formatScalar(value)}`.trim();
 };
 
 const collectObjectDiff = (
@@ -315,7 +436,7 @@ const collectObjectDiff = (
       continue;
     }
 
-    if (beforeItem !== afterItem) {
+    if (!areValuesEqual(beforeItem, afterItem)) {
       rows.push({
         path: nextPath,
         before: beforeItem,
@@ -329,7 +450,7 @@ const collectObjectDiff = (
 
 const getChangedRows = (
   entry: AdminChangeLogEntry
-): Array<{ key: string; label: string; before: string; after: string }> => {
+): Array<{ key: string; label: string; before: string; after: string; hideBefore: boolean }> => {
   if (entry.event === 'create') {
     return [];
   }
@@ -338,12 +459,22 @@ const getChangedRows = (
   const beforeMap = (entry.before ?? {}) as Record<string, unknown>;
   const afterMap = (entry.after ?? {}) as Record<string, unknown>;
 
-  const rows: Array<{ key: string; label: string; before: string; after: string }> = [];
+  const rows: Array<{
+    key: string;
+    label: string;
+    before: string;
+    after: string;
+    hideBefore: boolean;
+  }> = [];
 
   for (const field of fields) {
     const beforeValue = normalizeComparableValue(beforeMap[field]);
     const afterValue = normalizeComparableValue(afterMap[field]);
     const fieldLabel = resolveFieldLabel(field);
+
+    if (areValuesEqual(beforeValue, afterValue)) {
+      continue;
+    }
 
     if (isPlainObject(beforeValue) || isPlainObject(afterValue)) {
       const nestedBefore = isPlainObject(beforeValue) ? beforeValue : {};
@@ -351,11 +482,14 @@ const getChangedRows = (
       const nestedRows = collectObjectDiff(nestedBefore, nestedAfter);
 
       for (const nestedRow of nestedRows) {
+        const isInitialSet = isUnsetValue(nestedRow.before) && !isUnsetValue(nestedRow.after);
+
         rows.push({
           key: `${field}.${nestedRow.path}`,
           label: `${fieldLabel} · ${prettifyFieldName(nestedRow.path)}`,
           before: formatScalar(nestedRow.before),
-          after: formatScalar(nestedRow.after),
+          after: isInitialSet ? formatSetValue(nestedRow.after) : formatScalar(nestedRow.after),
+          hideBefore: isInitialSet,
         });
       }
 
@@ -363,24 +497,30 @@ const getChangedRows = (
     }
 
     if (Array.isArray(beforeValue) || Array.isArray(afterValue)) {
-      if (JSON.stringify(beforeValue ?? null) === JSON.stringify(afterValue ?? null)) {
+      if (areValuesEqual(beforeValue, afterValue)) {
         continue;
       }
+
+      const isInitialSet = isUnsetValue(beforeValue) && !isUnsetValue(afterValue);
 
       rows.push({
         key: field,
         label: fieldLabel,
         before: formatScalar(beforeValue),
-        after: formatScalar(afterValue),
+        after: isInitialSet ? formatSetValue(afterValue) : formatScalar(afterValue),
+        hideBefore: isInitialSet,
       });
       continue;
     }
+
+    const isInitialSet = isUnsetValue(beforeValue) && !isUnsetValue(afterValue);
 
     rows.push({
       key: field,
       label: fieldLabel,
       before: formatScalar(beforeValue),
-      after: formatScalar(afterValue),
+      after: isInitialSet ? formatSetValue(afterValue) : formatScalar(afterValue),
+      hideBefore: isInitialSet,
     });
   }
 
@@ -388,10 +528,6 @@ const getChangedRows = (
 };
 
 const canRollback = (entry: AdminChangeLogEntry): boolean => {
-  if (entry.event === 'create') {
-    return false;
-  }
-
   if (entry.event === 'update') {
     return getChangedRows(entry).length > 0;
   }
@@ -424,7 +560,7 @@ const rollbackMessage = computed(() => {
 
   return t('admin.changelog.rollback.confirm', {
     version: rollbackEntry.value.version,
-    event: eventLabel(rollbackEntry.value.event),
+    event: eventLabel(rollbackEntry.value),
   });
 });
 
@@ -489,6 +625,17 @@ watch(
   { immediate: true }
 );
 
+watch(
+  () => props.refreshToken,
+  () => {
+    if (!props.entityId) {
+      return;
+    }
+
+    void fetchChangeLog();
+  }
+);
+
 watch(page, () => {
   void fetchChangeLog();
 });
@@ -543,6 +690,21 @@ watch(page, () => {
   border-radius: 999px;
   padding: 0.1rem 0.5rem;
   font-weight: 600;
+}
+
+.admin-changelog-badge.is-create {
+  border-color: color-mix(in srgb, #22c55e 55%, var(--border));
+  color: #4ade80;
+}
+
+.admin-changelog-badge.is-update {
+  border-color: color-mix(in srgb, #3b82f6 55%, var(--border));
+  color: #93c5fd;
+}
+
+.admin-changelog-badge.is-restore {
+  border-color: color-mix(in srgb, #a855f7 55%, var(--border));
+  color: #c084fc;
 }
 
 .admin-actor-link {
@@ -622,5 +784,72 @@ watch(page, () => {
 
 .admin-diff-value {
   word-break: break-word;
+}
+
+.skeleton-line {
+  display: inline-block;
+  width: 100%;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.08) 25%,
+    rgba(148, 163, 184, 0.18) 37%,
+    rgba(148, 163, 184, 0.08) 63%
+  );
+  background-size: 400% 100%;
+  animation: changelog-skeleton-shimmer 1.25s ease infinite;
+}
+
+.skeleton-line.is-badge {
+  height: 1.6rem;
+  width: 7.5rem;
+}
+
+.skeleton-meta-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 18rem;
+}
+
+.skeleton-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skeleton-line.is-action {
+  height: 2rem;
+  width: 7rem;
+}
+
+.skeleton-line.is-meta {
+  height: 0.95rem;
+  width: 58%;
+}
+
+.skeleton-line.is-meta-short {
+  height: 0.72rem;
+  width: 6.2rem;
+}
+
+.skeleton-line.is-meta.medium {
+  width: 46%;
+}
+
+.skeleton-line.is-meta.long {
+  width: 74%;
+}
+
+@keyframes changelog-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
 }
 </style>

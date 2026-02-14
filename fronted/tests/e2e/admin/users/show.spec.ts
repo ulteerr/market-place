@@ -148,6 +148,102 @@ test.describe('Admin users show page', () => {
     await expect(page.locator('dd', { hasText: /^Moderator$/ })).toBeVisible();
   });
 
+  test('applies rollback from create entry and restores initial snapshot', async ({ page }) => {
+    await setupAdminAuth(page);
+
+    let currentLastName = 'AfterCreateUpdate';
+    let rollbackCalled = false;
+
+    await page.route('**/api/admin/users/u-1', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          user: {
+            ...shownUser,
+            last_name: currentLastName,
+          },
+        }),
+      });
+    });
+
+    await page.route('**/api/admin/changelog**', async (route) => {
+      const url = route.request().url();
+      if (!url.includes('model=user') || !url.includes('entity_id=u-1')) {
+        await route.fallback();
+        return;
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          data: {
+            list_mode: 'latest',
+            current_page: 1,
+            data: [
+              {
+                id: 'log-create-1',
+                auditable_type: 'Modules\\\\Users\\\\Models\\\\User',
+                auditable_id: 'u-1',
+                event: 'create',
+                version: 1,
+                before: null,
+                after: {
+                  id: 'u-1',
+                  first_name: shownUser.first_name,
+                  last_name: 'InitialLastName',
+                  middle_name: shownUser.middle_name,
+                  email: shownUser.email,
+                },
+                changed_fields: null,
+                actor_type: 'Modules\\\\Users\\\\Models\\\\User',
+                actor_id: 'admin-1',
+                batch_id: null,
+                rolled_back_from_id: null,
+                meta: null,
+                created_at: '2026-02-14T18:00:00.000000Z',
+              },
+            ],
+            last_page: 1,
+            per_page: 20,
+            total: 1,
+          },
+        }),
+      });
+    });
+
+    await page.route('**/api/admin/changelog/log-create-1/rollback', async (route) => {
+      rollbackCalled = true;
+      currentLastName = 'InitialLastName';
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          message: 'Rollback completed.',
+          data: {
+            model_type: 'Modules\\\\Users\\\\Models\\\\User',
+            model_id: 'u-1',
+            rolled_back_from_id: 'log-create-1',
+          },
+        }),
+      });
+    });
+
+    await page.goto('/admin/users/u-1');
+    await expect(page.locator('dd', { hasText: /^AfterCreateUpdate$/ })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Откатить' }).first().click();
+    await page.locator('[role="dialog"]').getByRole('button', { name: 'Откатить' }).click();
+
+    await expect.poll(() => rollbackCalled).toBeTruthy();
+    await expect(page.locator('dd', { hasText: /^InitialLastName$/ })).toBeVisible();
+  });
+
   test('shows actor name links in changelog', async ({ page }) => {
     await setupAdminAuth(page);
 

@@ -83,6 +83,7 @@
     <AdminChangeLogPanel
       model="profile"
       :entity-id="user?.id || null"
+      :refresh-token="changeLogRefreshToken"
       @rolled-back="onProfileRolledBack"
     />
   </section>
@@ -111,6 +112,7 @@ const formError = ref('');
 const avatarUploading = ref(false);
 const avatarError = ref('');
 const avatarDraftFiles = ref<File[]>([]);
+const changeLogRefreshToken = ref(0);
 
 const form = reactive({
   first_name: user.value?.first_name ?? '',
@@ -166,6 +168,7 @@ const submitForm = async () => {
       middle_name: form.middle_name.trim() || null,
       email: form.email.trim(),
     });
+    changeLogRefreshToken.value += 1;
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.profile.errors.update'));
@@ -189,6 +192,7 @@ const onAvatarFilesAdded = async (files: File[]) => {
 
   try {
     await uploadAvatar(file);
+    changeLogRefreshToken.value += 1;
   } catch (error) {
     avatarError.value = getApiErrorMessage(error, t('admin.profile.avatar.errors.upload'));
   } finally {
@@ -203,6 +207,7 @@ const onDeleteAvatar = async () => {
 
   try {
     await deleteAvatar();
+    changeLogRefreshToken.value += 1;
   } catch (error) {
     avatarError.value = getApiErrorMessage(error, t('admin.profile.avatar.errors.delete'));
   } finally {
@@ -213,6 +218,7 @@ const onDeleteAvatar = async () => {
 const onProfileRolledBack = async () => {
   await refreshUser();
   syncFormFromUser();
+  changeLogRefreshToken.value += 1;
 };
 </script>
 

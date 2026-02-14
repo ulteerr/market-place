@@ -67,15 +67,18 @@ export default {
     changedFields: 'Изменённые поля',
     was: 'было',
     now: 'стало',
+    set: 'установлено',
     complexChanged: 'изменено',
     showJson: 'Показать JSON',
     hideJson: 'Скрыть JSON',
+    createdData: 'Создано',
     before: 'До',
     after: 'После',
     empty: 'Пока нет изменений.',
     rollback: {
       title: 'Откат изменений',
       confirm: 'Откатить к версии #{version} ({event})?',
+      toVersion: 'Восстановлено к версии #{version}',
     },
     fields: {
       common: {

@@ -6,9 +6,10 @@
 
     <div class="flex items-center gap-2">
       <button
+        v-if="currentPage > 1"
         type="button"
         class="admin-button-secondary rounded-md px-3 py-1.5 text-xs"
-        :disabled="loading || currentPage <= 1"
+        :disabled="loading"
         @click="$emit('page', currentPage - 1)"
       >
         {{ t('admin.pagination.back') }}
@@ -29,9 +30,10 @@
       </template>
 
       <button
+        v-if="currentPage < lastPage"
         type="button"
         class="admin-button-secondary rounded-md px-3 py-1.5 text-xs"
-        :disabled="loading || currentPage >= lastPage"
+        :disabled="loading"
         @click="$emit('page', currentPage + 1)"
       >
         {{ t('admin.pagination.forward') }}

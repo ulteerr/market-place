@@ -108,6 +108,8 @@ final class ChangeLogService
             return $context->withMeta(
                 [
                     "rolled_back_from_id" => $entry->id,
+                    "rolled_back_from_version" => $entry->version,
+                    "rolled_back_to_version" => $this->resolveRollbackTargetVersion($entry),
                     "rollback" => true,
                 ],
                 function () use ($modelClass, $model, $targetState, $keyName, $entityId): Model {
@@ -167,8 +169,18 @@ final class ChangeLogService
     private function resolveTargetState(ChangeLog $entry): ?array
     {
         return match ($entry->event) {
-            "create", "update", "delete", "restore" => $entry->before,
+            "create" => $entry->after,
+            "update", "delete", "restore" => $entry->before,
             default => throw new RuntimeException("Unsupported changelog event for rollback."),
+        };
+    }
+
+    private function resolveRollbackTargetVersion(ChangeLog $entry): ?int
+    {
+        return match ($entry->event) {
+            "create" => 1,
+            "update", "delete", "restore" => max(1, ((int) $entry->version) - 1),
+            default => null,
         };
     }
 

@@ -215,4 +215,112 @@ test.describe('Admin users page', () => {
     await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
     await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
   });
+
+  test('shows pagination navigation buttons only when available', async ({ page }) => {
+    await setupAdminAuth(page);
+
+    const paginatedUsers = Array.from({ length: 51 }, (_, index) => ({
+      id: `u-p-${index + 1}`,
+      email: `user${index + 1}@example.com`,
+      first_name: `Имя${index + 1}`,
+      last_name: `Фамилия${index + 1}`,
+      middle_name: null,
+      can_access_admin_panel: index % 2 === 0,
+    }));
+
+    await page.route('**/api/admin/users**', async (route) => {
+      const url = new URL(route.request().url());
+      const pageNumber = Math.max(1, Number(url.searchParams.get('page') ?? 1));
+      const perPage = Math.max(1, Number(url.searchParams.get('per_page') ?? 10));
+
+      const total = paginatedUsers.length;
+      const lastPage = Math.max(1, Math.ceil(total / perPage));
+      const currentPage = Math.min(pageNumber, lastPage);
+      const offset = (currentPage - 1) * perPage;
+      const pageItems = paginatedUsers.slice(offset, offset + perPage);
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          data: {
+            data: pageItems,
+            current_page: currentPage,
+            last_page: lastPage,
+            per_page: perPage,
+            total,
+          },
+        }),
+      });
+    });
+
+    await page.goto('/admin/users');
+
+    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Вперед' })).toHaveCount(1);
+
+    await page.getByRole('button', { name: '2', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Вперед' })).toHaveCount(1);
+
+    await page.getByRole('button', { name: '6', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Вперед' })).toHaveCount(0);
+  });
+
+  test('changes list when pagination buttons are clicked', async ({ page }) => {
+    await setupAdminAuth(page);
+
+    const paginatedUsers = Array.from({ length: 25 }, (_, index) => ({
+      id: `u-c-${index + 1}`,
+      email: `click${index + 1}@example.com`,
+      first_name: `Имя${index + 1}`,
+      last_name: `Фамилия${index + 1}`,
+      middle_name: null,
+      can_access_admin_panel: true,
+    }));
+
+    await page.route('**/api/admin/users**', async (route) => {
+      const url = new URL(route.request().url());
+      const pageNumber = Math.max(1, Number(url.searchParams.get('page') ?? 1));
+      const perPage = Math.max(1, Number(url.searchParams.get('per_page') ?? 10));
+
+      const total = paginatedUsers.length;
+      const lastPage = Math.max(1, Math.ceil(total / perPage));
+      const currentPage = Math.min(pageNumber, lastPage);
+      const offset = (currentPage - 1) * perPage;
+      const pageItems = paginatedUsers.slice(offset, offset + perPage);
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          data: {
+            data: pageItems,
+            current_page: currentPage,
+            last_page: lastPage,
+            per_page: perPage,
+            total,
+          },
+        }),
+      });
+    });
+
+    await page.goto('/admin/users');
+    await expect(page.locator('tbody tr').first()).toContainText('Фамилия1');
+
+    await page.getByRole('button', { name: '2', exact: true }).click();
+    await expect(page).toHaveURL(/page=2/);
+    await expect(page.locator('tbody tr').first()).toContainText('Фамилия11');
+
+    await page.getByRole('button', { name: 'Вперед' }).click();
+    await expect(page).toHaveURL(/page=3/);
+    await expect(page.locator('tbody tr').first()).toContainText('Фамилия21');
+
+    await page.getByRole('button', { name: 'Назад' }).click();
+    await expect(page).toHaveURL(/page=2/);
+    await expect(page.locator('tbody tr').first()).toContainText('Фамилия11');
+  });
 });

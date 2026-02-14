@@ -67,15 +67,18 @@ export default {
     changedFields: 'Changed fields',
     was: 'was',
     now: 'now',
+    set: 'set',
     complexChanged: 'changed',
     showJson: 'Show JSON',
     hideJson: 'Hide JSON',
+    createdData: 'Created',
     before: 'Before',
     after: 'After',
     empty: 'No changes yet.',
     rollback: {
       title: 'Rollback changes',
       confirm: 'Rollback to version #{version} ({event})?',
+      toVersion: 'Restored to version #{version}',
     },
     fields: {
       common: {

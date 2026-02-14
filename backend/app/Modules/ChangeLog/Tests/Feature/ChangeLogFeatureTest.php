@@ -147,6 +147,44 @@ final class ChangeLogFeatureTest extends TestCase
     }
 
     #[Test]
+    public function admin_can_rollback_role_to_create_snapshot(): void
+    {
+        $auth = $this->actingAsAdmin();
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/roles", [
+                "code" => "audit-create-snapshot",
+                "label" => "Role Initial",
+            ])
+            ->assertCreated();
+
+        $roleId = (string) $createResponse->json("data.id");
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/roles/{$roleId}", [
+                "label" => "Role Changed",
+            ])
+            ->assertOk();
+
+        $createEntry = ChangeLog::query()
+            ->where("auditable_type", Role::class)
+            ->where("auditable_id", $roleId)
+            ->where("event", "create")
+            ->where("version", 1)
+            ->firstOrFail();
+
+        $this->withHeaders($auth["headers"])
+            ->post("/api/admin/changelog/{$createEntry->id}/rollback")
+            ->assertOk()
+            ->assertJsonPath("data.model_id", $roleId);
+
+        $this->assertDatabaseHas("roles", [
+            "id" => $roleId,
+            "label" => "Role Initial",
+        ]);
+    }
+
+    #[Test]
     public function admin_can_restore_hard_deleted_role_via_rollback(): void
     {
         $auth = $this->actingAsAdmin();
