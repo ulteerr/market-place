@@ -71,4 +71,21 @@ export const mockMeEndpoint = async (page: Page, user: AdminAuthUser = defaultAd
 export const setupAdminAuth = async (page: Page, user: AdminAuthUser = defaultAdminUser) => {
   await setAdminAuthCookies(page, user);
   await mockMeEndpoint(page, user);
+  await page.route('**/api/admin/changelog**', async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'ok',
+        data: {
+          list_mode: 'latest',
+          current_page: 1,
+          data: [],
+          last_page: 1,
+          per_page: 20,
+          total: 0,
+        },
+      }),
+    });
+  });
 };

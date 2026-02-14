@@ -18,16 +18,21 @@ final class ChangeLogController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $listMode = $this->service->listMode();
+        $perPage = $request->has("per_page") ? (int) $request->integer("per_page") : null;
+        $page = $request->has("page") ? (int) $request->integer("page") : null;
         $items = $this->service->paginate(
             [
                 "model" => $request->query("model"),
                 "entity_id" => $request->query("entity_id"),
                 "event" => $request->query("event"),
             ],
-            (int) $request->integer("per_page", 30),
+            $perPage,
+            $page,
         );
 
         return StatusResponseFactory::success([
+            "list_mode" => $listMode,
             ...$items->toArray(),
             "data" => ChangeLogResource::collection($items->getCollection())->resolve(),
         ]);

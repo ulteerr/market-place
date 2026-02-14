@@ -43,10 +43,17 @@
         </div>
       </form>
     </article>
+
+    <AdminChangeLogPanel
+      model="role"
+      :entity-id="String(route.params.id || '')"
+      @rolled-back="onRoleRolledBack"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
+import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
 import type { UpdateRolePayload } from '~/composables/useAdminRoles';
 import {
@@ -136,6 +143,10 @@ const submitForm = async () => {
 };
 
 onMounted(fetchRole);
+
+const onRoleRolledBack = async () => {
+  await fetchRole();
+};
 </script>
 
 <style lang="scss" scoped src="./edit.scss"></style>

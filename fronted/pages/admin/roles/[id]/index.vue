@@ -43,10 +43,17 @@
         </div>
       </template>
     </article>
+
+    <AdminChangeLogPanel
+      model="role"
+      :entity-id="role?.id || String(route.params.id || '')"
+      @rolled-back="onRoleRolledBack"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
+import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
 import type { AdminRole } from '~/composables/useAdminRoles';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
@@ -83,6 +90,10 @@ const fetchRole = async () => {
 };
 
 onMounted(fetchRole);
+
+const onRoleRolledBack = async () => {
+  await fetchRole();
+};
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

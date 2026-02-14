@@ -113,10 +113,17 @@
         </div>
       </form>
     </article>
+
+    <AdminChangeLogPanel
+      model="user"
+      :entity-id="String(route.params.id || '')"
+      @rolled-back="onUserRolledBack"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
+import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
@@ -344,6 +351,10 @@ const submitForm = async () => {
 onMounted(async () => {
   await Promise.all([fetchUser(), fetchRoles()]);
 });
+
+const onUserRolledBack = async () => {
+  await fetchUser();
+};
 
 onBeforeUnmount(() => {
   if (avatarPreviewUrl.value) {

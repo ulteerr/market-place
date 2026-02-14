@@ -14,9 +14,12 @@ use RuntimeException;
 
 final class ChangeLogService
 {
-    public function paginate(array $filters = [], int $perPage = 30): LengthAwarePaginator
-    {
-        $query = ChangeLog::query()->orderByDesc("created_at");
+    public function paginate(
+        array $filters = [],
+        ?int $perPage = null,
+        ?int $page = null,
+    ): LengthAwarePaginator {
+        $query = ChangeLog::query()->with("actor")->orderByDesc("created_at");
 
         $model = trim((string) ($filters["model"] ?? ""));
         $entityId = trim((string) ($filters["entity_id"] ?? ""));
@@ -35,12 +38,37 @@ final class ChangeLogService
             $query->where("event", $event);
         }
 
-        return $query->paginate(max(1, min(200, $perPage)));
+        $mode = $this->listMode();
+        $maxPerPage = max(1, (int) config("changelog.admin.max_per_page", 200));
+
+        if ($mode === "latest") {
+            $latestLimit = max(
+                1,
+                min($maxPerPage, (int) config("changelog.admin.latest_limit", 20)),
+            );
+            return $query->paginate($latestLimit, ["*"], "page", 1);
+        }
+
+        $defaultPerPage = max(
+            1,
+            min($maxPerPage, (int) config("changelog.admin.default_per_page", 30)),
+        );
+        $resolvedPerPage = $perPage !== null ? (int) $perPage : $defaultPerPage;
+        $resolvedPerPage = max(1, min($maxPerPage, $resolvedPerPage));
+        $resolvedPage = max(1, (int) ($page ?? 1));
+
+        return $query->paginate($resolvedPerPage, ["*"], "page", $resolvedPage);
+    }
+
+    public function listMode(): string
+    {
+        $mode = (string) config("changelog.admin.list_mode", "latest");
+        return in_array($mode, ["latest", "paginated"], true) ? $mode : "latest";
     }
 
     public function findById(string $id): ?ChangeLog
     {
-        return ChangeLog::query()->find($id);
+        return ChangeLog::query()->with("actor")->find($id);
     }
 
     public function rollback(ChangeLog $entry): Model
@@ -139,8 +167,7 @@ final class ChangeLogService
     private function resolveTargetState(ChangeLog $entry): ?array
     {
         return match ($entry->event) {
-            "create", "update", "restore" => $entry->after,
-            "delete" => $entry->before,
+            "create", "update", "delete", "restore" => $entry->before,
             default => throw new RuntimeException("Unsupported changelog event for rollback."),
         };
     }

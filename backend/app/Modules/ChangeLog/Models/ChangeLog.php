@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\ChangeLog\Models;
 
 use App\Shared\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Model;
 
 final class ChangeLog extends Model
@@ -36,4 +37,9 @@ final class ChangeLog extends Model
         "changed_fields" => "array",
         "meta" => "array",
     ];
+
+    public function actor(): MorphTo
+    {
+        return $this->morphTo(__FUNCTION__, "actor_type", "actor_id");
+    }
 }

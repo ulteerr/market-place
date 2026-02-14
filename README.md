@@ -122,15 +122,45 @@ Authentication uses **Bearer token** (Laravel Sanctum).
 
 ---
 
-## 🔐 Auth Endpoints
+All endpoints and request/response examples are available in Swagger UI.
 
-| Method | Endpoint              | Description |
-|------|------------------------|------------|
-| POST | /api/auth/login        | User login |
-| POST | /api/auth/register     | User registration |
-| POST | /api/auth/logout       | User logout (protected) |
+---
 
-All request/response examples are available directly in Swagger UI.
+## 🕘 ChangeLog (Audit Trail)
+
+Admin ChangeLog is available for profile, users and roles in admin pages.
+
+What it includes:
+- event type (`create`, `update`, `delete`, `restore`)
+- actor (current user is shown as `Я` / `Me`, others link to `/admin/users/{id}`)
+- version, timestamp, changed fields
+- rollback action from selected changelog record
+
+Rollback behavior:
+- rollback endpoint: `POST /api/admin/changelog/{id}/rollback`
+- UI refreshes entity data after successful rollback
+- empty `update` logs (without actual field changes) are skipped
+
+All API details are documented in Swagger.
+
+---
+
+## ⚙️ ChangeLog ENV
+
+Configure backend changelog list mode in `backend/.env`:
+
+```env
+CHANGELOG_ADMIN_LIST_MODE=latest
+CHANGELOG_ADMIN_LATEST_LIMIT=20
+CHANGELOG_ADMIN_PER_PAGE=30
+CHANGELOG_ADMIN_MAX_PER_PAGE=200
+```
+
+Meaning:
+- `CHANGELOG_ADMIN_LIST_MODE`: `latest` or `paginated`
+- `CHANGELOG_ADMIN_LATEST_LIMIT`: number of latest records in `latest` mode
+- `CHANGELOG_ADMIN_PER_PAGE`: default page size for `paginated` mode
+- `CHANGELOG_ADMIN_MAX_PER_PAGE`: hard max page size limit
 
 ---
 

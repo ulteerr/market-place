@@ -62,10 +62,17 @@
         </div>
       </template>
     </article>
+
+    <AdminChangeLogPanel
+      model="user"
+      :entity-id="user?.id || String(route.params.id || '')"
+      @rolled-back="onUserRolledBack"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
+import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import { getAdminUserFullName } from '~/composables/useAdminUsers';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
@@ -115,6 +122,10 @@ const userInitials = computed(() => {
 });
 
 onMounted(fetchUser);
+
+const onUserRolledBack = async () => {
+  await fetchUser();
+};
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

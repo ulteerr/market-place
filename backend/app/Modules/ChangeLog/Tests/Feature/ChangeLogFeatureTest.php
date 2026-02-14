@@ -38,10 +38,12 @@ final class ChangeLogFeatureTest extends TestCase
             ->where("auditable_type", User::class)
             ->where("auditable_id", $target->id)
             ->where("event", "create")
+            ->latest("created_at")
             ->first();
 
         $this->assertNotNull($createLog);
         $this->assertSame((string) $auth["user"]->id, $createLog->actor_id);
+        $this->assertNull($createLog->changed_fields);
 
         $this->withHeaders($auth["headers"])
             ->patch("/api/admin/users/" . $target->id, [
@@ -57,6 +59,7 @@ final class ChangeLogFeatureTest extends TestCase
             ->first();
 
         $this->assertNotNull($updateLog);
+        $this->assertSame((string) $auth["user"]->id, $updateLog->actor_id);
         $this->assertSame("Audit", $updateLog->before["first_name"] ?? null);
         $this->assertSame("AuditUpdated", $updateLog->after["first_name"] ?? null);
         $this->assertContains("first_name", $updateLog->changed_fields ?? []);
@@ -96,6 +99,7 @@ final class ChangeLogFeatureTest extends TestCase
 
         $this->assertNotNull($profileLog);
         $this->assertSame("profile", $profileLog->meta["scope"] ?? null);
+        $this->assertNotContains("settings", $profileLog->changed_fields ?? []);
     }
 
     #[Test]
@@ -128,7 +132,7 @@ final class ChangeLogFeatureTest extends TestCase
             ->where("auditable_type", Role::class)
             ->where("auditable_id", $roleId)
             ->where("event", "update")
-            ->where("version", 2)
+            ->where("version", 3)
             ->firstOrFail();
 
         $this->withHeaders($auth["headers"])
@@ -204,6 +208,59 @@ final class ChangeLogFeatureTest extends TestCase
         $this->withHeaders($user["headers"])
             ->post("/api/admin/changelog/{$entry->id}/rollback")
             ->assertForbidden();
+    }
+
+    #[Test]
+    public function it_does_not_log_create_without_authenticated_actor(): void
+    {
+        $role = Role::factory()->create([
+            "code" => "without-actor",
+            "label" => "Without Actor",
+        ]);
+
+        $this->assertDatabaseMissing("change_logs", [
+            "auditable_type" => Role::class,
+            "auditable_id" => (string) $role->id,
+            "event" => "create",
+        ]);
+    }
+
+    #[Test]
+    public function it_skips_update_log_when_no_actual_changes(): void
+    {
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/users", [
+                "first_name" => "NoChange",
+                "last_name" => "User",
+                "email" => "no-change@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+
+        $beforeCount = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->count();
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/users/{$userId}", [
+                "first_name" => "NoChange",
+            ])
+            ->assertOk();
+
+        $afterCount = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->count();
+
+        $this->assertSame($beforeCount, $afterCount);
     }
 
     private function actingAsAdmin(): array

@@ -48,6 +48,16 @@ components:
           type: string
           nullable: true
           format: uuid
+        actor:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            full_name:
+              type: string
+              nullable: true
         batch_id:
           type: string
           nullable: true
@@ -75,6 +85,10 @@ components:
           type: object
           required: [current_page, data, per_page]
           properties:
+            list_mode:
+              type: string
+              enum: [latest, paginated]
+              example: latest
             current_page:
               type: integer
               example: 1
@@ -150,4 +164,3 @@ components:
             rolled_back_from_id:
               type: string
               format: uuid
-

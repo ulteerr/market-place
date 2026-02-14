@@ -79,10 +79,17 @@
         </div>
       </form>
     </article>
+
+    <AdminChangeLogPanel
+      model="profile"
+      :entity-id="user?.id || null"
+      @rolled-back="onProfileRolledBack"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
+import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
 import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
@@ -97,7 +104,7 @@ definePageMeta({
   layout: 'admin',
 });
 
-const { user, updateProfile, uploadAvatar, deleteAvatar } = useAuth();
+const { user, refreshUser, updateProfile, uploadAvatar, deleteAvatar } = useAuth();
 
 const saving = ref(false);
 const formError = ref('');
@@ -139,6 +146,13 @@ const resetErrors = () => {
   fieldErrors.last_name = '';
   fieldErrors.middle_name = '';
   fieldErrors.email = '';
+};
+
+const syncFormFromUser = () => {
+  form.first_name = user.value?.first_name ?? '';
+  form.last_name = user.value?.last_name ?? '';
+  form.middle_name = user.value?.middle_name ?? '';
+  form.email = user.value?.email ?? '';
 };
 
 const submitForm = async () => {
@@ -194,6 +208,11 @@ const onDeleteAvatar = async () => {
   } finally {
     avatarUploading.value = false;
   }
+};
+
+const onProfileRolledBack = async () => {
+  await refreshUser();
+  syncFormFromUser();
 };
 </script>
 

@@ -89,6 +89,10 @@ final class ChangeLogObserver
         }
 
         $actor = auth()->user();
+        if ($event === "create" && !$actor) {
+            return;
+        }
+
         $auditableType = $model::class;
         $auditableId = (string) $model->getKey();
 
@@ -97,7 +101,14 @@ final class ChangeLogObserver
             ->where("auditable_id", $auditableId)
             ->max("version");
 
-        $resolvedFields = $changedFields ?? $this->diffFields($before ?? [], $after ?? []);
+        $resolvedFields =
+            $event === "create"
+                ? null
+                : $changedFields ?? $this->diffFields($before ?? [], $after ?? []);
+
+        if ($event === "update" && empty($resolvedFields)) {
+            return;
+        }
 
         ChangeLog::query()->create([
             "auditable_type" => $auditableType,
@@ -106,7 +117,7 @@ final class ChangeLogObserver
             "version" => ((int) $version) + 1,
             "before" => $before,
             "after" => $after,
-            "changed_fields" => array_values($resolvedFields),
+            "changed_fields" => $resolvedFields !== null ? array_values($resolvedFields) : null,
             "actor_type" => $actor ? $actor::class : null,
             "actor_id" => $actor?->getKey(),
             "batch_id" => $context->currentBatchId(),
@@ -168,21 +179,47 @@ final class ChangeLogObserver
             return $value->format(\DateTimeInterface::ATOM);
         }
 
-        if (
-            is_bool($value) ||
-            is_int($value) ||
-            is_float($value) ||
-            is_string($value) ||
-            $value === null
-        ) {
+        if (is_bool($value) || is_int($value) || is_float($value) || $value === null) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            $decoded = $this->decodeJsonString($value);
+            if ($decoded !== null) {
+                return $this->normalizeValue($decoded);
+            }
+
             return $value;
         }
 
         if (is_array($value)) {
+            if ($this->isAssocArray($value)) {
+                ksort($value);
+            }
+
             return array_map(fn($item) => $this->normalizeValue($item), $value);
         }
 
         return (string) $value;
+    }
+
+    private function decodeJsonString(string $value): mixed
+    {
+        $trimmed = trim($value);
+        if (!str_starts_with($trimmed, "{") && !str_starts_with($trimmed, "[")) {
+            return null;
+        }
+
+        try {
+            return json_decode($trimmed, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return null;
+        }
+    }
+
+    private function isAssocArray(array $value): bool
+    {
+        return !array_is_list($value);
     }
 
     private function diffFields(array $before, array $after): array
