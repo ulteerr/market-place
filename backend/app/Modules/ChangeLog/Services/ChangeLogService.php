@@ -39,22 +39,14 @@ final class ChangeLogService
         }
 
         $mode = $this->listMode();
-        $maxPerPage = max(1, (int) config("changelog.admin.max_per_page", 200));
+        $limit = max(1, (int) config("changelog.admin.limit", 20));
 
         if ($mode === "latest") {
-            $latestLimit = max(
-                1,
-                min($maxPerPage, (int) config("changelog.admin.latest_limit", 20)),
-            );
-            return $query->paginate($latestLimit, ["*"], "page", 1);
+            return $query->paginate($limit, ["*"], "page", 1);
         }
 
-        $defaultPerPage = max(
-            1,
-            min($maxPerPage, (int) config("changelog.admin.default_per_page", 30)),
-        );
-        $resolvedPerPage = $perPage !== null ? (int) $perPage : $defaultPerPage;
-        $resolvedPerPage = max(1, min($maxPerPage, $resolvedPerPage));
+        $resolvedPerPage = $perPage !== null ? (int) $perPage : $limit;
+        $resolvedPerPage = max(1, min($limit, $resolvedPerPage));
         $resolvedPage = max(1, (int) ($page ?? 1));
 
         return $query->paginate($resolvedPerPage, ["*"], "page", $resolvedPage);

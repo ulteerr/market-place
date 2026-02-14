@@ -145,22 +145,30 @@ All API details are documented in Swagger.
 
 ---
 
+## 🆕 Recent ChangeLog updates
+
+- rollback from `create` is supported (restore to initial snapshot / version `#1`)
+- rollback entries are shown as `restore` with target version label
+- create entries show one JSON block (`Created/Создано`) instead of `Before/After`
+- diff view hides empty `before` and shows `set <value>` for first-time assignment
+- profile page refreshes ChangeLog block after save/avatar actions without full reload
+- pagination hides `Back` on first page and `Next` on last page
+- added e2e coverage for pagination navigation and rollback from `create`
+
+---
+
 ## ⚙️ ChangeLog ENV
 
 Configure backend changelog list mode in `backend/.env`:
 
 ```env
 CHANGELOG_ADMIN_LIST_MODE=latest
-CHANGELOG_ADMIN_LATEST_LIMIT=20
-CHANGELOG_ADMIN_PER_PAGE=30
-CHANGELOG_ADMIN_MAX_PER_PAGE=200
+CHANGELOG_ADMIN_LIMIT=20
 ```
 
 Meaning:
 - `CHANGELOG_ADMIN_LIST_MODE`: `latest` or `paginated`
-- `CHANGELOG_ADMIN_LATEST_LIMIT`: number of latest records in `latest` mode
-- `CHANGELOG_ADMIN_PER_PAGE`: default page size for `paginated` mode
-- `CHANGELOG_ADMIN_MAX_PER_PAGE`: hard max page size limit
+- `CHANGELOG_ADMIN_LIMIT`: record limit (`latest`) or page size cap (`paginated`)
 
 ---
 
