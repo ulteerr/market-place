@@ -28,6 +28,10 @@
         @reset="$emit('reset')"
       />
 
+      <div v-if="$slots.filters">
+        <slot name="filters" />
+      </div>
+
       <div class="flex flex-wrap items-start justify-between gap-3">
         <p class="admin-muted text-sm sm:shrink-0">
           {{ t('admin.entity.shownCount', { shown: shownCount, total: totalCount }) }}

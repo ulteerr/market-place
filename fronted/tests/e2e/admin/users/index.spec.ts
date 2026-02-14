@@ -48,6 +48,7 @@ const setupUsersPage = async (page: Page) => {
     const sortBy = url.searchParams.get('sort_by') ?? 'last_name';
     const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
     const perPage = Number(url.searchParams.get('per_page') ?? 10);
+    const accessGroup = url.searchParams.get('access_group');
 
     const filtered = dataset.filter((item) => {
       if (!search) {
@@ -59,7 +60,19 @@ const setupUsersPage = async (page: Page) => {
         .some((value) => String(value).toLowerCase().includes(search));
     });
 
-    const sorted = [...filtered].sort((left, right) => {
+    const byAccess = filtered.filter((item) => {
+      if (accessGroup === 'admin') {
+        return item.can_access_admin_panel;
+      }
+
+      if (accessGroup === 'basic') {
+        return !item.can_access_admin_panel;
+      }
+
+      return true;
+    });
+
+    const sorted = [...byAccess].sort((left, right) => {
       const leftValue = String((left as Record<string, unknown>)[sortBy] ?? '').toLowerCase();
       const rightValue = String((right as Record<string, unknown>)[sortBy] ?? '').toLowerCase();
       const compare = leftValue.localeCompare(rightValue, 'ru');
@@ -176,6 +189,28 @@ test.describe('Admin users page', () => {
     await expect(page.getByText('Удалить пользователя Иванов Иван Иванович?')).toBeVisible();
     await page.locator('[role="dialog"]').getByRole('button', { name: 'Удалить' }).click();
 
+    await expect(page.getByText('Иванов', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
+    await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
+  });
+
+  test('filters users by access groups via tag buttons', async ({ page }) => {
+    await setupUsersPage(page);
+    await page.goto('/admin/users');
+
+    await page.getByTestId('admin-tag-admin').click();
+    await expect(page).toHaveURL(/access_group=admin/);
+    await expect(page.getByText('Иванов', { exact: true })).toBeVisible();
+    await expect(page.getByText('Петрова', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
+
+    await page.reload();
+    await expect(page).toHaveURL(/access_group=admin/);
+    await expect(page.getByText('Иванов', { exact: true })).toBeVisible();
+    await expect(page.getByText('Петрова', { exact: true })).toHaveCount(0);
+
+    await page.getByTestId('admin-tag-basic').click();
+    await expect(page).toHaveURL(/access_group=basic/);
     await expect(page.getByText('Иванов', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
     await expect(page.getByText('Показано 1 из 1.')).toBeVisible();

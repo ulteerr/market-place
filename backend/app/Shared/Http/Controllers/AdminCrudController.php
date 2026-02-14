@@ -20,32 +20,37 @@ abstract class AdminCrudController extends Controller
 
     protected function paginateMethod(): string
     {
-        return 'paginate';
+        return "paginate";
     }
 
     protected function createMethod(): string
     {
-        return 'create';
+        return "create";
     }
 
     protected function findMethod(): string
     {
-        return 'findById';
+        return "findById";
     }
 
     protected function updateMethod(): string
     {
-        return 'update';
+        return "update";
     }
 
     protected function deleteMethod(): string
     {
-        return 'delete';
+        return "delete";
     }
 
     protected function updateArguments(string $id, array $data): array
     {
         return [$id, $data];
+    }
+
+    protected function indexFilters(): array
+    {
+        return [];
     }
 
     protected function createItem(array $data): mixed
@@ -80,24 +85,27 @@ abstract class AdminCrudController extends Controller
     {
         $request = request();
 
-        $perPage = max(1, min(100, (int) $request->integer('per_page', 20)));
-        $sortBy = trim((string) $request->query('sort_by', ''));
-        $sortDir = strtolower((string) $request->query('sort_dir', 'asc'));
-        $search = trim((string) $request->query('search', ''));
+        $perPage = max(1, min(100, (int) $request->integer("per_page", 20)));
+        $sortBy = trim((string) $request->query("sort_by", ""));
+        $sortDir = strtolower((string) $request->query("sort_dir", "asc"));
+        $search = trim((string) $request->query("search", ""));
 
-        if (!in_array($sortDir, ['asc', 'desc'], true)) {
-            $sortDir = 'asc';
+        if (!in_array($sortDir, ["asc", "desc"], true)) {
+            $sortDir = "asc";
         }
 
         $method = $this->paginateMethod();
         $items = $this->service()->{$method}(
             $perPage,
             [],
-            [
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-                'search' => $search,
-            ]
+            array_merge(
+                [
+                    "sort_by" => $sortBy,
+                    "sort_dir" => $sortDir,
+                    "search" => $search,
+                ],
+                $this->indexFilters(),
+            ),
         );
 
         return StatusResponseFactory::success($items);
@@ -108,15 +116,9 @@ abstract class AdminCrudController extends Controller
         $requestClass = $this->createRequestClass();
         $request = app($requestClass);
 
-        $item = $this->createItem(
-            $request->validated()
-        );
+        $item = $this->createItem($request->validated());
 
-        return StatusResponseFactory::successWithMessage(
-            'Created successfully',
-            $item,
-            201
-        );
+        return StatusResponseFactory::successWithMessage("Created successfully", $item, 201);
     }
 
     public function show(string $id): JsonResponse
@@ -124,7 +126,7 @@ abstract class AdminCrudController extends Controller
         $item = $this->findItem($id);
 
         if (!$item) {
-            abort(404, 'Not found');
+            abort(404, "Not found");
         }
 
         if ($factory = $this->responseFactory()) {
@@ -139,23 +141,15 @@ abstract class AdminCrudController extends Controller
         $requestClass = $this->updateRequestClass();
         $request = app($requestClass);
 
-        $item = $this->updateItem(
-            $id,
-            $request->validated()
-        );
+        $item = $this->updateItem($id, $request->validated());
 
-        return StatusResponseFactory::successWithMessage(
-            'Updated successfully',
-            $item
-        );
+        return StatusResponseFactory::successWithMessage("Updated successfully", $item);
     }
 
     public function destroy(string $id): JsonResponse
     {
         $this->deleteItem($id);
 
-        return StatusResponseFactory::ok(
-            'Deleted successfully'
-        );
+        return StatusResponseFactory::ok("Deleted successfully");
     }
 }

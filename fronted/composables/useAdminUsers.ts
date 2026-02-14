@@ -66,6 +66,7 @@ export interface AdminUsersListParams {
   search?: string;
   sort_by?: string;
   sort_dir?: SortDirection;
+  access_group?: 'admin' | 'basic';
 }
 
 export const getAdminUserFullName = (user: AdminUser): string => {

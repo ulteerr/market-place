@@ -12,9 +12,7 @@ use Modules\Users\Http\Requests\UpdateAdminUserRequest;
 
 final class AdminUserController extends AdminCrudController
 {
-    public function __construct(
-        private readonly UsersService $usersService
-    ) {}
+    public function __construct(private readonly UsersService $usersService) {}
 
     protected function service(): object
     {
@@ -38,22 +36,22 @@ final class AdminUserController extends AdminCrudController
 
     protected function createMethod(): string
     {
-        return 'createUser';
+        return "createUser";
     }
 
     protected function findMethod(): string
     {
-        return 'getUserById';
+        return "getUserById";
     }
 
     protected function updateMethod(): string
     {
-        return 'updateUser';
+        return "updateUser";
     }
 
     protected function deleteMethod(): string
     {
-        return 'deleteUser';
+        return "deleteUser";
     }
 
     protected function updateArguments(string $id, array $data): array
@@ -61,9 +59,22 @@ final class AdminUserController extends AdminCrudController
         $user = $this->usersService->getUserById($id);
 
         if (!$user) {
-            abort(404, 'Not found');
+            abort(404, "Not found");
         }
 
         return [$user, $data];
+    }
+
+    protected function indexFilters(): array
+    {
+        $accessGroup = trim((string) request()->query("access_group", ""));
+
+        if (!in_array($accessGroup, ["admin", "basic"], true)) {
+            return [];
+        }
+
+        return [
+            "access_group" => $accessGroup,
+        ];
     }
 }

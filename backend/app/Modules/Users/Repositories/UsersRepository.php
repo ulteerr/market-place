@@ -94,6 +94,19 @@ final class UsersRepository implements UsersRepositoryInterface
             });
         }
 
+        $accessGroup = trim((string) ($filters["access_group"] ?? ""));
+        if ($accessGroup === "admin") {
+            $query->whereHas(
+                "roles",
+                fn(Builder $roleQuery) => $roleQuery->where("code", "!=", "participant"),
+            );
+        } elseif ($accessGroup === "basic") {
+            $query->whereDoesntHave(
+                "roles",
+                fn(Builder $roleQuery) => $roleQuery->where("code", "!=", "participant"),
+            );
+        }
+
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
         $sortDir = strtolower((string) ($filters["sort_dir"] ?? "desc"));
         if (!in_array($sortDir, ["asc", "desc"], true)) {

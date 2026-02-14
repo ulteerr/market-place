@@ -30,10 +30,19 @@
     @update:mode="onModeChange"
     @toggle-desktop="onToggleDesktopMode"
     @apply="onApplySearch"
-    @reset="onResetFilters"
+    @reset="onResetAllFilters"
     @sort="onToggleSort"
     @page="fetchUsers"
   >
+    <template #filters>
+      <AdminTagFilter
+        v-model="selectedAccessGroups"
+        :options="accessTagOptions"
+        mode="single"
+        @update:model-value="onAccessFilterChange"
+      />
+    </template>
+
     <template #table>
       <table class="admin-table">
         <thead>
@@ -175,6 +184,7 @@
 <script setup lang="ts">
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import AdminTagFilter from '~/components/admin/Listing/AdminTagFilter.vue';
 import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import type { AdminUser } from '~/composables/useAdminUsers';
@@ -186,6 +196,24 @@ definePageMeta({
 });
 
 const usersApi = useAdminUsers();
+const route = useRoute();
+const router = useRouter();
+
+const readAccessGroupFromQuery = (): 'admin' | 'basic' | null => {
+  const raw = route.query.access_group;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+
+  return value === 'admin' || value === 'basic' ? value : null;
+};
+
+const initialAccessGroup = readAccessGroupFromQuery();
+const selectedAccessGroups = ref<Array<'admin' | 'basic'>>(
+  initialAccessGroup ? [initialAccessGroup] : []
+);
+const accessTagOptions = computed(() => [
+  { value: 'admin', label: t('admin.users.index.tags.admin') },
+  { value: 'basic', label: t('admin.users.index.tags.basic') },
+]);
 const {
   listState,
   items: users,
@@ -217,7 +245,11 @@ const {
   defaultPerPage: 10,
   listErrorMessage: t('admin.errors.users.loadList'),
   deleteErrorMessage: t('admin.errors.users.delete'),
-  list: usersApi.list,
+  list: (params) =>
+    usersApi.list({
+      ...params,
+      access_group: selectedAccessGroups.value[0] ?? undefined,
+    }),
   remove: usersApi.remove,
   getItemId: (user) => user.id,
 });
@@ -235,6 +267,27 @@ const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
 
 const onToggleDesktopMode = () => {
   tableOnDesktop.value = !tableOnDesktop.value;
+};
+
+const syncAccessGroupQuery = async () => {
+  await router.replace({
+    query: {
+      ...route.query,
+      access_group: selectedAccessGroups.value[0] ?? undefined,
+      page: undefined,
+    },
+  });
+};
+
+const onAccessFilterChange = async () => {
+  await syncAccessGroupQuery();
+  await fetchUsers(1);
+};
+
+const onResetAllFilters = async () => {
+  selectedAccessGroups.value = [];
+  await syncAccessGroupQuery();
+  onResetFilters();
 };
 
 const accessLabel = (item: AdminUser): string => {

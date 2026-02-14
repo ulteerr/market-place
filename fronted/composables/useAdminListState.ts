@@ -70,6 +70,7 @@ export const useAdminListState = (options: UseAdminListStateOptions) => {
   const syncQuery = async (page: number) => {
     await router.replace({
       query: {
+        ...route.query,
         page: page > 1 ? String(page) : undefined,
         per_page: String(perPage.value),
         sort_by: sortBy.value,

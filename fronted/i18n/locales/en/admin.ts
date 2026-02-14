@@ -198,6 +198,10 @@ export default {
         admin: 'Admin panel',
         basic: 'No admin access',
       },
+      tags: {
+        admin: 'Admins',
+        basic: 'Regular users',
+      },
     },
     new: {
       title: 'New user',
