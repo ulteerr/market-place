@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ActionLog\Models\ActionLog;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
+use Modules\Users\Services\UsersService;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -124,6 +125,45 @@ final class ActionLogFeatureTest extends TestCase
             User::class,
             (string) $modelFilteredResponse->json("data.data.0.model_type"),
         );
+    }
+
+    #[Test]
+    public function it_logs_user_related_changes_for_roles_in_action_log(): void
+    {
+        $this->actingAsAdmin();
+
+        $participant = Role::query()->firstOrCreate(
+            ["code" => "participant"],
+            ["label" => "Participant", "is_system" => true],
+        );
+        Role::query()->firstOrCreate(
+            ["code" => "admin"],
+            ["label" => "Admin", "is_system" => true],
+        );
+
+        $target = User::query()->create([
+            "email" => "target-roles@example.com",
+            "first_name" => "Target",
+            "last_name" => "Roles",
+            "password" => "password123",
+        ]);
+        $target->roles()->sync([$participant->id]);
+
+        app(UsersService::class)->updateUser($target, [
+            "roles" => ["admin"],
+        ]);
+
+        $entry = ActionLog::query()
+            ->where("model_type", User::class)
+            ->where("model_id", (string) $target->id)
+            ->where("event", "update")
+            ->latest("created_at")
+            ->first();
+
+        $this->assertNotNull($entry);
+        $this->assertContains("roles", $entry->changed_fields ?? []);
+        $this->assertSame(["participant"], $entry->before["roles"] ?? null);
+        $this->assertSame(["admin", "participant"], $entry->after["roles"] ?? null);
     }
 
     private function actingAsAdmin(): array

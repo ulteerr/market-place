@@ -16,6 +16,8 @@ use Modules\Files\Services\FilesService;
 use RuntimeException;
 use Modules\ChangeLog\Models\ChangeLog;
 use Modules\ChangeLog\Services\ChangeLogContext;
+use Modules\ActionLog\Models\ActionLog;
+use Modules\ActionLog\Services\ActionLogService;
 
 final class UsersService implements UsersServiceInterface
 {
@@ -31,6 +33,7 @@ final class UsersService implements UsersServiceInterface
             $this->syncGlobalRoles($user, $data["roles"] ?? []);
             $this->attachAvatarIfProvided($user, $data);
             $this->enrichCreateChangeLogWithRelatedState($user);
+            $this->enrichCreateActionLogWithRelatedState($user);
 
             return $user;
         });
@@ -48,6 +51,7 @@ final class UsersService implements UsersServiceInterface
             $this->removeAvatarIfRequested($user, $data);
             $this->attachAvatarIfProvided($user, $data);
             $this->writeRelatedChangeLogIfChanged($user, $beforeRelatedSnapshot);
+            $this->writeRelatedActionLogIfChanged($user, $beforeRelatedSnapshot);
 
             return $user;
         });
@@ -255,5 +259,92 @@ final class UsersService implements UsersServiceInterface
                 "schema_signature" => $user->changeLogSchemaSignature(),
             ],
         ]);
+    }
+
+    private function enrichCreateActionLogWithRelatedState(User $user): void
+    {
+        if (!$user->shouldWriteActionLog("create")) {
+            return;
+        }
+
+        $createLog = ActionLog::query()
+            ->where("model_type", User::class)
+            ->where("model_id", (string) $user->id)
+            ->where("event", "create")
+            ->latest("created_at")
+            ->first();
+
+        if (!$createLog) {
+            return;
+        }
+
+        $related = $this->buildRelatedSnapshot($user);
+        $after = is_array($createLog->after) ? $createLog->after : [];
+        $createLog->after = [...$after, ...$related];
+        $createLog->save();
+    }
+
+    private function writeRelatedActionLogIfChanged(User $user, array $beforeRelatedSnapshot): void
+    {
+        if (!$user->shouldWriteActionLog("update")) {
+            return;
+        }
+
+        $afterRelatedSnapshot = $this->buildRelatedSnapshot($user);
+        $changedFields = [];
+
+        foreach (array_keys($beforeRelatedSnapshot) as $key) {
+            if (($beforeRelatedSnapshot[$key] ?? null) !== ($afterRelatedSnapshot[$key] ?? null)) {
+                $changedFields[] = $key;
+            }
+        }
+
+        if ($changedFields === []) {
+            return;
+        }
+
+        $beforePayload = [];
+        $afterPayload = [];
+        foreach ($changedFields as $field) {
+            $beforePayload[$field] = $beforeRelatedSnapshot[$field] ?? null;
+            $afterPayload[$field] = $afterRelatedSnapshot[$field] ?? null;
+        }
+
+        $actorId = auth()->id();
+        $ipAddress = request()?->ip();
+
+        $existingEntry = ActionLog::query()
+            ->where("model_type", User::class)
+            ->where("model_id", (string) $user->id)
+            ->where("event", "update")
+            ->where("user_id", $actorId)
+            ->where("ip_address", $ipAddress)
+            ->where("created_at", ">=", now()->subSeconds(10))
+            ->latest("created_at")
+            ->first();
+
+        if ($existingEntry) {
+            $existingBefore = is_array($existingEntry->before) ? $existingEntry->before : [];
+            $existingAfter = is_array($existingEntry->after) ? $existingEntry->after : [];
+            $existingChangedFields = is_array($existingEntry->changed_fields)
+                ? $existingEntry->changed_fields
+                : [];
+
+            $existingEntry->before = [...$existingBefore, ...$beforePayload];
+            $existingEntry->after = [...$existingAfter, ...$afterPayload];
+            $existingEntry->changed_fields = array_values(
+                array_unique([...$existingChangedFields, ...$changedFields]),
+            );
+            $existingEntry->save();
+            return;
+        }
+
+        app(ActionLogService::class)->logModelEvent(
+            $user,
+            "update",
+            $beforePayload,
+            $afterPayload,
+            $changedFields,
+        );
     }
 }

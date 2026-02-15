@@ -45,7 +45,7 @@ final class ActionLogObserver
     {
         $before = self::$beforeSnapshots[spl_object_id($model)] ?? [];
         $after = $this->normalizeAttributes($model->getAttributes());
-        $changedFields = $this->diffFields($before, $after);
+        $changedFields = $this->diffFields($model, $before, $after);
 
         if ($changedFields === []) {
             $this->forget($model);
@@ -160,12 +160,25 @@ final class ActionLogObserver
         }
     }
 
-    private function diffFields(array $before, array $after): array
+    private function diffFields(Model $model, array $before, array $after): array
     {
         $keys = array_unique(array_merge(array_keys($before), array_keys($after)));
+        $ignored = ["created_at", "updated_at"];
+
+        if (method_exists($model, "actionLogExcludedAttributes")) {
+            $extra = $model->actionLogExcludedAttributes();
+            if (is_array($extra)) {
+                $ignored = [...$ignored, ...$extra];
+            }
+        }
+
+        $ignored = array_values(array_unique(array_filter($ignored, "is_string")));
         $changed = [];
 
         foreach ($keys as $key) {
+            if (in_array($key, $ignored, true)) {
+                continue;
+            }
             if (($before[$key] ?? null) !== ($after[$key] ?? null)) {
                 $changed[] = $key;
             }
