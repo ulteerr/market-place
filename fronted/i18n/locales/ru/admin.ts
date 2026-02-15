@@ -73,8 +73,13 @@ export default {
     showJson: 'Показать JSON',
     hideJson: 'Скрыть JSON',
     createdData: 'Создано',
+    mediaSnapshots: 'Медиа-снапшоты',
     before: 'До',
     after: 'После',
+    preview: {
+      title: 'Изображение',
+      open: 'Открыть изображение',
+    },
     empty: 'Пока нет изменений.',
     rollback: {
       title: 'Откат изменений',

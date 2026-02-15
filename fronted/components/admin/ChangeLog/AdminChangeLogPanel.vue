@@ -86,11 +86,37 @@
           >
             <span class="admin-muted admin-diff-label">{{ row.label }}:</span>
             <span v-if="!row.hideBefore" class="admin-diff-before admin-diff-value">
-              {{ t('admin.changelog.was') }} {{ row.before }}
+              <template v-if="row.beforePreview">
+                <UiImagePreview
+                  :src="row.beforePreview"
+                  :alt="row.label"
+                  :preview-alt="row.label"
+                  variant="table"
+                  :fallback-text="t('common.dash')"
+                  :preview-title="t('admin.changelog.preview.title')"
+                  :open-aria-label="t('admin.changelog.preview.open')"
+                  class="admin-diff-image"
+                />
+              </template>
+              <template v-else>{{ t('admin.changelog.was') }} {{ row.before }}</template>
             </span>
             <span v-if="!row.hideBefore" class="admin-muted admin-diff-arrow">→</span>
             <span class="admin-diff-after admin-diff-value">
-              {{ row.hideBefore ? row.after : `${t('admin.changelog.now')} ${row.after}` }}
+              <template v-if="row.afterPreview">
+                <UiImagePreview
+                  :src="row.afterPreview"
+                  :alt="row.label"
+                  :preview-alt="row.label"
+                  variant="table"
+                  :fallback-text="t('common.dash')"
+                  :preview-title="t('admin.changelog.preview.title')"
+                  :open-aria-label="t('admin.changelog.preview.open')"
+                  class="admin-diff-image"
+                />
+              </template>
+              <template v-else>{{
+                row.hideBefore ? row.after : `${t('admin.changelog.now')} ${row.after}`
+              }}</template>
             </span>
           </li>
         </ul>
@@ -171,11 +197,14 @@
 import type {
   AdminChangeLogEntry,
   ChangeLogEvent,
+  ChangeLogMediaSnapshotItem,
   ChangeLogListMode,
 } from '~/composables/useAdminChangeLog';
 import AdminLink from '~/components/admin/AdminLink.vue';
+import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
+import { resolveAssetUrl } from '~/composables/asset-url';
 
 const props = withDefaults(
   defineProps<{
@@ -203,6 +232,7 @@ const emit = defineEmits<{
 const { t, te, locale } = useI18n();
 const { user: authUser } = useAuth();
 const changeLogApi = useAdminChangeLog();
+const config = useRuntimeConfig();
 
 const entries = ref<AdminChangeLogEntry[]>([]);
 const expandedEntryIds = reactive(new Set<string>());
@@ -454,6 +484,56 @@ const formatSetValue = (value: unknown): string => {
   return `${t('admin.changelog.set')} ${formatScalar(value)}`.trim();
 };
 
+const formatBytes = (value: number | null | undefined): string => {
+  if (!value || value <= 0) {
+    return '';
+  }
+
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = value;
+  let index = 0;
+
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index += 1;
+  }
+
+  return `${size.toFixed(size >= 100 || index === 0 ? 0 : 1)} ${units[index]}`;
+};
+
+const normalizeMediaMap = (
+  value: Record<string, ChangeLogMediaSnapshotItem | null> | null | undefined
+): Record<string, ChangeLogMediaSnapshotItem | null> => {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
+
+  return value;
+};
+
+const resolveMediaPreviewUrl = (
+  item: ChangeLogMediaSnapshotItem | null | undefined
+): string | null => {
+  if (!item?.path) {
+    return null;
+  }
+
+  const rawPath = item.path.trim();
+  if (!rawPath) {
+    return null;
+  }
+
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return resolveAssetUrl(config.public.apiBase, rawPath);
+  }
+
+  const normalized = rawPath.replace(/^\/+/, '');
+  const storagePath = normalized.startsWith('storage/')
+    ? `/${normalized}`
+    : `/storage/${normalized}`;
+  return resolveAssetUrl(config.public.apiBase, storagePath);
+};
+
 const collectObjectDiff = (
   beforeValue: Record<string, unknown>,
   afterValue: Record<string, unknown>,
@@ -488,7 +568,15 @@ const collectObjectDiff = (
 
 const getChangedRows = (
   entry: AdminChangeLogEntry
-): Array<{ key: string; label: string; before: string; after: string; hideBefore: boolean }> => {
+): Array<{
+  key: string;
+  label: string;
+  before: string;
+  after: string;
+  hideBefore: boolean;
+  beforePreview: string | null;
+  afterPreview: string | null;
+}> => {
   if (entry.event === 'create') {
     return [];
   }
@@ -496,6 +584,8 @@ const getChangedRows = (
   const fields = entry.changed_fields ?? [];
   const beforeMap = (entry.before ?? {}) as Record<string, unknown>;
   const afterMap = (entry.after ?? {}) as Record<string, unknown>;
+  const mediaBeforeMap = normalizeMediaMap(entry.media_before);
+  const mediaAfterMap = normalizeMediaMap(entry.media_after);
 
   const rows: Array<{
     key: string;
@@ -503,6 +593,8 @@ const getChangedRows = (
     before: string;
     after: string;
     hideBefore: boolean;
+    beforePreview: string | null;
+    afterPreview: string | null;
   }> = [];
 
   for (const field of fields) {
@@ -528,6 +620,8 @@ const getChangedRows = (
           before: formatDiffValue(nestedRow.before),
           after: isInitialSet ? formatSetValue(nestedRow.after) : formatDiffValue(nestedRow.after),
           hideBefore: isInitialSet,
+          beforePreview: null,
+          afterPreview: null,
         });
       }
 
@@ -547,11 +641,17 @@ const getChangedRows = (
         before: formatDiffValue(beforeValue),
         after: isInitialSet ? formatSetValue(afterValue) : formatDiffValue(afterValue),
         hideBefore: isInitialSet,
+        beforePreview: null,
+        afterPreview: null,
       });
       continue;
     }
 
     const isInitialSet = isUnsetValue(beforeValue) && !isUnsetValue(afterValue);
+    const avatarBeforePreview =
+      field === 'avatar_id' ? resolveMediaPreviewUrl(mediaBeforeMap.avatar ?? null) : null;
+    const avatarAfterPreview =
+      field === 'avatar_id' ? resolveMediaPreviewUrl(mediaAfterMap.avatar ?? null) : null;
 
     rows.push({
       key: field,
@@ -559,6 +659,8 @@ const getChangedRows = (
       before: formatDiffValue(beforeValue),
       after: isInitialSet ? formatSetValue(afterValue) : formatDiffValue(afterValue),
       hideBefore: isInitialSet,
+      beforePreview: avatarBeforePreview,
+      afterPreview: avatarAfterPreview,
     });
   }
 
@@ -807,6 +909,11 @@ watch(page, () => {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.25rem;
+}
+
+.admin-diff-image {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .admin-diff-value {

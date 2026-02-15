@@ -1,4 +1,4 @@
-.PHONY: up down restart art comp migrate migrate-fresh db-seed \
+.PHONY: up down restart art comp migrate migrate-fresh db-seed db-reset-hard \
         cache-clear config-cache route-cache view-clear \
         test test-auth swagger redoc openapi-validate openapi-bundle docs \
         hooks-install \
@@ -48,6 +48,11 @@ migrate-fresh:
 
 db-seed:
 	make art cmd="db:seed"
+
+db-reset-hard:
+	make art cmd="migrate:fresh --force"
+	make art cmd="db:seed --force"
+	docker-compose exec backend sh -lc "rm -rf storage/app/public/uploads/*"
 
 # --------------------------
 # Cache & optimization

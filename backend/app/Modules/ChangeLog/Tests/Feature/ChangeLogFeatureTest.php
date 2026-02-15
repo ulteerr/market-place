@@ -5,15 +5,28 @@ declare(strict_types=1);
 namespace Modules\ChangeLog\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Modules\ChangeLog\Models\ChangeLog;
+use Modules\Files\Models\File;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 final class ChangeLogFeatureTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function fakePng(string $name = "avatar.png"): UploadedFile
+    {
+        $png = base64_decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlH0J8AAAAASUVORK5CYII=",
+            true,
+        );
+
+        return UploadedFile::fake()->createWithContent($name, $png ?: "");
+    }
 
     #[Test]
     public function it_logs_create_update_and_delete_for_user(): void
@@ -379,6 +392,172 @@ final class ChangeLogFeatureTest extends TestCase
             "id" => $roleId,
             "label" => "Delete Me",
         ]);
+    }
+
+    #[Test]
+    public function deleting_changelog_cleans_snapshot_file_when_no_other_references(): void
+    {
+        Storage::fake("public");
+
+        $path = "uploads/old/changelog-cleanup/avatar.png";
+        Storage::disk("public")->put($path, "snapshot");
+
+        $file = File::query()->create([
+            "disk" => "public",
+            "path" => $path,
+            "original_name" => "avatar.png",
+            "mime_type" => "image/png",
+            "size" => 8,
+            "collection" => "avatar",
+            "fileable_type" => null,
+            "fileable_id" => null,
+        ]);
+
+        $entry = ChangeLog::query()->create([
+            "auditable_type" => User::class,
+            "auditable_id" => (string) User::factory()->create()->id,
+            "event" => "update",
+            "version" => 1,
+            "before" => ["avatar_id" => (string) $file->id],
+            "after" => ["avatar_id" => null],
+            "media_before" => [
+                "avatar" => [
+                    "file_id" => (string) $file->id,
+                    "disk" => "public",
+                    "path" => $path,
+                    "collection" => "avatar",
+                ],
+            ],
+            "media_after" => ["avatar" => null],
+            "changed_fields" => ["avatar_id"],
+        ]);
+
+        $this->assertDatabaseHas("file_references", [
+            "file_id" => (string) $file->id,
+            "owner_type" => "changelog:before",
+            "owner_id" => (string) $entry->id,
+        ]);
+
+        $entry->delete();
+
+        $this->assertDatabaseMissing("file_references", [
+            "file_id" => (string) $file->id,
+            "owner_type" => "changelog:before",
+            "owner_id" => (string) $entry->id,
+        ]);
+        $this->assertDatabaseMissing("files", [
+            "id" => (string) $file->id,
+        ]);
+        Storage::disk("public")->assertMissing($path);
+    }
+
+    #[Test]
+    public function rollback_does_not_fail_when_avatar_snapshot_file_is_unavailable(): void
+    {
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/users", [
+                "first_name" => "Rollback",
+                "last_name" => "MissingAvatar",
+                "email" => "rollback-missing-avatar@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+
+        $entry = ChangeLog::query()->create([
+            "auditable_type" => User::class,
+            "auditable_id" => $userId,
+            "event" => "update",
+            "version" => 999,
+            "before" => ["avatar_id" => "73387241-b9f0-4c34-9053-f0a54282d0d5"],
+            "after" => ["avatar_id" => null],
+            "media_before" => [
+                "avatar" => [
+                    "file_id" => "73387241-b9f0-4c34-9053-f0a54282d0d5",
+                    "disk" => "public",
+                    "path" => "uploads/missing/file.png",
+                    "collection" => "avatar",
+                ],
+            ],
+            "media_after" => ["avatar" => null],
+            "changed_fields" => ["avatar_id"],
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->post("/api/admin/changelog/{$entry->id}/rollback")
+            ->assertOk();
+
+        $user = User::query()->with("avatar")->findOrFail($userId);
+        $this->assertNull($user->avatar);
+    }
+
+    #[Test]
+    public function rollback_avatar_change_creates_restore_log_entry(): void
+    {
+        Storage::fake("public");
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->post("/api/admin/users", [
+                "first_name" => "Avatar",
+                "last_name" => "Rollback",
+                "email" => "avatar-rollback-log@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+        $user = User::query()->findOrFail($userId);
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/users/{$userId}", [
+                "first_name" => $user->first_name,
+                "last_name" => $user->last_name,
+                "email" => $user->email,
+                "avatar" => $this->fakePng("a.png"),
+            ])
+            ->assertOk();
+
+        $this->withHeaders($auth["headers"])
+            ->patch("/api/admin/users/{$userId}", [
+                "first_name" => $user->first_name,
+                "last_name" => $user->last_name,
+                "email" => $user->email,
+                "avatar" => $this->fakePng("b.png"),
+            ])
+            ->assertOk();
+
+        $avatarUpdateLog = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->whereJsonContains("changed_fields", "avatar_id")
+            ->latest("created_at")
+            ->firstOrFail();
+
+        $this->withHeaders($auth["headers"])
+            ->post("/api/admin/changelog/{$avatarUpdateLog->id}/rollback")
+            ->assertOk();
+
+        $restoreLog = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->where("rolled_back_from_id", (string) $avatarUpdateLog->id)
+            ->latest("created_at")
+            ->first();
+
+        $this->assertNotNull($restoreLog);
+        $this->assertContains("avatar_id", $restoreLog->changed_fields ?? []);
     }
 
     #[Test]

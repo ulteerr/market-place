@@ -107,6 +107,63 @@ test.describe('Admin users form pages', () => {
     expect(capturedUpdatePayload).toContain('\r\nadmin\r\n');
   });
 
+  test('shows API error when update with avatar returns 500', async ({ page }) => {
+    await setupUsersForm(page);
+
+    let capturedUpdatePayload = '';
+
+    await page.route('**/api/admin/users/u-1', async (route) => {
+      const method = route.request().method();
+
+      if (method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'ok',
+            user: existingUser,
+          }),
+        });
+        return;
+      }
+
+      if (method === 'PATCH') {
+        capturedUpdatePayload = readRawBody(route);
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({}),
+        });
+        return;
+      }
+
+      await route.fallback();
+    });
+
+    await page.goto('/admin/users/u-1/edit');
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Редактирование пользователя' })
+    ).toBeVisible();
+
+    await page.setInputFiles('input[type="file"]', {
+      name: 'avatar-update.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6W1k8AAAAASUVORK5CYII=',
+        'base64'
+      ),
+    });
+    await page.getByLabel('Имя').fill('Иван2');
+
+    await page.getByRole('button', { name: 'Сохранить' }).click();
+
+    await expect(page).toHaveURL(/\/admin\/users\/u-1\/edit$/);
+    await expect(page.getByText('Не удалось обновить пользователя.')).toBeVisible();
+    expect(capturedUpdatePayload).toContain('name="first_name"');
+    expect(capturedUpdatePayload).toContain('\r\nИван2\r\n');
+    expect(capturedUpdatePayload).toContain('name="avatar"; filename="avatar-update.png"');
+  });
+
   test('creates single changelog entry when user and roles change together', async ({ page }) => {
     await setupUsersForm(page);
 

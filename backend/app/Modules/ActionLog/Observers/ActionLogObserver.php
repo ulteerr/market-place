@@ -108,8 +108,13 @@ final class ActionLogObserver
     private function normalizeAttributes(array $attributes): array
     {
         $normalized = [];
+        $exclude = array_fill_keys($this->excludedAttributes(), true);
 
         foreach ($attributes as $key => $value) {
+            if (isset($exclude[$key])) {
+                continue;
+            }
+
             $normalized[$key] = $this->normalizeValue($value);
         }
 
@@ -163,20 +168,11 @@ final class ActionLogObserver
     private function diffFields(Model $model, array $before, array $after): array
     {
         $keys = array_unique(array_merge(array_keys($before), array_keys($after)));
-        $ignored = ["created_at", "updated_at"];
-
-        if (method_exists($model, "actionLogExcludedAttributes")) {
-            $extra = $model->actionLogExcludedAttributes();
-            if (is_array($extra)) {
-                $ignored = [...$ignored, ...$extra];
-            }
-        }
-
-        $ignored = array_values(array_unique(array_filter($ignored, "is_string")));
+        $ignored = array_fill_keys($this->excludedAttributes($model), true);
         $changed = [];
 
         foreach ($keys as $key) {
-            if (in_array($key, $ignored, true)) {
+            if (isset($ignored[$key])) {
                 continue;
             }
             if (($before[$key] ?? null) !== ($after[$key] ?? null)) {
@@ -185,5 +181,22 @@ final class ActionLogObserver
         }
 
         return $changed;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function excludedAttributes(?Model $model = null): array
+    {
+        $excluded = (array) config("action-log.exclude", ["created_at", "updated_at"]);
+
+        if ($model && method_exists($model, "actionLogExcludedAttributes")) {
+            $extra = $model->actionLogExcludedAttributes();
+            if (is_array($extra)) {
+                $excluded = [...$excluded, ...$extra];
+            }
+        }
+
+        return array_values(array_unique(array_filter($excluded, "is_string")));
     }
 }

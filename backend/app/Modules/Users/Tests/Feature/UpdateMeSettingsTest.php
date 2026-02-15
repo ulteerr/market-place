@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Users\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\ActionLog\Models\ActionLog;
+use Modules\ChangeLog\Models\ChangeLog;
+use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -16,6 +19,7 @@ final class UpdateMeSettingsTest extends TestCase
     public function authenticated_user_can_update_settings(): void
     {
         $auth = $this->actingAsUser();
+        $userId = (string) $auth["user"]->id;
 
         $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
             "settings" => [
@@ -53,6 +57,22 @@ final class UpdateMeSettingsTest extends TestCase
         $this->assertTrue(
             $auth["user"]->settings["admin_navigation_sections"]["system"]["open"] ?? false,
         );
+
+        $settingsChangeLog = ChangeLog::query()
+            ->where("auditable_type", User::class)
+            ->where("auditable_id", $userId)
+            ->where("event", "update")
+            ->latest("created_at")
+            ->first();
+        $this->assertNull($settingsChangeLog);
+
+        $settingsActionLog = ActionLog::query()
+            ->where("model_type", User::class)
+            ->where("model_id", $userId)
+            ->where("event", "update")
+            ->latest("created_at")
+            ->first();
+        $this->assertNull($settingsActionLog);
     }
 
     #[Test]

@@ -73,8 +73,13 @@ export default {
     showJson: 'Show JSON',
     hideJson: 'Hide JSON',
     createdData: 'Created',
+    mediaSnapshots: 'Media snapshots',
     before: 'Before',
     after: 'After',
+    preview: {
+      title: 'Image',
+      open: 'Open image',
+    },
     empty: 'No changes yet.',
     rollback: {
       title: 'Rollback changes',

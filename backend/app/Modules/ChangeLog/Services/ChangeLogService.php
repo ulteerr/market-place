@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Modules\Files\Services\FilesService;
 use Modules\ChangeLog\Models\ChangeLog;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
@@ -16,6 +17,8 @@ use RuntimeException;
 
 final class ChangeLogService
 {
+    public function __construct(private readonly FilesService $filesService) {}
+
     public function paginate(
         array $filters = [],
         ?int $perPage = null,
@@ -89,6 +92,7 @@ final class ChangeLogService
         }
 
         $targetState = $this->resolveTargetState($entry);
+        $targetMediaState = $this->resolveTargetMediaState($entry);
         $keyName = $prototype->getKeyName();
         $entityId = $entry->auditable_id;
 
@@ -100,6 +104,7 @@ final class ChangeLogService
             $modelClass,
             $model,
             $targetState,
+            $targetMediaState,
             $keyName,
             $entityId,
         ) {
@@ -112,7 +117,14 @@ final class ChangeLogService
                     "rolled_back_to_version" => $this->resolveRollbackTargetVersion($entry),
                     "rollback" => true,
                 ],
-                function () use ($modelClass, $model, $targetState, $keyName, $entityId): Model {
+                function () use (
+                    $modelClass,
+                    $model,
+                    $targetState,
+                    $targetMediaState,
+                    $keyName,
+                    $entityId,
+                ): Model {
                     $batchId = app(ChangeLogContext::class)->currentBatchId();
 
                     if ($targetState === null) {
@@ -128,6 +140,7 @@ final class ChangeLogService
 
                     $instance = $model ?? new $modelClass();
                     $beforeRelatedState = $this->buildRelatedSnapshot($instance);
+                    $beforeRelatedMedia = $this->buildRelatedMediaSnapshot($instance);
                     $payload = $this->prepareRollbackPayload($instance, $targetState);
 
                     $payload[$keyName] = $entityId;
@@ -142,12 +155,15 @@ final class ChangeLogService
                         $instance->restore();
                     }
 
-                    $this->applyRelatedRollbackState($instance, $targetState);
+                    $this->applyRelatedRollbackState($instance, $targetState, $targetMediaState);
                     $afterRelatedState = $this->buildRelatedSnapshot($instance);
+                    $afterRelatedMedia = $this->buildRelatedMediaSnapshot($instance);
                     $this->upsertRelatedRollbackLogIfNeeded(
                         $instance,
                         $beforeRelatedState,
                         $afterRelatedState,
+                        $beforeRelatedMedia,
+                        $afterRelatedMedia,
                         $batchId,
                         app(ChangeLogContext::class)->meta(),
                     );
@@ -197,6 +213,17 @@ final class ChangeLogService
         };
     }
 
+    private function resolveTargetMediaState(ChangeLog $entry): ?array
+    {
+        return match ($entry->event) {
+            "create" => is_array($entry->media_after) ? $entry->media_after : null,
+            "update", "delete", "restore" => is_array($entry->media_before)
+                ? $entry->media_before
+                : null,
+            default => null,
+        };
+    }
+
     private function prepareRollbackPayload(Model $model, array $snapshot): array
     {
         $fillable = method_exists($model, "changeLogRollbackAttributes")
@@ -234,10 +261,28 @@ final class ChangeLogService
         );
     }
 
-    private function applyRelatedRollbackState(Model $model, array $targetState): void
-    {
-        if ($model instanceof User && array_key_exists("roles", $targetState)) {
+    private function applyRelatedRollbackState(
+        Model $model,
+        array $targetState,
+        ?array $targetMediaState = null,
+    ): void {
+        if (!$model instanceof User) {
+            return;
+        }
+
+        if (array_key_exists("roles", $targetState)) {
             $this->syncUserRolesFromSnapshot($model, $targetState["roles"]);
+        }
+
+        if (
+            array_key_exists("avatar_id", $targetState) ||
+            (is_array($targetMediaState) && array_key_exists("avatar", $targetMediaState))
+        ) {
+            $this->syncUserAvatarFromSnapshot(
+                $model,
+                $targetState["avatar_id"] ?? null,
+                is_array($targetMediaState) ? $targetMediaState["avatar"] ?? null : null,
+            );
         }
     }
 
@@ -278,19 +323,88 @@ final class ChangeLogService
             return [];
         }
 
-        $fresh = $model->fresh()?->load(["roles:id,code"]) ?? $model->load(["roles:id,code"]);
+        $fresh =
+            $model
+                ->fresh()
+                ?->load(["roles:id,code", "avatar:id,fileable_id,fileable_type,collection"]) ??
+            $model->load(["roles:id,code", "avatar:id,fileable_id,fileable_type,collection"]);
         $roles = $fresh->roles->pluck("code")->filter()->values()->all();
         sort($roles);
 
         return [
             "roles" => $roles,
+            "avatar_id" => $fresh->avatar?->id,
         ];
+    }
+
+    private function buildRelatedMediaSnapshot(Model $model): array
+    {
+        if (!$model instanceof User || !$model->exists) {
+            return [];
+        }
+
+        $fresh =
+            $model
+                ->fresh()
+                ?->load([
+                    "avatar:id,fileable_id,fileable_type,disk,path,original_name,mime_type,size,collection",
+                ]) ??
+            $model->load([
+                "avatar:id,fileable_id,fileable_type,disk,path,original_name,mime_type,size,collection",
+            ]);
+
+        $avatar = $fresh->avatar;
+        return [
+            "avatar" => $avatar
+                ? [
+                    "file_id" => (string) $avatar->id,
+                    "disk" => $avatar->disk,
+                    "path" => $avatar->path,
+                    "original_name" => $avatar->original_name,
+                    "mime_type" => $avatar->mime_type,
+                    "size" => (int) $avatar->size,
+                    "collection" => $avatar->collection,
+                ]
+                : null,
+        ];
+    }
+
+    private function syncUserAvatarFromSnapshot(
+        User $user,
+        mixed $avatarId,
+        mixed $avatarMedia,
+    ): void {
+        $resolvedAvatarId = is_string($avatarId) ? trim($avatarId) : "";
+
+        if ($resolvedAvatarId === "" && !is_array($avatarMedia)) {
+            $this->filesService->removeAttachedFile($user, "avatar", false);
+            return;
+        }
+
+        $file = null;
+        if ($resolvedAvatarId !== "") {
+            $file = \Modules\Files\Models\File::query()->find($resolvedAvatarId);
+        }
+
+        if (!$file && is_array($avatarMedia)) {
+            $file = $this->filesService->resolveFileFromSnapshot($avatarMedia);
+        }
+
+        if (!$file) {
+            // Snapshot media can be cleaned up independently; keep rollback resilient.
+            $this->filesService->removeAttachedFile($user, "avatar", false);
+            return;
+        }
+
+        $this->filesService->attachExistingFile($file, $user, "avatar", false);
     }
 
     private function upsertRelatedRollbackLogIfNeeded(
         Model $model,
         array $beforeRelatedState,
         array $afterRelatedState,
+        array $beforeRelatedMediaState,
+        array $afterRelatedMediaState,
         string $batchId,
         array $contextMeta,
     ): void {
@@ -320,6 +434,12 @@ final class ChangeLogService
             $beforePayload[$field] = $beforeRelatedState[$field] ?? null;
             $afterPayload[$field] = $afterRelatedState[$field] ?? null;
         }
+        $beforeMediaPayload = [];
+        $afterMediaPayload = [];
+        if (in_array("avatar_id", $changedFields, true)) {
+            $beforeMediaPayload["avatar"] = $beforeRelatedMediaState["avatar"] ?? null;
+            $afterMediaPayload["avatar"] = $afterRelatedMediaState["avatar"] ?? null;
+        }
 
         $entry = ChangeLog::query()
             ->where("auditable_type", User::class)
@@ -334,9 +454,13 @@ final class ChangeLogService
             $existingAfter = is_array($entry->after) ? $entry->after : [];
             $existingChanged = is_array($entry->changed_fields) ? $entry->changed_fields : [];
             $existingMeta = is_array($entry->meta) ? $entry->meta : [];
+            $existingMediaBefore = is_array($entry->media_before) ? $entry->media_before : [];
+            $existingMediaAfter = is_array($entry->media_after) ? $entry->media_after : [];
 
             $entry->before = [...$existingBefore, ...$beforePayload];
             $entry->after = [...$existingAfter, ...$afterPayload];
+            $entry->media_before = [...$existingMediaBefore, ...$beforeMediaPayload];
+            $entry->media_after = [...$existingMediaAfter, ...$afterMediaPayload];
             $entry->changed_fields = array_values(
                 array_unique([...$existingChanged, ...$changedFields]),
             );
@@ -364,6 +488,8 @@ final class ChangeLogService
             "version" => $lastVersion + 1,
             "before" => $beforePayload,
             "after" => $afterPayload,
+            "media_before" => $beforeMediaPayload === [] ? null : $beforeMediaPayload,
+            "media_after" => $afterMediaPayload === [] ? null : $afterMediaPayload,
             "changed_fields" => array_values($changedFields),
             "actor_type" => $actor ? $actor::class : null,
             "actor_id" => $actor?->getKey(),

@@ -6,6 +6,7 @@ namespace Modules\Files\Models;
 
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,6 +34,11 @@ final class File extends Model
     public function fileable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function references(): HasMany
+    {
+        return $this->hasMany(FileReference::class, "file_id");
     }
 
     public function getUrlAttribute(): string

@@ -9,7 +9,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\ChangeLog\Services\ChangeLogContext;
-use Modules\Files\Services\FilesService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Users\Http\Requests\UploadMeAvatarRequest;
@@ -23,7 +22,6 @@ final class MeController extends Controller
 {
     public function __construct(
         private readonly UsersService $usersService,
-        private readonly FilesService $filesService,
         private readonly ChangeLogContext $changeLogContext,
     ) {}
 
@@ -90,16 +88,22 @@ final class MeController extends Controller
             abort(422, "Invalid avatar file");
         }
 
-        $this->filesService->attachUploadedFile($file, $request->user(), "avatar");
+        $user = $this->changeLogContext->withMeta(
+            ["scope" => "profile"],
+            fn() => $this->usersService->updateUser($request->user(), ["avatar" => $file]),
+        );
 
-        return UserResponseFactory::success($request->user()->fresh());
+        return UserResponseFactory::success($user->fresh());
     }
 
     public function deleteAvatar(Request $request): JsonResponse
     {
-        $this->filesService->removeAttachedFile($request->user(), "avatar");
+        $user = $this->changeLogContext->withMeta(
+            ["scope" => "profile"],
+            fn() => $this->usersService->updateUser($request->user(), ["avatar_delete" => true]),
+        );
 
-        return UserResponseFactory::success($request->user()->fresh());
+        return UserResponseFactory::success($user->fresh());
     }
 
     public function streamSettings(Request $request): StreamedResponse

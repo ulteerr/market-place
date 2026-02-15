@@ -2,6 +2,16 @@ import type { PaginationPayload } from '~/composables/useAdminCrudCommon';
 
 export type ChangeLogEvent = 'create' | 'update' | 'delete' | 'restore';
 
+export interface ChangeLogMediaSnapshotItem {
+  file_id?: string | null;
+  disk?: string | null;
+  path?: string | null;
+  original_name?: string | null;
+  mime_type?: string | null;
+  size?: number | null;
+  collection?: string | null;
+}
+
 export interface AdminChangeLogEntry {
   id: string;
   auditable_type: string;
@@ -9,7 +19,9 @@ export interface AdminChangeLogEntry {
   event: ChangeLogEvent;
   version: number;
   before: Record<string, unknown> | null;
+  media_before: Record<string, ChangeLogMediaSnapshotItem | null> | null;
   after: Record<string, unknown> | null;
+  media_after: Record<string, ChangeLogMediaSnapshotItem | null> | null;
   changed_fields: string[] | null;
   actor_type: string | null;
   actor_id: string | null;

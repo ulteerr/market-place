@@ -267,6 +267,51 @@ final class AdminUsersCrudTest extends AdminCrudTestCase
     }
 
     #[Test]
+    public function admin_can_update_user_profile_roles_and_avatar_in_single_request(): void
+    {
+        Storage::fake("public");
+        $auth = $this->actingAsAdmin();
+        $participantRole = Role::factory()->participant()->create();
+        $moderatorRole = Role::factory()->moderator()->create();
+
+        $user = User::factory()->create([
+            "email" => "avatar.profile.update@example.com",
+            "first_name" => "Before",
+            "last_name" => "User",
+        ]);
+        $user->roles()->sync([$participantRole->id]);
+
+        $this->withHeaders($auth["headers"])
+            ->patch($this->endpoint() . "/" . $user->id, [
+                "first_name" => "After",
+                "last_name" => "Updated",
+                "email" => $user->email,
+                "roles" => ["participant", "moderator"],
+                "avatar" => $this->fakePng("update-profile-avatar.png"),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas("users", [
+            "id" => (string) $user->id,
+            "first_name" => "After",
+            "last_name" => "Updated",
+            "email" => $user->email,
+        ]);
+
+        $this->assertSame(
+            ["moderator", "participant"],
+            $user->fresh()->roles()->pluck("code")->sort()->values()->all(),
+        );
+
+        $this->assertDatabaseHas("files", [
+            "fileable_id" => (string) $user->id,
+            "fileable_type" => User::class,
+            "collection" => "avatar",
+            "original_name" => "update-profile-avatar.png",
+        ]);
+    }
+
+    #[Test]
     public function admin_can_delete_user_avatar_via_update_payload(): void
     {
         Storage::fake("public");
@@ -305,6 +350,68 @@ final class AdminUsersCrudTest extends AdminCrudTestCase
             "fileable_id" => (string) $user->id,
             "fileable_type" => User::class,
             "collection" => "avatar",
+        ]);
+    }
+
+    #[Test]
+    public function admin_can_replace_existing_avatar_while_updating_profile_and_roles(): void
+    {
+        Storage::fake("public");
+        $auth = $this->actingAsAdmin();
+        $participantRole = Role::factory()->participant()->create();
+        $moderatorRole = Role::factory()->moderator()->create();
+
+        $user = User::factory()->create([
+            "email" => "avatar.replace@example.com",
+            "first_name" => "Before",
+            "last_name" => "Avatar",
+        ]);
+        $user->roles()->sync([$participantRole->id]);
+
+        $this->withHeaders($auth["headers"])
+            ->patch($this->endpoint() . "/" . $user->id, [
+                "first_name" => "Before",
+                "last_name" => "Avatar",
+                "email" => $user->email,
+                "roles" => ["participant"],
+                "avatar" => $this->fakePng("first-avatar.png"),
+            ])
+            ->assertOk();
+
+        $firstAvatarId = (string) $user->fresh()->avatar?->id;
+        $this->assertNotSame("", $firstAvatarId);
+
+        $this->withHeaders($auth["headers"])
+            ->patch($this->endpoint() . "/" . $user->id, [
+                "first_name" => "After",
+                "last_name" => "Updated",
+                "email" => $user->email,
+                "roles" => ["participant", "moderator"],
+                "avatar" => $this->fakePng("second-avatar.png"),
+            ])
+            ->assertOk();
+
+        $freshUser = $user->fresh();
+        $this->assertDatabaseHas("users", [
+            "id" => (string) $freshUser->id,
+            "first_name" => "After",
+            "last_name" => "Updated",
+        ]);
+        $this->assertSame(
+            ["moderator", "participant"],
+            $freshUser->roles()->pluck("code")->sort()->values()->all(),
+        );
+
+        $this->assertDatabaseHas("files", [
+            "fileable_id" => (string) $freshUser->id,
+            "fileable_type" => User::class,
+            "collection" => "avatar",
+            "original_name" => "second-avatar.png",
+        ]);
+        $this->assertDatabaseHas("files", [
+            "id" => $firstAvatarId,
+            "fileable_id" => null,
+            "fileable_type" => null,
         ]);
     }
 

@@ -22,7 +22,9 @@ final class ChangeLog extends Model
         "event",
         "version",
         "before",
+        "media_before",
         "after",
+        "media_after",
         "changed_fields",
         "actor_type",
         "actor_id",
@@ -33,7 +35,9 @@ final class ChangeLog extends Model
 
     protected $casts = [
         "before" => "array",
+        "media_before" => "array",
         "after" => "array",
+        "media_after" => "array",
         "changed_fields" => "array",
         "meta" => "array",
     ];

@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Modules\Users\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Modules\Files\Models\File;
 use Modules\Files\Services\FilesService;
 use RuntimeException;
 use Modules\ChangeLog\Models\ChangeLog;
@@ -43,6 +44,7 @@ final class UsersService implements UsersServiceInterface
     {
         return DB::transaction(function () use ($user, $data) {
             $beforeRelatedSnapshot = $this->buildRelatedSnapshot($user);
+            $beforeRelatedMedia = $this->buildRelatedMediaSnapshot($user);
 
             $user = $this->repository->update($user, $data);
             if (array_key_exists("roles", $data)) {
@@ -50,7 +52,11 @@ final class UsersService implements UsersServiceInterface
             }
             $this->removeAvatarIfRequested($user, $data);
             $this->attachAvatarIfProvided($user, $data);
-            $this->writeRelatedChangeLogIfChanged($user, $beforeRelatedSnapshot);
+            $this->writeRelatedChangeLogIfChanged(
+                $user,
+                $beforeRelatedSnapshot,
+                $beforeRelatedMedia,
+            );
             $this->writeRelatedActionLogIfChanged($user, $beforeRelatedSnapshot);
 
             return $user;
@@ -122,7 +128,7 @@ final class UsersService implements UsersServiceInterface
             return;
         }
 
-        $this->filesService->attachUploadedFile($avatar, $user, "avatar");
+        $this->filesService->attachUploadedFile($avatar, $user, "avatar", "public", false);
     }
 
     private function removeAvatarIfRequested(User $user, array $data): void
@@ -131,7 +137,7 @@ final class UsersService implements UsersServiceInterface
             return;
         }
 
-        $this->filesService->removeAttachedFile($user, "avatar");
+        $this->filesService->removeAttachedFile($user, "avatar", false);
     }
 
     private function buildRelatedSnapshot(User $user): array
@@ -166,15 +172,21 @@ final class UsersService implements UsersServiceInterface
         }
 
         $related = $this->buildRelatedSnapshot($user);
+        $relatedMedia = $this->buildRelatedMediaSnapshot($user);
         $after = is_array($createLog->after) ? $createLog->after : [];
 
         $createLog->after = [...$after, ...$related];
+        $createLog->media_after = $relatedMedia === [] ? null : $relatedMedia;
         $createLog->save();
     }
 
-    private function writeRelatedChangeLogIfChanged(User $user, array $beforeRelatedSnapshot): void
-    {
+    private function writeRelatedChangeLogIfChanged(
+        User $user,
+        array $beforeRelatedSnapshot,
+        array $beforeRelatedMedia,
+    ): void {
         $afterRelatedSnapshot = $this->buildRelatedSnapshot($user);
+        $afterRelatedMedia = $this->buildRelatedMediaSnapshot($user);
         $changedFields = [];
 
         foreach (array_keys($beforeRelatedSnapshot) as $key) {
@@ -202,6 +214,16 @@ final class UsersService implements UsersServiceInterface
         }
 
         $batchId = $context->currentBatchId();
+        $resolvedMediaBefore = [];
+        $resolvedMediaAfter = [];
+        if (
+            ($beforeRelatedSnapshot["avatar_id"] ?? null) !==
+            ($afterRelatedSnapshot["avatar_id"] ?? null)
+        ) {
+            $resolvedMediaBefore["avatar"] = $beforeRelatedMedia["avatar"] ?? null;
+            $resolvedMediaAfter["avatar"] = $afterRelatedMedia["avatar"] ?? null;
+        }
+
         $existingEntry = ChangeLog::query()
             ->where("auditable_type", User::class)
             ->where("auditable_id", (string) $user->id)
@@ -217,9 +239,17 @@ final class UsersService implements UsersServiceInterface
                 ? $existingEntry->changed_fields
                 : [];
             $existingMeta = is_array($existingEntry->meta) ? $existingEntry->meta : [];
+            $existingMediaBefore = is_array($existingEntry->media_before)
+                ? $existingEntry->media_before
+                : [];
+            $existingMediaAfter = is_array($existingEntry->media_after)
+                ? $existingEntry->media_after
+                : [];
 
             $existingEntry->before = [...$existingBefore, ...$beforePayload];
             $existingEntry->after = [...$existingAfter, ...$afterPayload];
+            $existingEntry->media_before = [...$existingMediaBefore, ...$resolvedMediaBefore];
+            $existingEntry->media_after = [...$existingMediaAfter, ...$resolvedMediaAfter];
             $existingEntry->changed_fields = array_values(
                 array_unique([...$existingChangedFields, ...$changedFields]),
             );
@@ -248,6 +278,8 @@ final class UsersService implements UsersServiceInterface
             "version" => $lastVersion + 1,
             "before" => $beforePayload,
             "after" => $afterPayload,
+            "media_before" => $resolvedMediaBefore === [] ? null : $resolvedMediaBefore,
+            "media_after" => $resolvedMediaAfter === [] ? null : $resolvedMediaAfter,
             "changed_fields" => array_values($changedFields),
             "actor_type" => $actor ? $actor::class : null,
             "actor_id" => $actor?->getKey(),
@@ -346,5 +378,39 @@ final class UsersService implements UsersServiceInterface
             $afterPayload,
             $changedFields,
         );
+    }
+
+    private function buildRelatedMediaSnapshot(User $user): array
+    {
+        $fresh =
+            $user
+                ->fresh()
+                ?->load([
+                    "avatar:id,fileable_id,fileable_type,disk,path,original_name,mime_type,size,collection",
+                ]) ??
+            $user->load([
+                "avatar:id,fileable_id,fileable_type,disk,path,original_name,mime_type,size,collection",
+            ]);
+
+        return [
+            "avatar" => $this->buildFileSnapshot($fresh->avatar),
+        ];
+    }
+
+    private function buildFileSnapshot(?File $file): ?array
+    {
+        if (!$file) {
+            return null;
+        }
+
+        return [
+            "file_id" => (string) $file->id,
+            "disk" => $file->disk,
+            "path" => $file->path,
+            "original_name" => $file->original_name,
+            "mime_type" => $file->mime_type,
+            "size" => (int) $file->size,
+            "collection" => $file->collection,
+        ];
     }
 }

@@ -73,13 +73,13 @@ final class MeAvatarTest extends TestCase
             ->assertOk()
             ->assertJsonPath("user.avatar.original_name", "second.png");
 
-        $this->assertDatabaseCount("files", 1);
+        $this->assertDatabaseCount("files", 2);
         $secondFile = File::query()
             ->where("fileable_id", (string) $auth["user"]->id)
             ->firstOrFail();
 
         $this->assertNotSame($firstFile->id, $secondFile->id);
-        Storage::disk("public")->assertMissing($firstFile->path);
+        Storage::disk("public")->assertExists($firstFile->path);
         Storage::disk("public")->assertExists($secondFile->path);
     }
 
@@ -103,8 +103,12 @@ final class MeAvatarTest extends TestCase
             ->assertOk()
             ->assertJsonPath("user.avatar", null);
 
-        $this->assertDatabaseCount("files", 0);
-        Storage::disk("public")->assertMissing($file->path);
+        $this->assertDatabaseHas("files", [
+            "id" => (string) $file->id,
+            "fileable_type" => null,
+            "fileable_id" => null,
+        ]);
+        Storage::disk("public")->assertExists($file->path);
     }
 
     #[Test]

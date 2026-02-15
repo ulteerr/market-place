@@ -88,6 +88,64 @@ Optional:
 make db-seed
 ```
 
+Для полного пересоздания БД + сидов + очистки загруженных файлов:
+
+```bash
+make db-reset-hard
+```
+
+---
+
+## 🔐 Admin Panel Login
+
+### 1. Убедиться, что есть сидовые пользователи
+
+Сидовые аккаунты создаются в `backend/app/Modules/Users/Database/Seeders/UsersSeeder.php` и привязка ролей задается там же:
+
+```php
+$adminUser = User::query()->firstOrCreate(
+    ["email" => "admin@example.com"],
+    [
+        "first_name" => "System",
+        "last_name" => "Admin",
+        "phone" => "+79991112233",
+        "password" => "password123",
+    ],
+);
+$adminUser->roles()->syncWithoutDetaching([$participantRole->id, $adminRole->id]);
+
+$moderatorUser = User::query()->firstOrCreate(
+    ["email" => "moderator@example.com"],
+    [
+        "first_name" => "System",
+        "last_name" => "Moderator",
+        "phone" => "+79994445566",
+        "password" => "password123",
+    ],
+);
+```
+
+Если сиды еще не применены:
+
+```bash
+make db-seed
+```
+
+### 2. Открыть страницу логина
+
+- Frontend login page: `http://localhost:3000/login`
+- После успешного входа переход в админку: `http://localhost:3000/admin`
+
+### 3. Ввести данные в форму
+
+- Поле `Email`
+- Поле `Password`
+
+Демо-учетки:
+
+- `admin@example.com` / `password123`
+- `moderator@example.com` / `password123`
+
 ---
 
 ## 🌐 Available Services
@@ -216,7 +274,10 @@ make front-nuxi cmd="add page profile"
 make migrate
 make migrate-fresh
 make db-seed
+make db-reset-hard
 ```
+
+`db-reset-hard` выполняет полный цикл: `migrate:fresh` → `db:seed` и очищает `backend/storage/app/public/uploads/*`.
 
 ### Cache & optimization
 
