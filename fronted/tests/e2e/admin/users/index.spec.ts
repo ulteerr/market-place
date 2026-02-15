@@ -117,11 +117,24 @@ test.describe('Admin users page', () => {
     await page.goto('/admin/users');
 
     await expect(page.getByRole('heading', { level: 2, name: 'Пользователи' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Найти' })).toHaveCount(0);
     await expect(page.getByText('Иванов', { exact: true })).toBeVisible();
     await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
     await expect(page.locator('thead th').first()).toBeVisible();
     await expect(page.locator('img[src="https://example.com/users/u-1-avatar.png"]')).toBeVisible();
+  });
+
+  test('filters users by search automatically', async ({ page }) => {
+    await setupUsersPage(page);
+    await page.goto('/admin/users');
+
+    await page.locator('input.admin-input').first().fill('Петрова');
+
+    await expect(page).toHaveURL(/search=%D0%9F%D0%B5%D1%82%D1%80%D0%BE%D0%B2%D0%B0/);
+    await expect(page.getByText('Иванов', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Петрова', { exact: true })).toBeVisible();
+    await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
   });
 
   test('opens full image from thumbnail in modal', async ({ page }) => {

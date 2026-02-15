@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]">
+  <div :class="toolbarClass">
     <input
       :value="searchValue"
       type="text"
@@ -20,6 +20,7 @@
     </div>
 
     <button
+      v-if="showApply"
       type="button"
       class="admin-button-secondary rounded-lg px-3 py-2 text-xs"
       :disabled="loading"
@@ -50,10 +51,12 @@ const props = withDefaults(
     perPage: number;
     perPageOptions: number[];
     loading?: boolean;
+    showApply?: boolean;
   }>(),
   {
     searchPlaceholder: undefined,
     loading: false,
+    showApply: true,
   }
 );
 
@@ -74,6 +77,12 @@ const perPageSelectOptions = computed(() => {
     label: t('admin.toolbar.perPage', { count: option }),
     value: option,
   }));
+});
+
+const toolbarClass = computed(() => {
+  return props.showApply
+    ? 'grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]'
+    : 'grid gap-3 lg:grid-cols-[1fr_auto_auto]';
 });
 
 const onPerPageChange = (value: string | number | (string | number)[]) => {

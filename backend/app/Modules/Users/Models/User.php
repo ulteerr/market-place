@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
+use App\Shared\Traits\HasActionLog;
 use App\Shared\Traits\HasChangeLog;
 use Modules\Children\Models\Child;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -18,7 +19,7 @@ use Modules\Files\Traits\HasFiles;
 
 final class User extends Authenticatable
 {
-    use Notifiable, HasUuid, HasApiTokens, HasFactory, HasFiles, HasChangeLog;
+    use Notifiable, HasUuid, HasApiTokens, HasFactory, HasFiles, HasChangeLog, HasActionLog;
 
     protected $keyType = "string";
     public $incrementing = false;

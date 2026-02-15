@@ -8,6 +8,7 @@
     :create-label="t('admin.users.index.createLabel')"
     :search-value="listState.searchInput.value"
     :search-placeholder="t('admin.users.index.searchPlaceholder')"
+    :show-apply="false"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
     :loading="loading"
@@ -29,7 +30,6 @@
     @update:per-page="onUpdatePerPage"
     @update:mode="onModeChange"
     @toggle-desktop="onToggleDesktopMode"
-    @apply="onApplySearch"
     @reset="onResetAllFilters"
     @sort="onToggleSort"
     @page="fetchUsers"
@@ -44,78 +44,81 @@
     </template>
 
     <template #table>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>{{ t('admin.users.index.headers.thumbnail') }}</th>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
-                {{ t('admin.users.index.headers.lastName') }} {{ listState.sortMark('last_name') }}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('first_name')">
-                {{ t('admin.users.index.headers.firstName') }}
-                {{ listState.sortMark('first_name') }}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('middle_name')">
-                {{ t('admin.users.index.headers.middleName') }}
-                {{ listState.sortMark('middle_name') }}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('access')">
-                {{ t('admin.users.index.headers.access') }} {{ listState.sortMark('access') }}
-              </button>
-            </th>
-            <th class="text-right">{{ t('admin.users.index.headers.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="6" class="admin-muted py-5 text-center text-sm">
-              {{ t('common.loading') }}
-            </td>
-          </tr>
-          <tr v-else-if="!users.length">
-            <td colspan="6" class="admin-muted py-5 text-center text-sm">
-              {{ t('admin.users.index.empty') }}
-            </td>
-          </tr>
-          <tr v-for="item in users" :key="item.id">
-            <td>
-              <UiImagePreview
-                :src="item.avatar?.url ?? null"
-                :alt="getAdminUserFullName(item)"
-                :preview-alt="getAdminUserFullName(item)"
-                variant="table"
-                :fallback-text="t('common.dash')"
-                :preview-title="t('admin.users.index.preview.title')"
-                :open-aria-label="t('admin.users.index.preview.open')"
-              />
-            </td>
-            <td>
-              <span>{{ item.last_name || t('common.dash') }}</span>
-            </td>
-            <td>{{ item.first_name || t('common.dash') }}</td>
-            <td>{{ item.middle_name || t('common.dash') }}</td>
-            <td>
-              <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
-            </td>
-            <td>
-              <AdminCrudActions
-                :show-to="`/admin/users/${item.id}`"
-                :edit-to="`/admin/users/${item.id}/edit`"
-                :deleting="deletingId === item.id"
-                align="end"
-                @delete="removeUser(item)"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto rounded-xl border border-[var(--border)]">
+        <table class="admin-table min-w-[980px]">
+          <thead>
+            <tr>
+              <th>{{ t('admin.users.index.headers.thumbnail') }}</th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
+                  {{ t('admin.users.index.headers.lastName') }}
+                  {{ listState.sortMark('last_name') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('first_name')">
+                  {{ t('admin.users.index.headers.firstName') }}
+                  {{ listState.sortMark('first_name') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('middle_name')">
+                  {{ t('admin.users.index.headers.middleName') }}
+                  {{ listState.sortMark('middle_name') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('access')">
+                  {{ t('admin.users.index.headers.access') }} {{ listState.sortMark('access') }}
+                </button>
+              </th>
+              <th class="text-right">{{ t('admin.users.index.headers.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading">
+              <td colspan="6" class="admin-muted py-5 text-center text-sm">
+                {{ t('common.loading') }}
+              </td>
+            </tr>
+            <tr v-else-if="!users.length">
+              <td colspan="6" class="admin-muted py-5 text-center text-sm">
+                {{ t('admin.users.index.empty') }}
+              </td>
+            </tr>
+            <tr v-for="item in users" :key="item.id">
+              <td>
+                <UiImagePreview
+                  :src="item.avatar?.url ?? null"
+                  :alt="getAdminUserFullName(item)"
+                  :preview-alt="getAdminUserFullName(item)"
+                  variant="table"
+                  :fallback-text="t('common.dash')"
+                  :preview-title="t('admin.users.index.preview.title')"
+                  :open-aria-label="t('admin.users.index.preview.open')"
+                />
+              </td>
+              <td>
+                <span>{{ item.last_name || t('common.dash') }}</span>
+              </td>
+              <td>{{ item.first_name || t('common.dash') }}</td>
+              <td>{{ item.middle_name || t('common.dash') }}</td>
+              <td>
+                <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
+              </td>
+              <td>
+                <AdminCrudActions
+                  :show-to="`/admin/users/${item.id}`"
+                  :edit-to="`/admin/users/${item.id}/edit`"
+                  :deleting="deletingId === item.id"
+                  align="end"
+                  @delete="removeUser(item)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
 
     <template #cards>
@@ -232,7 +235,6 @@ const {
   paginationItems,
   fetchItems: fetchUsers,
   onToggleSort,
-  onApplySearch,
   onResetFilters,
   onUpdatePerPage,
   removeItem,
@@ -318,6 +320,41 @@ const removeUser = async (user: AdminUser) => {
     cancelLabel: t('common.cancel'),
   });
 };
+
+const searchAutoReady = ref(false);
+let searchAutoTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => listState.searchInput.value,
+  (nextValue) => {
+    if (!searchAutoReady.value) {
+      return;
+    }
+
+    if (nextValue.trim() === listState.search.value) {
+      return;
+    }
+
+    if (searchAutoTimer) {
+      clearTimeout(searchAutoTimer);
+    }
+
+    searchAutoTimer = setTimeout(() => {
+      fetchUsers(listState.applySearch());
+    }, 300);
+  }
+);
+
+onMounted(() => {
+  searchAutoReady.value = true;
+});
+
+onBeforeUnmount(() => {
+  if (searchAutoTimer) {
+    clearTimeout(searchAutoTimer);
+    searchAutoTimer = null;
+  }
+});
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

@@ -9,9 +9,12 @@
           <p class="admin-muted mt-2 text-sm">{{ subtitle }}</p>
         </div>
 
-        <NuxtLink :to="createTo" class="admin-button rounded-lg px-4 py-2 text-sm">{{
-          createLabel
-        }}</NuxtLink>
+        <NuxtLink
+          v-if="showCreate"
+          :to="createTo"
+          class="admin-button rounded-lg px-4 py-2 text-sm"
+          >{{ createLabel }}</NuxtLink
+        >
       </div>
     </div>
 
@@ -22,6 +25,7 @@
         :per-page="perPage"
         :per-page-options="perPageOptions"
         :loading="loading"
+        :show-apply="showApply"
         @update:search-value="(value) => $emit('update:searchValue', value)"
         @update:per-page="(value) => $emit('update:perPage', value)"
         @apply="$emit('apply')"
@@ -132,33 +136,42 @@ const emit = defineEmits<{
   (e: 'page', value: number): void;
 }>();
 
-defineProps<{
-  pageClass?: string;
-  maxWidthClass?: string;
-  title: string;
-  subtitle: string;
-  createTo: string;
-  createLabel: string;
-  searchValue: string;
-  searchPlaceholder: string;
-  perPage: number;
-  perPageOptions: number[];
-  loading: boolean;
-  shownCount: number;
-  totalCount: number;
-  loadError: string;
-  mode: ContentMode;
-  tableOnDesktop: boolean;
-  cardSortFields: CardSortField[];
-  activeSortBy: string;
-  sortMark: (field: string) => string;
-  showPagination: boolean;
-  currentPage: number;
-  lastPage: number;
-  paginationPerPage: number;
-  paginationItems: PaginationItem[];
-  tableSkeletonColumns?: number;
-}>();
+withDefaults(
+  defineProps<{
+    pageClass?: string;
+    maxWidthClass?: string;
+    title: string;
+    subtitle: string;
+    createTo?: string;
+    createLabel?: string;
+    showCreate?: boolean;
+    searchValue: string;
+    searchPlaceholder: string;
+    perPage: number;
+    perPageOptions: number[];
+    loading: boolean;
+    showApply?: boolean;
+    shownCount: number;
+    totalCount: number;
+    loadError: string;
+    mode: ContentMode;
+    tableOnDesktop: boolean;
+    cardSortFields: CardSortField[];
+    activeSortBy: string;
+    sortMark: (field: string) => string;
+    showPagination: boolean;
+    currentPage: number;
+    lastPage: number;
+    paginationPerPage: number;
+    paginationItems: PaginationItem[];
+    tableSkeletonColumns?: number;
+  }>(),
+  {
+    createTo: '/',
+    createLabel: '',
+    showCreate: true,
+  }
+);
 
 const modeOptions = computed(() => [
   { value: 'table', label: t('admin.entity.modes.table') },

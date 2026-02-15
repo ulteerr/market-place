@@ -13,6 +13,7 @@ export default {
       settings: 'Настройки',
       users: 'Пользователи',
       roles: 'Роли',
+      actionLogs: 'Журнал изменений',
     },
     sections: {
       system: 'Система',
@@ -335,6 +336,50 @@ export default {
       delete: 'Не удалось удалить роль.',
     },
     confirmDelete: 'Удалить роль {code}?',
+  },
+  actionLogs: {
+    title: 'Журнал изменений',
+    subtitle: 'История изменений моделей (создание, обновление, удаление).',
+    empty: 'Записей пока нет.',
+    headers: {
+      createdAt: 'Дата',
+      event: 'Событие',
+      model: 'Сущность',
+      user: 'Автор',
+      changedFields: 'Изменённые поля',
+      ip: 'IP',
+    },
+    events: {
+      create: 'Создание',
+      update: 'Обновление',
+      delete: 'Удаление',
+    },
+    models: {
+      user: 'Пользователь',
+      role: 'Роль',
+    },
+    filters: {
+      event: 'Событие',
+      anyEvent: 'Все события',
+      model: 'Сущность',
+      anyModel: 'Все сущности',
+      user: 'Пользователь',
+      userPlaceholder: 'ID / email / ФИО',
+      dateRange: 'Диапазон дат',
+      dateFrom: 'Дата от',
+      dateTo: 'Дата до',
+      searchPlaceholder: 'Поиск по сущности/событию/id',
+      eventAll: 'Все',
+      eventCreate: 'Создание',
+      eventUpdate: 'Обновление',
+      eventDelete: 'Удаление',
+      modelAll: 'Все',
+      modelUser: 'Пользователь',
+      modelRole: 'Роль',
+    },
+    errors: {
+      load: 'Не удалось загрузить журнал действий.',
+    },
   },
   errors: {
     users: {

@@ -8,6 +8,7 @@
     :create-label="t('admin.roles.index.createLabel')"
     :search-value="listState.searchInput.value"
     :search-placeholder="t('admin.roles.index.searchPlaceholder')"
+    :show-apply="false"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
     :loading="loading"
@@ -29,69 +30,70 @@
     @update:per-page="onUpdatePerPage"
     @update:mode="onModeChange"
     @toggle-desktop="onToggleDesktopMode"
-    @apply="onApplySearch"
     @reset="onResetFilters"
     @sort="onToggleSort"
     @page="fetchRoles"
   >
     <template #table>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('code')">
-                {{ t('admin.roles.index.headers.code') }} {{ listState.sortMark('code') }}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('label')">
-                {{ t('admin.roles.index.headers.label') }} {{ listState.sortMark('label') }}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="sort-btn" @click="onToggleSort('is_system')">
-                {{ t('admin.roles.index.headers.type') }} {{ listState.sortMark('is_system') }}
-              </button>
-            </th>
-            <th class="text-right">{{ t('admin.roles.index.headers.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="4" class="admin-muted py-5 text-center text-sm">
-              {{ t('common.loading') }}
-            </td>
-          </tr>
-          <tr v-else-if="!roles.length">
-            <td colspan="4" class="admin-muted py-5 text-center text-sm">
-              {{ t('admin.roles.index.empty') }}
-            </td>
-          </tr>
-          <tr v-for="role in roles" :key="role.id">
-            <td class="font-mono text-xs">{{ role.code }}</td>
-            <td>{{ role.label || '—' }}</td>
-            <td>
-              <span :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']">
-                {{
-                  role.is_system
-                    ? t('admin.roles.index.type.system')
-                    : t('admin.roles.index.type.custom')
-                }}
-              </span>
-            </td>
-            <td>
-              <AdminCrudActions
-                :show-to="`/admin/roles/${role.id}`"
-                :edit-to="`/admin/roles/${role.id}/edit`"
-                :can-delete="!role.is_system"
-                :deleting="deletingId === role.id"
-                align="end"
-                @delete="removeRole(role)"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto rounded-xl border border-[var(--border)]">
+        <table class="admin-table min-w-[760px]">
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('code')">
+                  {{ t('admin.roles.index.headers.code') }} {{ listState.sortMark('code') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('label')">
+                  {{ t('admin.roles.index.headers.label') }} {{ listState.sortMark('label') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('is_system')">
+                  {{ t('admin.roles.index.headers.type') }} {{ listState.sortMark('is_system') }}
+                </button>
+              </th>
+              <th class="text-right">{{ t('admin.roles.index.headers.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading">
+              <td colspan="4" class="admin-muted py-5 text-center text-sm">
+                {{ t('common.loading') }}
+              </td>
+            </tr>
+            <tr v-else-if="!roles.length">
+              <td colspan="4" class="admin-muted py-5 text-center text-sm">
+                {{ t('admin.roles.index.empty') }}
+              </td>
+            </tr>
+            <tr v-for="role in roles" :key="role.id">
+              <td class="font-mono text-xs">{{ role.code }}</td>
+              <td>{{ role.label || '—' }}</td>
+              <td>
+                <span :class="['role-chip', role.is_system ? 'is-system' : 'is-custom']">
+                  {{
+                    role.is_system
+                      ? t('admin.roles.index.type.system')
+                      : t('admin.roles.index.type.custom')
+                  }}
+                </span>
+              </td>
+              <td>
+                <AdminCrudActions
+                  :show-to="`/admin/roles/${role.id}`"
+                  :edit-to="`/admin/roles/${role.id}/edit`"
+                  :can-delete="!role.is_system"
+                  :deleting="deletingId === role.id"
+                  align="end"
+                  @delete="removeRole(role)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
 
     <template #cards>
@@ -169,7 +171,6 @@ const {
   paginationItems,
   fetchItems: fetchRoles,
   onToggleSort,
-  onApplySearch,
   onResetFilters,
   onUpdatePerPage,
   removeItem,
@@ -209,6 +210,41 @@ const removeRole = async (role: AdminRole) => {
     cancelLabel: t('common.cancel'),
   });
 };
+
+const searchAutoReady = ref(false);
+let searchAutoTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => listState.searchInput.value,
+  (nextValue) => {
+    if (!searchAutoReady.value) {
+      return;
+    }
+
+    if (nextValue.trim() === listState.search.value) {
+      return;
+    }
+
+    if (searchAutoTimer) {
+      clearTimeout(searchAutoTimer);
+    }
+
+    searchAutoTimer = setTimeout(() => {
+      fetchRoles(listState.applySearch());
+    }, 300);
+  }
+);
+
+onMounted(() => {
+  searchAutoReady.value = true;
+});
+
+onBeforeUnmount(() => {
+  if (searchAutoTimer) {
+    clearTimeout(searchAutoTimer);
+    searchAutoTimer = null;
+  }
+});
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

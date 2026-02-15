@@ -6,13 +6,14 @@ namespace Modules\Users\Models;
 
 use App\Shared\Traits\HasChangeLog;
 use App\Shared\Traits\HasUuid;
+use App\Shared\Traits\HasActionLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 final class Role extends Model
 {
-    use HasFactory, HasUuid, HasChangeLog;
+    use HasFactory, HasUuid, HasChangeLog, HasActionLog;
     protected $table = "roles";
 
     protected $fillable = ["id", "code", "label", "is_system"];

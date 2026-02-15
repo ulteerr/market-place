@@ -13,6 +13,7 @@ export default {
       settings: 'Settings',
       users: 'Users',
       roles: 'Roles',
+      actionLogs: 'Change log',
     },
     sections: {
       system: 'System',
@@ -335,6 +336,50 @@ export default {
       delete: 'Failed to delete role.',
     },
     confirmDelete: 'Delete role {code}?',
+  },
+  actionLogs: {
+    title: 'Change log',
+    subtitle: 'Model change history (create, update, delete).',
+    empty: 'No records yet.',
+    headers: {
+      createdAt: 'Date',
+      event: 'Event',
+      model: 'Entity',
+      user: 'Actor',
+      changedFields: 'Changed fields',
+      ip: 'IP',
+    },
+    events: {
+      create: 'Create',
+      update: 'Update',
+      delete: 'Delete',
+    },
+    models: {
+      user: 'User',
+      role: 'Role',
+    },
+    filters: {
+      event: 'Event',
+      anyEvent: 'Any event',
+      model: 'Entity',
+      anyModel: 'Any entity',
+      user: 'User',
+      userPlaceholder: 'ID / email / full name',
+      dateRange: 'Date range',
+      dateFrom: 'Date from',
+      dateTo: 'Date to',
+      searchPlaceholder: 'Search by entity/event/id',
+      eventAll: 'All',
+      eventCreate: 'Create',
+      eventUpdate: 'Update',
+      eventDelete: 'Delete',
+      modelAll: 'All',
+      modelUser: 'User',
+      modelRole: 'Role',
+    },
+    errors: {
+      load: 'Failed to load action logs.',
+    },
   },
   errors: {
     users: {

@@ -40,13 +40,9 @@
             <span class="admin-muted">{{ t('admin.changelog.version') }} #{{ entry.version }}</span>
             <span class="admin-muted">{{ formatDate(entry.created_at) }}</span>
             <span class="admin-muted">{{ t('admin.changelog.actor') }}:</span>
-            <NuxtLink
-              v-if="resolveActorLink(entry)"
-              :to="resolveActorLink(entry)!"
-              class="admin-actor-link"
-            >
+            <AdminLink v-if="resolveActorLink(entry)" :to="resolveActorLink(entry)!">
               {{ resolveActorLabel(entry) }}
-            </NuxtLink>
+            </AdminLink>
             <span v-else class="admin-muted">{{ resolveActorLabel(entry) }}</span>
             <span v-if="rollbackSourceVersion(entry) !== null" class="admin-muted">
               {{
@@ -177,6 +173,7 @@ import type {
   ChangeLogEvent,
   ChangeLogListMode,
 } from '~/composables/useAdminChangeLog';
+import AdminLink from '~/components/admin/AdminLink.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 
@@ -746,17 +743,6 @@ watch(page, () => {
 .admin-changelog-badge.is-restore {
   border-color: color-mix(in srgb, #a855f7 55%, var(--border));
   color: #c084fc;
-}
-
-.admin-actor-link {
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
-  text-underline-offset: 2px;
-}
-
-.admin-actor-link:hover {
-  color: var(--accent);
 }
 
 .admin-changelog-json {

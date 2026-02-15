@@ -26,9 +26,22 @@ test.describe('Admin roles page', () => {
     await page.goto('/admin/roles');
 
     await expect(page.getByRole('heading', { level: 2, name: 'Роли' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Найти' })).toHaveCount(0);
     await expect(page.getByRole('cell', { name: 'admin', exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'manager', exact: true })).toBeVisible();
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
+  });
+
+  test('filters roles by search automatically', async ({ page }) => {
+    await setupRolesPage(page);
+    await page.goto('/admin/roles');
+
+    await page.locator('input.admin-input').first().fill('manager');
+
+    await expect(page).toHaveURL(/search=manager/);
+    await expect(page.getByRole('cell', { name: 'admin', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('cell', { name: 'manager', exact: true })).toBeVisible();
+    await expect(page.getByText('Показано 1 из 1.')).toBeVisible();
   });
 
   test('sorts roles by code', async ({ page }) => {

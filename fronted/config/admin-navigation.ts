@@ -1,4 +1,4 @@
-export type AdminNavIcon = 'home' | 'system' | 'settings' | 'users' | 'roles';
+export type AdminNavIcon = 'home' | 'system' | 'settings' | 'users' | 'roles' | 'activity';
 
 export interface AdminNavigationItemDefinition {
   key: string;
@@ -38,6 +38,12 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
         to: '/admin/roles',
         labelKey: 'admin.layout.menu.roles',
         icon: 'roles',
+      },
+      {
+        key: 'action-logs',
+        to: '/admin/action-logs',
+        labelKey: 'admin.layout.menu.actionLogs',
+        icon: 'activity',
       },
     ],
   },
