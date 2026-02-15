@@ -287,6 +287,15 @@ paths:
                             type: boolean
                             example: true
                         additionalProperties: false
+                    admin_navigation_sections:
+                      type: object
+                      additionalProperties:
+                        type: object
+                        properties:
+                          open:
+                            type: boolean
+                            example: true
+                        additionalProperties: false
                   additionalProperties: true
                   example:
                     locale: en
@@ -296,13 +305,12 @@ paths:
                       users:
                         contentMode: cards
                         tableOnDesktop: false
+                    admin_navigation_sections:
+                      system:
+                        open: true
       responses:
-        '200':
-          description: Updated user settings
-          content:
-            application/json:
-              schema:
-                $ref: '#/paths/~1api~1me/get/responses/200/content/application~1json/schema'
+        '204':
+          description: Settings updated successfully (no response body)
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '422':
@@ -324,6 +332,51 @@ paths:
                 example: |
                   event: settings
                   data: {"settings":{"theme":"dark"}}
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+  /api/me/avatar:
+    post:
+      tags:
+        - Users
+      summary: Upload current user avatar
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - avatar
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: User with updated avatar
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1me/get/responses/200/content/application~1json/schema'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    delete:
+      tags:
+        - Users
+      summary: Delete current user avatar
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User with removed avatar
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1me/get/responses/200/content/application~1json/schema'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
   /api/admin/users:
@@ -465,6 +518,10 @@ paths:
                               type: boolean
                               nullable: true
                               example: true
+                            avatar:
+                              allOf:
+                                - $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data/properties/avatar/allOf/0'
+                              nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -536,6 +593,21 @@ paths:
                     type: string
                   example:
                     - moderator
+                permission_overrides:
+                  type: object
+                  properties:
+                    allow:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - admin.users.read
+                    deny:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - admin.roles.delete
       responses:
         '201':
           description: User created
@@ -592,6 +664,8 @@ paths:
                         example:
                           - participant
                           - admin
+                      permission_overrides:
+                        $ref: '#/paths/~1api~1admin~1users/post/requestBody/content/application~1json/schema/properties/permission_overrides'
                       is_admin:
                         type: boolean
                         example: true
@@ -600,6 +674,37 @@ paths:
                         example: true
                       settings:
                         $ref: '#/paths/~1api~1me~1settings/patch/requestBody/content/application~1json/schema/properties/settings'
+                      avatar:
+                        allOf:
+                          - type: object
+                            required:
+                              - id
+                              - url
+                              - original_name
+                              - collection
+                            properties:
+                              id:
+                                type: string
+                                format: uuid
+                                example: d3302fd5-360b-48ba-a049-40aa4accf26f
+                              url:
+                                type: string
+                                format: uri
+                                example: 'http://localhost:8080/storage/uploads/2026/02/avatar.png'
+                              original_name:
+                                type: string
+                                example: avatar.png
+                              mime_type:
+                                type: string
+                                nullable: true
+                                example: image/png
+                              size:
+                                type: integer
+                                example: 48231
+                              collection:
+                                type: string
+                                example: avatar
+                        nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -704,6 +809,8 @@ paths:
                   example:
                     - admin
                     - moderator
+                permission_overrides:
+                  $ref: '#/paths/~1api~1admin~1users/post/requestBody/content/application~1json/schema/properties/permission_overrides'
       responses:
         '200':
           description: User updated
@@ -818,6 +925,13 @@ paths:
                   nullable: true
                   maxLength: 255
                   example: Editor
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - admin.users.read
+                    - admin.users.update
       responses:
         '201':
           description: Role created
@@ -858,12 +972,72 @@ paths:
                       is_system:
                         type: boolean
                         example: false
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - admin.users.read
+                          - admin.users.update
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/admin/permissions:
+    get:
+      tags:
+        - Admin Roles
+      summary: List available access permissions (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Available permission codes
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - data
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - code
+                            - scope
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                              example: 3f8d4f3b-7cf7-4e36-a6cf-f84e0f6f19bb
+                            code:
+                              type: string
+                              example: admin.users.read
+                            scope:
+                              type: string
+                              example: admin
+                            label:
+                              type: string
+                              nullable: true
+                              example: Просмотр пользователей в админке
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
   '/api/admin/roles/{id}':
     parameters:
       - name: id
@@ -922,6 +1096,12 @@ paths:
                   nullable: true
                   maxLength: 255
                   example: Updated Editor
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - admin.users.read
       responses:
         '200':
           description: Role updated
@@ -975,3 +1155,306 @@ paths:
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/admin/changelog:
+    get:
+      tags:
+        - Admin ChangeLog
+      summary: List changelog entries (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: model
+          in: query
+          required: false
+          schema:
+            type: string
+            example: user
+          description: Model alias or FQCN from changelog config.
+        - name: entity_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: event
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - create
+              - update
+              - delete
+              - restore
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            example: 30
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Paginated changelog entries
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - per_page
+                    properties:
+                      list_mode:
+                        type: string
+                        enum:
+                          - latest
+                          - paginated
+                        example: latest
+                      current_page:
+                        type: integer
+                        example: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1changelog~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
+                      first_page_url:
+                        type: string
+                        nullable: true
+                      from:
+                        type: integer
+                        nullable: true
+                      last_page:
+                        type: integer
+                        example: 1
+                      last_page_url:
+                        type: string
+                        nullable: true
+                      links:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: true
+                      next_page_url:
+                        type: string
+                        nullable: true
+                      path:
+                        type: string
+                      per_page:
+                        type: integer
+                        example: 30
+                      prev_page_url:
+                        type: string
+                        nullable: true
+                      to:
+                        type: integer
+                        nullable: true
+                      total:
+                        type: integer
+                        example: 8
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  '/api/admin/changelog/{id}':
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Admin ChangeLog
+      summary: Get changelog entry by id (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Changelog entry details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - auditable_type
+                      - auditable_id
+                      - event
+                      - version
+                      - created_at
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      auditable_type:
+                        type: string
+                        example: Modules\\Users\\Models\\User
+                      auditable_id:
+                        type: string
+                        format: uuid
+                      event:
+                        type: string
+                        enum:
+                          - create
+                          - update
+                          - delete
+                          - restore
+                      version:
+                        type: integer
+                        minimum: 1
+                        example: 3
+                      before:
+                        type: object
+                        nullable: true
+                        additionalProperties: true
+                      after:
+                        type: object
+                        nullable: true
+                        additionalProperties: true
+                      changed_fields:
+                        type: array
+                        nullable: true
+                        items:
+                          type: string
+                        example:
+                          - first_name
+                          - last_name
+                      actor_type:
+                        type: string
+                        nullable: true
+                        example: Modules\\Users\\Models\\User
+                      actor_id:
+                        type: string
+                        nullable: true
+                        format: uuid
+                      actor:
+                        type: object
+                        nullable: true
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          full_name:
+                            type: string
+                            nullable: true
+                      batch_id:
+                        type: string
+                        nullable: true
+                        format: uuid
+                      rolled_back_from_id:
+                        type: string
+                        nullable: true
+                        format: uuid
+                      meta:
+                        type: object
+                        nullable: true
+                        additionalProperties: true
+                      created_at:
+                        type: string
+                        format: date-time
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
+  '/api/admin/changelog/{id}/rollback':
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Admin ChangeLog
+      summary: Rollback entity state to selected changelog entry (admin only)
+      description: |
+        Applies rollback for the entity/version represented by this changelog entry. Supports create/update/delete/restore entries.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Rollback completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Rollback completed.
+                  data:
+                    type: object
+                    required:
+                      - model_type
+                      - model_id
+                      - rolled_back_from_id
+                    properties:
+                      model_type:
+                        type: string
+                        example: Modules\\Users\\Models\\Role
+                      model_id:
+                        type: string
+                        format: uuid
+                      rolled_back_from_id:
+                        type: string
+                        format: uuid
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
+        '409':
+          description: Rollback conflict (schema mismatch or invalid target state)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: 'Cannot rollback: model schema signature mismatch.'

@@ -18,6 +18,8 @@ export interface AdminAuthUser {
     size?: number;
   } | null;
   can_access_admin_panel: boolean;
+  roles?: string[];
+  permissions?: string[];
   settings?: {
     theme: 'light' | 'dark';
     collapse_menu: boolean;
@@ -33,9 +35,26 @@ export const defaultAdminUser: AdminAuthUser = {
   last_name: 'Системный',
   middle_name: 'Тестовый',
   can_access_admin_panel: true,
+  roles: ['participant', 'admin'],
+  permissions: [
+    'admin.panel.access',
+    'admin.users.read',
+    'admin.users.create',
+    'admin.users.update',
+    'admin.users.delete',
+    'admin.roles.read',
+    'admin.roles.create',
+    'admin.roles.update',
+    'admin.roles.delete',
+    'admin.changelog.read',
+    'admin.changelog.rollback',
+    'admin.action-log.read',
+  ],
 };
 
 export const setAdminAuthCookies = async (page: Page, user: AdminAuthUser = defaultAdminUser) => {
+  const mergedUser: AdminAuthUser = { ...defaultAdminUser, ...user };
+
   await page.context().addCookies([
     {
       name: 'auth_token',
@@ -44,7 +63,7 @@ export const setAdminAuthCookies = async (page: Page, user: AdminAuthUser = defa
     },
     {
       name: 'auth_user',
-      value: encodeURIComponent(JSON.stringify(user)),
+      value: encodeURIComponent(JSON.stringify(mergedUser)),
       url: authOrigin,
     },
     {
@@ -56,13 +75,15 @@ export const setAdminAuthCookies = async (page: Page, user: AdminAuthUser = defa
 };
 
 export const mockMeEndpoint = async (page: Page, user: AdminAuthUser = defaultAdminUser) => {
+  const mergedUser: AdminAuthUser = { ...defaultAdminUser, ...user };
+
   await page.route('**/api/me', async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         status: 'ok',
-        user,
+        user: mergedUser,
       }),
     });
   });

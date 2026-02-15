@@ -2,9 +2,9 @@
 declare(strict_types=1);
 namespace Modules\Users\Database\Factories;
 
-
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Users\Enums\RoleCode;
 use Modules\Users\Models\Role;
 
 class RoleFactory extends Factory
@@ -14,33 +14,49 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'id'    => (string) Str::uuid(),
-            'code'  => $this->faker->unique()->word(),
-            'label' => $this->faker->word(),
+            "id" => (string) Str::uuid(),
+            "code" => $this->faker->unique()->word(),
+            "label" => $this->faker->word(),
         ];
     }
 
     public function participant(): static
     {
-        return $this->state(fn () => [
-            'code'  => 'participant',
-            'label' => 'Участник',
-        ]);
+        return $this->state(
+            fn() => [
+                "code" => RoleCode::PARTICIPANT->value,
+                "label" => "Участник",
+            ],
+        );
     }
 
     public function admin(): static
     {
-        return $this->state(fn () => [
-            'code'  => 'admin',
-            'label' => 'Администратор',
-        ]);
+        return $this->state(
+            fn() => [
+                "code" => RoleCode::ADMIN->value,
+                "label" => "Администратор",
+            ],
+        );
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->state(
+            fn() => [
+                "code" => RoleCode::SUPER_ADMIN->value,
+                "label" => "Супер-администратор",
+            ],
+        );
     }
 
     public function moderator(): static
     {
-        return $this->state(fn () => [
-            'code'  => 'moderator',
-            'label' => 'Модератор',
-        ]);
+        return $this->state(
+            fn() => [
+                "code" => RoleCode::MODERATOR->value,
+                "label" => "Модератор",
+            ],
+        );
     }
 }

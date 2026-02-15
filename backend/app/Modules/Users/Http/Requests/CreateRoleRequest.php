@@ -11,8 +11,10 @@ final class CreateRoleRequest extends CrudRequest
     protected function ruleset(): array
     {
         return [
-            'code'  => ['required', 'string', 'max:50', 'unique:roles,code'],
-            'label' => ['nullable', 'string', 'max:255'],
+            "code" => ["required", "string", "max:50", "unique:roles,code"],
+            "label" => ["nullable", "string", "max:255"],
+            "permissions" => ["sometimes", "array"],
+            "permissions.*" => ["string", "distinct", "exists:access_permissions,code"],
         ];
     }
 }

@@ -8,5 +8,7 @@ use Modules\ActionLog\Http\Controllers\AdminActionLogController;
 Route::middleware(["auth:sanctum", "can_access_admin_panel"])
     ->prefix("api/admin/action-logs")
     ->group(function (): void {
-        Route::get("/", [AdminActionLogController::class, "index"]);
+        Route::get("/", [AdminActionLogController::class, "index"])->middleware(
+            "can_permission:admin.action-log.read",
+        );
     });

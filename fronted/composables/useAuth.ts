@@ -33,6 +33,7 @@ interface AuthUser {
     >;
   } | null;
   roles?: string[];
+  permissions?: string[];
   is_admin?: boolean;
   can_access_admin_panel?: boolean;
 }

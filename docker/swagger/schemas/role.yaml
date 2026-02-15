@@ -21,6 +21,30 @@ components:
         is_system:
           type: boolean
           example: false
+        permissions:
+          type: array
+          items:
+            type: string
+          example: [admin.users.read, admin.users.update]
+
+    AccessPermission:
+      type: object
+      required: [id, code, scope]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3f8d4f3b-7cf7-4e36-a6cf-f84e0f6f19bb
+        code:
+          type: string
+          example: admin.users.read
+        scope:
+          type: string
+          example: admin
+        label:
+          type: string
+          nullable: true
+          example: Просмотр пользователей в админке
 
 
     CreateRoleRequest:
@@ -36,6 +60,11 @@ components:
           nullable: true
           maxLength: 255
           example: Editor
+        permissions:
+          type: array
+          items:
+            type: string
+          example: [admin.users.read, admin.users.update]
 
 
     UpdateRoleRequest:
@@ -50,3 +79,8 @@ components:
           nullable: true
           maxLength: 255
           example: Updated Editor
+        permissions:
+          type: array
+          items:
+            type: string
+          example: [admin.users.read]

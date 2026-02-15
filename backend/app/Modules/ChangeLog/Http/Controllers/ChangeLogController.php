@@ -51,13 +51,17 @@ final class ChangeLogController extends Controller
     public function rollback(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
-        if (!$user || !$user->hasRole("admin")) {
+        if (!$user) {
             return StatusResponseFactory::error("Forbidden", 403);
         }
 
         $entry = $this->service->findById($id);
         if (!$entry) {
             return StatusResponseFactory::error("ChangeLog entry not found.", 404);
+        }
+
+        if (!$user->can("rollback", $entry)) {
+            return StatusResponseFactory::error("Forbidden", 403);
         }
 
         try {

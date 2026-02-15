@@ -645,9 +645,9 @@ final class ChangeLogFeatureTest extends TestCase
 
     private function actingAsAdmin(): array
     {
-        $adminRole = Role::factory()->admin()->create();
+        $superAdminRole = Role::factory()->superAdmin()->create();
         $auth = $this->actingAsUser();
-        $auth["user"]->roles()->sync([$adminRole->id]);
+        $auth["user"]->roles()->sync([$superAdminRole->id]);
 
         return $auth;
     }

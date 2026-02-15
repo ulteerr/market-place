@@ -405,6 +405,38 @@ admin_roles:
         $ref: ../errors.yaml#/ValidationError
 
 
+admin_permissions:
+  get:
+    tags: [Admin Roles]
+    summary: List available access permissions (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Available permission codes
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  type: object
+                  required: [data]
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: ../schemas/role.yaml#/components/schemas/AccessPermission
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+
 admin_roles_by_id:
   parameters:
     - name: id

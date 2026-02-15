@@ -5,6 +5,7 @@
     :title="t('admin.roles.index.title')"
     :subtitle="t('admin.roles.index.subtitle')"
     create-to="/admin/roles/new"
+    :show-create="canCreateRoles"
     :create-label="t('admin.roles.index.createLabel')"
     :search-value="listState.searchInput.value"
     :search-placeholder="t('admin.roles.index.searchPlaceholder')"
@@ -84,7 +85,9 @@
                 <AdminCrudActions
                   :show-to="`/admin/roles/${role.id}`"
                   :edit-to="`/admin/roles/${role.id}/edit`"
-                  :can-delete="!role.is_system"
+                  :can-show="canReadRoles"
+                  :can-edit="canUpdateRoles"
+                  :can-delete="canDeleteRoles && !role.is_system"
                   :deleting="deletingId === role.id"
                   align="end"
                   @delete="removeRole(role)"
@@ -116,7 +119,9 @@
             <AdminCrudActions
               :show-to="`/admin/roles/${role.id}`"
               :edit-to="`/admin/roles/${role.id}/edit`"
-              :can-delete="!role.is_system"
+              :can-show="canReadRoles"
+              :can-edit="canUpdateRoles"
+              :can-delete="canDeleteRoles && !role.is_system"
               :deleting="deletingId === role.id"
               @delete="removeRole(role)"
             />
@@ -150,9 +155,16 @@ const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
+  middleware: 'admin-permission',
+  permission: 'admin.roles.read',
 });
 
 const rolesApi = useAdminRoles();
+const { hasPermission } = usePermissions();
+const canReadRoles = computed(() => hasPermission('admin.roles.read'));
+const canCreateRoles = computed(() => hasPermission('admin.roles.create'));
+const canUpdateRoles = computed(() => hasPermission('admin.roles.update'));
+const canDeleteRoles = computed(() => hasPermission('admin.roles.delete'));
 const {
   listState,
   items: roles,
@@ -202,8 +214,12 @@ const onToggleDesktopMode = () => {
 };
 
 const removeRole = async (role: AdminRole) => {
+  if (!canDeleteRoles.value || role.is_system) {
+    return;
+  }
+
   removeItem(role, {
-    canDelete: !role.is_system,
+    canDelete: canDeleteRoles.value && !role.is_system,
     confirmTitle: t('admin.actions.delete'),
     confirmMessage: t('admin.roles.confirmDelete', { code: role.code }),
     confirmLabel: t('admin.actions.delete'),

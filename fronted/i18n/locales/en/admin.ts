@@ -59,6 +59,72 @@ export default {
   files: {
     avatarHint: 'PNG/JPG/WEBP, up to 5MB',
   },
+  permissions: {
+    title: 'Role permissions',
+    roleHint: 'Select permissions granted by default for this role.',
+    userTitle: 'User personal permissions',
+    userHint:
+      'Allow grants a specific permission, Deny blocks a specific permission (overrides roles).',
+    allow: 'Allow',
+    deny: 'Deny',
+    scopes: {
+      admin: 'Admin',
+      org: 'Organization',
+      user: 'User',
+    },
+    codes: {
+      admin: {
+        panel: {
+          access: 'Admin panel access',
+        },
+        users: {
+          read: 'Read users in admin',
+          create: 'Create users in admin',
+          update: 'Update users in admin',
+          delete: 'Delete users in admin',
+        },
+        roles: {
+          read: 'Read roles in admin',
+          create: 'Create roles in admin',
+          update: 'Update roles in admin',
+          delete: 'Delete roles in admin',
+        },
+        changelog: {
+          read: 'Read changelog in admin',
+          rollback: 'Request changelog rollback in admin',
+        },
+        action_log: {
+          read: 'Read action log in admin',
+          update: 'Update action log in admin',
+          delete: 'Delete action log in admin',
+        },
+      },
+      org: {
+        company: {
+          profile: {
+            read: 'Read company account',
+            update: 'Update company account',
+            delete: 'Delete company account',
+          },
+        },
+        members: {
+          read: 'Read organization members',
+          write: 'Manage organization members',
+        },
+        children: {
+          read: 'Read children in organization',
+          write: 'Manage children in organization',
+        },
+      },
+      user: {
+        profile: {
+          read: 'Read user account',
+          update: 'Update user account',
+          delete: 'Delete user account',
+        },
+      },
+    },
+  },
   changelog: {
     title: 'Change history',
     subtitle: 'Audit trail for the current entity.',
@@ -108,6 +174,7 @@ export default {
         phone: 'Phone',
         roles: 'Roles',
         avatar_id: 'Avatar',
+        permission_overrides: 'Personal permissions',
       },
       role: {
         code: 'Code',
@@ -267,6 +334,8 @@ export default {
       errors: {
         invalidId: 'Invalid user identifier.',
         load: 'Failed to load user.',
+        cannotEditSuperAdmin: 'Only super_admin can edit a user with the super_admin role.',
+        cannotEditHigherRole: 'You cannot edit a user with a higher role than yours.',
         update: 'Failed to update user.',
       },
     },

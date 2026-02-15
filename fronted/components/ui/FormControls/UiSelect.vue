@@ -14,10 +14,12 @@
           :key="String(option.value)"
           type="button"
           :class="styles.tag"
+          :disabled="isLockedValue(option.value)"
+          :title="isLockedValue(option.value) ? option.label : undefined"
           @click="removeTag(option.value)"
         >
           {{ option.label }}
-          <span :class="styles.tagClose">×</span>
+          <span v-if="!isLockedValue(option.value)" :class="styles.tagClose">×</span>
         </button>
       </div>
 
@@ -99,6 +101,7 @@ const props = withDefaults(
     searchable?: boolean;
     multiple?: boolean;
     allowCreate?: boolean;
+    lockedValues?: SelectValue[];
   }>(),
   {
     modelValue: null,
@@ -113,6 +116,7 @@ const props = withDefaults(
     searchable: true,
     multiple: false,
     allowCreate: false,
+    lockedValues: () => [],
   }
 );
 
@@ -194,6 +198,7 @@ const canCreateTag = computed(() => {
 });
 
 const isSelected = (value: SelectValue) => selectedValues.value.includes(value);
+const isLockedValue = (value: SelectValue) => props.lockedValues.includes(value);
 
 const onInput = (event: Event) => {
   if (!props.searchable) {
@@ -254,6 +259,10 @@ const selectOption = (value: SelectValue) => {
 
 const removeTag = (value: SelectValue) => {
   if (!props.multiple) {
+    return;
+  }
+
+  if (isLockedValue(value)) {
     return;
   }
 

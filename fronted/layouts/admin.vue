@@ -330,20 +330,41 @@ type NavigationSectionView = Omit<AdminNavigationSectionDefinition, 'items'> & {
   items: NavigationItemView[];
 };
 
+const navigationPermissions: Record<string, string> = {
+  users: 'admin.users.read',
+  roles: 'admin.roles.read',
+  'action-logs': 'admin.action-log.read',
+};
+const { hasPermission } = usePermissions();
+
 const dashboardItem = computed<NavigationItemView>(() => ({
   ...adminDashboardItemDefinition,
   label: t(adminDashboardItemDefinition.labelKey),
 }));
 
+const isNavigationItemVisible = (item: AdminNavigationItemDefinition): boolean => {
+  const permission = navigationPermissions[item.key];
+
+  if (!permission) {
+    return true;
+  }
+
+  return hasPermission(permission);
+};
+
 const navigationSections = computed<NavigationSectionView[]>(() =>
-  adminNavigationSectionDefinitions.map((section) => ({
-    ...section,
-    label: t(section.labelKey),
-    items: section.items.map((item) => ({
-      ...item,
-      label: t(item.labelKey),
-    })),
-  }))
+  adminNavigationSectionDefinitions
+    .map((section) => ({
+      ...section,
+      label: t(section.labelKey),
+      items: section.items
+        .filter((item) => isNavigationItemVisible(item))
+        .map((item) => ({
+          ...item,
+          label: t(item.labelKey),
+        })),
+    }))
+    .filter((section) => section.items.length > 0)
 );
 
 const isSectionOpen = (key: string) => settings.value.admin_navigation_sections[key]?.open === true;

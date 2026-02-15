@@ -1,6 +1,5 @@
 ![CI](https://github.com/ulteerr/market-place/actions/workflows/ci.yml/badge.svg)
 
-
 # 🛒 Marketplace Platform
 
 Frontend + backend for Marketplace built with **Nuxt 4**, **Laravel**, **PostgreSQL**, **Redis**, and **Docker**.  
@@ -103,6 +102,17 @@ make db-reset-hard
 Сидовые аккаунты создаются в `backend/app/Modules/Users/Database/Seeders/UsersSeeder.php` и привязка ролей задается там же:
 
 ```php
+
+$superAdminUser = User::query()->firstOrCreate(
+	["email" => "superadmin@example.com"],
+	[
+		"first_name" => "System",
+		"last_name" => "SuperAdmin",
+		"phone" => "+79990001122",
+		"password" => "password123",
+	],
+);
+$superAdminUser->roles()->syncWithoutDetaching([$participantRole->id, $superAdminRole->id]);
 $adminUser = User::query()->firstOrCreate(
     ["email" => "admin@example.com"],
     [
@@ -143,22 +153,28 @@ make db-seed
 
 Демо-учетки:
 
+- `superadmin@example.com` / `password123`
 - `admin@example.com` / `password123`
 - `moderator@example.com` / `password123`
+
+Ограничения по ролям:
+
+- `super_admin` имеет все права.
+- `admin` может просматривать, создавать и удалять несистемные роли, но не может назначать роль `super_admin`.
 
 ---
 
 ## 🌐 Available Services
 
-| Service        | URL                          |
-|---------------|------------------------------|
-| Fronted (Nuxt)| http://localhost:3000        |
-| Backend API   | http://localhost:8080        |
-| Swagger UI    | http://localhost:8081        |
-| ReDoc CE      | http://localhost:8082        |
-| PostgreSQL    | localhost:5433               |
-| pgAdmin       | http://localhost:5050        |
-| Redis         | localhost:6381               |
+| Service        | URL                   |
+| -------------- | --------------------- |
+| Fronted (Nuxt) | http://localhost:3000 |
+| Backend API    | http://localhost:8080 |
+| Swagger UI     | http://localhost:8081 |
+| ReDoc CE       | http://localhost:8082 |
+| PostgreSQL     | localhost:5433        |
+| pgAdmin        | http://localhost:5050 |
+| Redis          | localhost:6381        |
 
 ---
 
@@ -167,11 +183,13 @@ make db-seed
 API documentation is **OpenAPI-first** and fully decoupled from backend code.
 
 Swagger UI:
+
 ```
 http://localhost:8081
 ```
 
 ReDoc CE:
+
 ```
 http://localhost:8082
 ```
@@ -189,12 +207,14 @@ All endpoints and request/response examples are available in Swagger UI.
 Admin ChangeLog is available for profile, users and roles in admin pages.
 
 What it includes:
+
 - event type (`create`, `update`, `delete`, `restore`)
 - actor (current user is shown as `Я` / `Me`, others link to `/admin/users/{id}`)
 - version, timestamp, changed fields
 - rollback action from selected changelog record
 
 Rollback behavior:
+
 - rollback endpoint: `POST /api/admin/changelog/{id}/rollback`
 - UI refreshes entity data after successful rollback
 - empty `update` logs (without actual field changes) are skipped
@@ -225,6 +245,7 @@ CHANGELOG_ADMIN_LIMIT=20
 ```
 
 Meaning:
+
 - `CHANGELOG_ADMIN_LIST_MODE`: `latest` or `paginated`
 - `CHANGELOG_ADMIN_LIMIT`: record limit (`latest`) or page size cap (`paginated`)
 
@@ -343,6 +364,40 @@ make redoc               # Restart ReDoc CE
 - Backend is fully decoupled from frontend pages (API/Auth only)
 - Errors are centralized and reused across modules
 - API documentation acts as a contract for frontend integration
+
+### Permissions strategy
+
+Права разделены по namespace:
+
+- `admin.*` — доступ и действия в админке
+- `org.*` — права в контексте организации
+- `user.*` — права обычного пользователя (собственный профиль и т.д.)
+- Для `admin.users` и `admin.roles` используются отдельные CRUD-коды:
+- `admin.users.read|create|update|delete`
+- `admin.roles.read|create|update|delete`
+- Для action logs: `admin.action-log.read`
+- Для changelog: `admin.changelog.read`
+- Для rollback changelog: `admin.changelog.rollback` + проверка права на целевую модель:
+- `User` rollback требует `admin.users.update`
+- `Role` rollback требует `admin.roles.update`
+- Для моделей подключены Policy:
+- `UserPolicy`, `RolePolicy`, `ActionLogPolicy`, `ChangeLogPolicy`
+- Регистрация policy выполнена в `Modules\\Auth\\AuthServiceProvider` через `Gate::policy(...)`
+- Источник прав: таблицы `access_permissions` и `role_access_permission` (role-based).
+- Дополнительно поддерживаются персональные оверрайды прав пользователя в `user_access_permissions`:
+- `allowed=true` — точечно выдать право пользователю
+- `allowed=false` — точечно запретить право (даже если оно есть через роль)
+- Для UI редактирования прав доступен endpoint `GET /api/admin/permissions`.
+- Роли и базовые права синхронизируются в `Modules\\Users\\Database\\Seeders\\RolesSeeder`.
+- Для маршрутов доступен middleware `can_permission`:
+
+```php
+Route::middleware(['auth:sanctum', 'can_permission:admin.users.read'])->group(function () {
+    // ...
+});
+```
+
+- Старый `can_access_admin_panel` оставлен для обратной совместимости.
 
 ---
 

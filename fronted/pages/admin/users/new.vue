@@ -64,12 +64,48 @@
           v-model="form.roles"
           :label="t('admin.users.new.fields.roles')"
           :options="roleOptions"
+          :locked-values="[PARTICIPANT_ROLE_CODE]"
           :placeholder="t('admin.users.new.rolesPlaceholder')"
           multiple
           searchable
           :disabled="saving || loadingRoles"
           :error="fieldErrors.roles"
         />
+
+        <div v-if="showPermissionOverrides" class="space-y-3">
+          <p class="text-sm font-medium">{{ t('admin.permissions.userTitle') }}</p>
+          <p class="admin-muted text-xs">{{ t('admin.permissions.userHint') }}</p>
+          <p v-if="loadingPermissions" class="admin-muted text-sm">{{ t('common.loading') }}</p>
+
+          <div v-for="group in permissionsByScope" v-else :key="group.scope" class="space-y-2">
+            <p class="text-xs uppercase tracking-wide text-white/60">
+              {{ permissionsApi.resolvePermissionScopeLabel(group.scope) }}
+            </p>
+            <div class="rounded-lg border border-white/10 p-3">
+              <div
+                v-for="permission in group.items"
+                :key="permission.code"
+                class="mb-2 grid grid-cols-[1fr_auto_auto] items-center gap-3 text-sm last:mb-0"
+              >
+                <span>{{ permissionsApi.resolvePermissionLabel(permission) }}</span>
+                <UiCheckbox
+                  class="justify-self-end"
+                  :label="t('admin.permissions.allow')"
+                  :model-value="form.permission_overrides_allow.includes(permission.code)"
+                  :disabled="saving"
+                  @update:model-value="(checked) => onOverrideAllowToggle(permission.code, checked)"
+                />
+                <UiCheckbox
+                  class="justify-self-end"
+                  :label="t('admin.permissions.deny')"
+                  :model-value="form.permission_overrides_deny.includes(permission.code)"
+                  :disabled="saving"
+                  @update:model-value="(checked) => onOverrideDenyToggle(permission.code, checked)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
         <UiImageDropzone
           v-model="avatarDraftFiles"
@@ -115,30 +151,39 @@
 
 <script setup lang="ts">
 import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiCheckbox from '~/components/ui/FormControls/UiCheckbox.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
 import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
+import type { AdminAccessPermission } from '~/composables/useAdminPermissions';
 import type { AdminRole } from '~/composables/useAdminRoles';
 import type { CreateUserPayload } from '~/composables/useAdminUsers';
+import { getHighestRoleLevelFromCodes, getRoleLevel } from '~/composables/useAdminUsers';
 import {
   getApiErrorPayload,
   getApiErrorMessage,
   getFieldError,
 } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
+const { user: authUser } = useAuth();
 
 definePageMeta({
   layout: 'admin',
+  middleware: 'admin-permission',
+  permission: 'admin.users.create',
 });
 
 const usersApi = useAdminUsers();
 const rolesApi = useAdminRoles();
+const permissionsApi = useAdminPermissions();
 
 const saving = ref(false);
 const loadingRoles = ref(false);
+const loadingPermissions = ref(false);
 const formError = ref('');
 const avatarError = ref('');
 const roles = ref<AdminRole[]>([]);
+const permissions = ref<AdminAccessPermission[]>([]);
 const avatarDraftFiles = ref<File[]>([]);
 const avatarFile = ref<File | null>(null);
 const avatarPreviewUrl = ref<string | null>(null);
@@ -151,8 +196,25 @@ const form = reactive({
   phone: '',
   password: '',
   password_confirmation: '',
-  roles: [] as string[],
+  roles: ['participant'] as string[],
+  permission_overrides_allow: [] as string[],
+  permission_overrides_deny: [] as string[],
 });
+
+const PARTICIPANT_ROLE_CODE = 'participant';
+const actorMaxRoleLevel = computed(() =>
+  getHighestRoleLevelFromCodes(Array.isArray(authUser.value?.roles) ? authUser.value.roles : [])
+);
+
+const normalizeAssignableRoles = (roles: string[]): string[] => {
+  const unique = [...new Set(roles.filter((role) => typeof role === 'string' && role.length > 0))];
+
+  if (!unique.includes(PARTICIPANT_ROLE_CODE)) {
+    unique.push(PARTICIPANT_ROLE_CODE);
+  }
+
+  return unique.filter((role) => getRoleLevel(role) <= actorMaxRoleLevel.value);
+};
 
 const fieldErrors = reactive<Record<string, string>>({
   first_name: '',
@@ -168,6 +230,28 @@ const roleOptions = computed(() => {
   return roles.value.map((role) => ({
     label: role.label ? `${role.code} (${role.label})` : role.code,
     value: role.code,
+    disabled:
+      role.code === PARTICIPANT_ROLE_CODE || getRoleLevel(role.code) > actorMaxRoleLevel.value,
+  }));
+});
+
+const showPermissionOverrides = computed(() =>
+  form.roles.some((roleCode) => roleCode !== PARTICIPANT_ROLE_CODE)
+);
+
+const permissionsByScope = computed(() => {
+  const grouped = new Map<string, AdminAccessPermission[]>();
+
+  permissions.value.forEach((permission) => {
+    const scope = permission.scope || 'other';
+    const bucket = grouped.get(scope) ?? [];
+    bucket.push(permission);
+    grouped.set(scope, bucket);
+  });
+
+  return [...grouped.entries()].map(([scope, items]) => ({
+    scope,
+    items,
   }));
 });
 
@@ -242,11 +326,48 @@ const fetchRoles = async () => {
   }
 };
 
+const fetchPermissions = async () => {
+  loadingPermissions.value = true;
+
+  try {
+    permissions.value = await permissionsApi.list();
+  } finally {
+    loadingPermissions.value = false;
+  }
+};
+
+const onOverrideAllowToggle = (code: string, checked: boolean) => {
+  if (checked) {
+    if (!form.permission_overrides_allow.includes(code)) {
+      form.permission_overrides_allow = [...form.permission_overrides_allow, code];
+    }
+    form.permission_overrides_deny = form.permission_overrides_deny.filter((item) => item !== code);
+    return;
+  }
+
+  form.permission_overrides_allow = form.permission_overrides_allow.filter((item) => item !== code);
+};
+
+const onOverrideDenyToggle = (code: string, checked: boolean) => {
+  if (checked) {
+    if (!form.permission_overrides_deny.includes(code)) {
+      form.permission_overrides_deny = [...form.permission_overrides_deny, code];
+    }
+    form.permission_overrides_allow = form.permission_overrides_allow.filter(
+      (item) => item !== code
+    );
+    return;
+  }
+
+  form.permission_overrides_deny = form.permission_overrides_deny.filter((item) => item !== code);
+};
+
 const submitForm = async () => {
   saving.value = true;
   resetErrors();
 
   try {
+    const safeRoles = normalizeAssignableRoles(form.roles);
     const payload: CreateUserPayload = {
       first_name: form.first_name.trim(),
       last_name: form.last_name.trim(),
@@ -255,7 +376,13 @@ const submitForm = async () => {
       phone: form.phone.trim() || null,
       password: form.password,
       password_confirmation: form.password_confirmation,
-      roles: [...form.roles],
+      roles: [...safeRoles],
+      permission_overrides: showPermissionOverrides.value
+        ? {
+            allow: [...form.permission_overrides_allow],
+            deny: [...form.permission_overrides_deny],
+          }
+        : undefined,
       avatar: avatarFile.value,
     };
 
@@ -278,7 +405,21 @@ const submitForm = async () => {
   }
 };
 
-onMounted(fetchRoles);
+onMounted(async () => {
+  await Promise.all([fetchRoles(), fetchPermissions()]);
+});
+
+watch(
+  () => form.roles,
+  (nextRoles) => {
+    const normalized = normalizeAssignableRoles(nextRoles);
+
+    if (normalized.join('|') !== nextRoles.join('|')) {
+      form.roles = normalized;
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 onBeforeUnmount(() => {
   if (avatarPreviewUrl.value) {

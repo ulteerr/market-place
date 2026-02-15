@@ -231,6 +231,7 @@ const emit = defineEmits<{
 
 const { t, te, locale } = useI18n();
 const { user: authUser } = useAuth();
+const { hasPermission } = usePermissions();
 const changeLogApi = useAdminChangeLog();
 const config = useRuntimeConfig();
 
@@ -367,7 +368,25 @@ const formatScalar = (value: unknown): string => {
   return String(value);
 };
 
-const formatArrayValue = (value: unknown[]): string => {
+const resolvePermissionCodeLabel = (code: string): string => {
+  const normalizedCode = code.replaceAll('-', '_');
+  const path = `admin.permissions.codes.${normalizedCode}`;
+
+  if (te(path)) {
+    return t(path);
+  }
+
+  return code;
+};
+
+const isPermissionOverridePath = (field: string, nestedPath?: string): boolean => {
+  return field === 'permission_overrides' && (nestedPath === 'allow' || nestedPath === 'deny');
+};
+
+const formatArrayValue = (
+  value: unknown[],
+  context?: { field?: string; nestedPath?: string }
+): string => {
   if (!value.length) {
     return t('common.dash');
   }
@@ -392,6 +411,14 @@ const formatArrayValue = (value: unknown[]): string => {
           return item ? 'true' : 'false';
         }
 
+        if (
+          typeof item === 'string' &&
+          context &&
+          isPermissionOverridePath(context.field ?? '', context.nestedPath)
+        ) {
+          return resolvePermissionCodeLabel(item);
+        }
+
         return String(item);
       })
       .join(', ');
@@ -400,9 +427,12 @@ const formatArrayValue = (value: unknown[]): string => {
   return t('admin.changelog.complexChanged');
 };
 
-const formatDiffValue = (value: unknown): string => {
+const formatDiffValue = (
+  value: unknown,
+  context?: { field?: string; nestedPath?: string }
+): string => {
   if (Array.isArray(value)) {
-    return formatArrayValue(value);
+    return formatArrayValue(value, context);
   }
 
   return formatScalar(value);
@@ -482,6 +512,20 @@ const normalizeComparableValue = (value: unknown): unknown => {
 
 const formatSetValue = (value: unknown): string => {
   return `${t('admin.changelog.set')} ${formatScalar(value)}`.trim();
+};
+
+const resolveNestedFieldLabel = (field: string, nestedPath: string): string => {
+  if (field === 'permission_overrides') {
+    if (nestedPath === 'allow') {
+      return t('admin.permissions.allow');
+    }
+
+    if (nestedPath === 'deny') {
+      return t('admin.permissions.deny');
+    }
+  }
+
+  return prettifyFieldName(nestedPath);
 };
 
 const formatBytes = (value: number | null | undefined): string => {
@@ -616,9 +660,11 @@ const getChangedRows = (
 
         rows.push({
           key: `${field}.${nestedRow.path}`,
-          label: `${fieldLabel} · ${prettifyFieldName(nestedRow.path)}`,
-          before: formatDiffValue(nestedRow.before),
-          after: isInitialSet ? formatSetValue(nestedRow.after) : formatDiffValue(nestedRow.after),
+          label: `${fieldLabel} · ${resolveNestedFieldLabel(field, nestedRow.path)}`,
+          before: formatDiffValue(nestedRow.before, { field, nestedPath: nestedRow.path }),
+          after: isInitialSet
+            ? formatSetValue(nestedRow.after)
+            : formatDiffValue(nestedRow.after, { field, nestedPath: nestedRow.path }),
           hideBefore: isInitialSet,
           beforePreview: null,
           afterPreview: null,
@@ -668,11 +714,32 @@ const getChangedRows = (
 };
 
 const canRollback = (entry: AdminChangeLogEntry): boolean => {
+  if (!hasPermission('admin.changelog.rollback')) {
+    return false;
+  }
+
+  const modelPermission = resolveModelRollbackPermission(props.model);
+  if (modelPermission && !hasPermission(modelPermission)) {
+    return false;
+  }
+
   if (entry.event === 'update') {
     return getChangedRows(entry).length > 0;
   }
 
   return true;
+};
+
+const resolveModelRollbackPermission = (model: string): string | null => {
+  if (model === 'user') {
+    return 'admin.users.update';
+  }
+
+  if (model === 'role') {
+    return 'admin.roles.update';
+  }
+
+  return null;
 };
 
 const goToPage = (targetPage: number) => {

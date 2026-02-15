@@ -49,6 +49,9 @@ paths:
   /api/admin/roles:
     $ref: ./modules/users.yaml#/admin_roles
 
+  /api/admin/permissions:
+    $ref: ./modules/users.yaml#/admin_permissions
+
   /api/admin/roles/{id}:
     $ref: ./modules/users.yaml#/admin_roles_by_id
 

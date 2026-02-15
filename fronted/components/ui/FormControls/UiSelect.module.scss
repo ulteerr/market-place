@@ -64,6 +64,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.9;
+  }
 }
 
 .tagClose {

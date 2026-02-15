@@ -9,6 +9,7 @@ export interface AdminRole {
   code: string;
   label: string | null;
   is_system: boolean;
+  permissions?: string[];
 }
 
 interface RoleShowResponse {
@@ -25,11 +26,13 @@ interface RoleMutationResponse {
 export interface CreateRolePayload {
   code: string;
   label?: string | null;
+  permissions?: string[];
 }
 
 export interface UpdateRolePayload {
   code?: string;
   label?: string | null;
+  permissions?: string[];
 }
 
 export interface AdminRolesListParams {

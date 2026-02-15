@@ -243,6 +243,8 @@ const { t, locale } = useI18n();
 
 definePageMeta({
   layout: 'admin',
+  middleware: 'admin-permission',
+  permission: 'admin.action-log.read',
 });
 
 const route = useRoute();

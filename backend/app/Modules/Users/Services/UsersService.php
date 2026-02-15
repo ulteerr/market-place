@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Modules\Users\Services;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Auth\Access\AuthorizationException;
 use Modules\Users\Contracts\UsersServiceInterface;
+use Modules\Users\Enums\RoleCode;
+use Modules\Users\Models\AccessPermission;
 use Modules\Users\Models\User;
+use Modules\Users\Models\UserAccessPermission;
 use Modules\Users\Repositories\UsersRepositoryInterface;
 use Illuminate\Support\Collection;
 use Modules\Users\Models\Role;
@@ -32,6 +36,9 @@ final class UsersService implements UsersServiceInterface
         return DB::transaction(function () use ($data) {
             $user = $this->repository->create($data);
             $this->syncGlobalRoles($user, $data["roles"] ?? []);
+            if (array_key_exists("permission_overrides", $data)) {
+                $this->syncUserPermissionOverrides($user, $data["permission_overrides"] ?? []);
+            }
             $this->attachAvatarIfProvided($user, $data);
             $this->enrichCreateChangeLogWithRelatedState($user);
             $this->enrichCreateActionLogWithRelatedState($user);
@@ -49,6 +56,9 @@ final class UsersService implements UsersServiceInterface
             $user = $this->repository->update($user, $data);
             if (array_key_exists("roles", $data)) {
                 $this->syncGlobalRoles($user, $data["roles"] ?? []);
+            }
+            if (array_key_exists("permission_overrides", $data)) {
+                $this->syncUserPermissionOverrides($user, $data["permission_overrides"] ?? []);
             }
             $this->removeAvatarIfRequested($user, $data);
             $this->attachAvatarIfProvided($user, $data);
@@ -86,8 +96,10 @@ final class UsersService implements UsersServiceInterface
 
     private function syncGlobalRoles(User $user, array $roleCodes = []): void
     {
-        if (!in_array("participant", $roleCodes, true)) {
-            $roleCodes[] = "participant";
+        $this->ensureSuperAdminRoleCanBeManagedByActor($user, $roleCodes);
+
+        if (!in_array(RoleCode::PARTICIPANT->value, $roleCodes, true)) {
+            $roleCodes[] = RoleCode::PARTICIPANT->value;
         }
 
         $roleCodes = array_values(array_unique(array_filter($roleCodes)));
@@ -99,6 +111,88 @@ final class UsersService implements UsersServiceInterface
         }
 
         $user->roles()->sync($rolesToAssign->pluck("id")->all());
+    }
+
+    private function ensureSuperAdminRoleCanBeManagedByActor(User $user, array $roleCodes): void
+    {
+        $actor = auth()->user();
+        if (!$actor instanceof User || $actor->hasRole(RoleCode::SUPER_ADMIN->value)) {
+            return;
+        }
+
+        $requestedSuperAdmin = in_array(RoleCode::SUPER_ADMIN->value, $roleCodes, true);
+        $targetIsSuperAdmin = $user->roles()->where("code", RoleCode::SUPER_ADMIN->value)->exists();
+
+        if ($requestedSuperAdmin || $targetIsSuperAdmin) {
+            throw new AuthorizationException("Only super admin can manage super admin role.");
+        }
+    }
+
+    private function syncUserPermissionOverrides(User $user, mixed $overrides): void
+    {
+        if (!is_array($overrides)) {
+            return;
+        }
+
+        $allowCodes = $this->normalizePermissionCodes($overrides["allow"] ?? []);
+        $denyCodes = $this->normalizePermissionCodes($overrides["deny"] ?? []);
+        $allowCodes = array_values(array_diff($allowCodes, $denyCodes));
+
+        $allCodes = array_values(array_unique(array_merge($allowCodes, $denyCodes)));
+        $codeToId = [];
+
+        if ($allCodes !== []) {
+            $permissions = AccessPermission::query()
+                ->whereIn("code", $allCodes)
+                ->get(["id", "code"]);
+
+            if ($permissions->count() !== count($allCodes)) {
+                $foundCodes = $permissions->pluck("code")->all();
+                $missingCodes = array_values(array_diff($allCodes, $foundCodes));
+                throw new RuntimeException(
+                    "One or more permissions not found: " . implode(", ", $missingCodes),
+                );
+            }
+
+            $codeToId = $permissions->pluck("id", "code")->all();
+        }
+
+        $user->permissionOverrides()->delete();
+
+        foreach ($allowCodes as $code) {
+            UserAccessPermission::query()->create([
+                "user_id" => (string) $user->id,
+                "permission_id" => (string) $codeToId[$code],
+                "allowed" => true,
+            ]);
+        }
+
+        foreach ($denyCodes as $code) {
+            UserAccessPermission::query()->create([
+                "user_id" => (string) $user->id,
+                "permission_id" => (string) $codeToId[$code],
+                "allowed" => false,
+            ]);
+        }
+    }
+
+    private function normalizePermissionCodes(mixed $codes): array
+    {
+        if (!is_array($codes)) {
+            return [];
+        }
+
+        return array_values(
+            array_unique(
+                array_filter(
+                    array_map(
+                        fn(mixed $code): string => is_string($code) ? trim($code) : "",
+                        $codes,
+                    ),
+                    fn(string $code): bool => $code !== "",
+                ),
+            ),
+        );
     }
 
     public function paginate(
@@ -145,16 +239,45 @@ final class UsersService implements UsersServiceInterface
         $fresh =
             $user
                 ->fresh()
-                ?->load(["roles:id,code", "avatar:id,fileable_id,fileable_type,collection"]) ??
-            $user->load(["roles:id,code", "avatar:id,fileable_id,fileable_type,collection"]);
+                ?->load([
+                    "roles:id,code",
+                    "avatar:id,fileable_id,fileable_type,collection",
+                    "permissionOverrides.permission:id,code",
+                ]) ??
+            $user->load([
+                "roles:id,code",
+                "avatar:id,fileable_id,fileable_type,collection",
+                "permissionOverrides.permission:id,code",
+            ]);
 
         $roles = $fresh->roles->pluck("code")->filter()->values()->all();
+        $permissionOverridesAllow = [];
+        $permissionOverridesDeny = [];
+
+        foreach ($fresh->permissionOverrides as $override) {
+            $code = (string) ($override->permission?->code ?? "");
+            if ($code === "") {
+                continue;
+            }
+
+            if ((bool) $override->allowed) {
+                $permissionOverridesAllow[] = $code;
+            } else {
+                $permissionOverridesDeny[] = $code;
+            }
+        }
 
         sort($roles);
+        sort($permissionOverridesAllow);
+        sort($permissionOverridesDeny);
 
         return [
             "roles" => $roles,
             "avatar_id" => $fresh->avatar?->id,
+            "permission_overrides" => [
+                "allow" => array_values(array_unique($permissionOverridesAllow)),
+                "deny" => array_values(array_unique($permissionOverridesDeny)),
+            ],
         ];
     }
 

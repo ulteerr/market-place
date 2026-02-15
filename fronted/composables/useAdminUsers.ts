@@ -21,8 +21,23 @@ export interface AdminUser {
   middle_name?: string | null;
   phone?: string | null;
   roles?: Array<string | { code?: string | null }>;
+  permission_overrides?: {
+    allow: string[];
+    deny: string[];
+  };
   can_access_admin_panel?: boolean;
 }
+
+const ROLE_LEVELS: Record<string, number> = {
+  participant: 0,
+  moderator: 1,
+  admin: 2,
+  super_admin: 3,
+};
+
+export const getRoleLevel = (roleCode: string): number => {
+  return ROLE_LEVELS[roleCode] ?? 0;
+};
 
 interface UserShowResponse {
   status: string;
@@ -44,6 +59,10 @@ export interface CreateUserPayload {
   middle_name?: string | null;
   phone?: string | null;
   roles?: string[];
+  permission_overrides?: {
+    allow: string[];
+    deny: string[];
+  };
   avatar?: File | null;
 }
 
@@ -56,6 +75,10 @@ export interface UpdateUserPayload {
   middle_name?: string | null;
   phone?: string | null;
   roles?: string[];
+  permission_overrides?: {
+    allow: string[];
+    deny: string[];
+  };
   avatar?: File | null;
   avatar_delete?: boolean;
 }
@@ -91,6 +114,42 @@ export const resolveAdminUserPanelAccess = (user: AdminUser): boolean | null => 
   }
 
   return null;
+};
+
+const extractRoleCode = (role: string | { code?: string | null }): string => {
+  if (typeof role === 'string') {
+    return role;
+  }
+
+  return role?.code ?? '';
+};
+
+export const adminUserHasRole = (user: AdminUser, roleCode: string): boolean => {
+  if (!Array.isArray(user.roles) || !roleCode) {
+    return false;
+  }
+
+  return user.roles.some((role) => extractRoleCode(role) === roleCode);
+};
+
+export const getHighestRoleLevelFromCodes = (roles: string[] = []): number => {
+  if (!Array.isArray(roles) || roles.length === 0) {
+    return 0;
+  }
+
+  return roles.reduce((max, roleCode) => Math.max(max, getRoleLevel(roleCode)), 0);
+};
+
+export const getHighestRoleLevelForUser = (user: AdminUser): number => {
+  if (!Array.isArray(user.roles) || user.roles.length === 0) {
+    return 0;
+  }
+
+  const roleCodes = user.roles
+    .map((role) => extractRoleCode(role))
+    .filter((role): role is string => typeof role === 'string' && role.length > 0);
+
+  return getHighestRoleLevelFromCodes(roleCodes);
 };
 
 export const useAdminUsers = () => {
@@ -142,6 +201,22 @@ export const useAdminUsers = () => {
         value.forEach((role) => {
           body.append('roles[]', role);
         });
+        return;
+      }
+
+      if (
+        key === 'permission_overrides' &&
+        value &&
+        typeof value === 'object' &&
+        !Array.isArray(value)
+      ) {
+        body.append('permission_overrides_present', '1');
+
+        const allow = Array.isArray(value.allow) ? value.allow : [];
+        const deny = Array.isArray(value.deny) ? value.deny : [];
+
+        allow.forEach((code) => body.append('permission_overrides[allow][]', code));
+        deny.forEach((code) => body.append('permission_overrides[deny][]', code));
         return;
       }
 

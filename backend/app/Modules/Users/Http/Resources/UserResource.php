@@ -30,6 +30,32 @@ final class UserResource extends JsonResource
             "roles" => $this->whenLoaded("roles", function () {
                 return $this->roles->pluck("code")->values();
             }),
+            "permissions" => $this->when(
+                $request->is("api/me") || $request->is("api/auth/*"),
+                fn() => $this->effectivePermissionCodes(),
+            ),
+            "permission_overrides" => $this->whenLoaded("permissionOverrides", function () {
+                $allow = [];
+                $deny = [];
+
+                foreach ($this->permissionOverrides as $override) {
+                    $code = (string) ($override->permission?->code ?? "");
+                    if ($code === "") {
+                        continue;
+                    }
+
+                    if ((bool) $override->allowed) {
+                        $allow[] = $code;
+                    } else {
+                        $deny[] = $code;
+                    }
+                }
+
+                return [
+                    "allow" => array_values(array_unique($allow)),
+                    "deny" => array_values(array_unique($deny)),
+                ];
+            }),
             "is_admin" => $this->whenLoaded("roles", fn() => $this->isAdmin()),
             "can_access_admin_panel" => $this->whenLoaded(
                 "roles",

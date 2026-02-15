@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Users\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\Users\Enums\RoleCode;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 
@@ -12,9 +13,23 @@ final class UsersSeeder extends Seeder
 {
     public function run(): void
     {
-        $participantRole = Role::query()->where("code", "participant")->firstOrFail();
-        $adminRole = Role::query()->where("code", "admin")->firstOrFail();
-        $moderatorRole = Role::query()->where("code", "moderator")->firstOrFail();
+        $participantRole = Role::query()
+            ->where("code", RoleCode::PARTICIPANT->value)
+            ->firstOrFail();
+        $superAdminRole = Role::query()->where("code", RoleCode::SUPER_ADMIN->value)->firstOrFail();
+        $adminRole = Role::query()->where("code", RoleCode::ADMIN->value)->firstOrFail();
+        $moderatorRole = Role::query()->where("code", RoleCode::MODERATOR->value)->firstOrFail();
+
+        $superAdminUser = User::query()->firstOrCreate(
+            ["email" => "superadmin@example.com"],
+            [
+                "first_name" => "System",
+                "last_name" => "SuperAdmin",
+                "phone" => "+79990001122",
+                "password" => "password123",
+            ],
+        );
+        $superAdminUser->roles()->syncWithoutDetaching([$participantRole->id, $superAdminRole->id]);
 
         $adminUser = User::query()->firstOrCreate(
             ["email" => "admin@example.com"],

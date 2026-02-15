@@ -7,6 +7,7 @@ namespace Modules\Users\Tests\Feature;
 use App\Shared\Testing\AdminCrudTestCase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Modules\Users\Models\AccessPermission;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
@@ -413,6 +414,102 @@ final class AdminUsersCrudTest extends AdminCrudTestCase
             "fileable_id" => null,
             "fileable_type" => null,
         ]);
+    }
+
+    #[Test]
+    public function admin_cannot_assign_super_admin_role_on_create(): void
+    {
+        $auth = $this->actingAsAdmin();
+        Role::factory()->participant()->create();
+        Role::factory()->superAdmin()->create();
+
+        $this->withHeaders($auth["headers"])
+            ->postJson($this->endpoint(), [
+                "first_name" => "No",
+                "last_name" => "PrivilegeEscalation",
+                "email" => "no-super-admin-create@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["super_admin"],
+            ])
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function admin_cannot_assign_super_admin_role_on_update(): void
+    {
+        $auth = $this->actingAsAdmin();
+        $participantRole = Role::factory()->participant()->create();
+        Role::factory()->superAdmin()->create();
+        $target = User::factory()->create([
+            "email" => "no-super-admin-update@example.com",
+        ]);
+        $target->roles()->sync([$participantRole->id]);
+
+        $this->withHeaders($auth["headers"])
+            ->patchJson($this->endpoint() . "/" . $target->id, [
+                "roles" => ["super_admin"],
+            ])
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function admin_can_set_and_update_user_permission_overrides(): void
+    {
+        $auth = $this->actingAsAdmin();
+        $participantRole = Role::factory()->participant()->create();
+        AccessPermission::query()->create([
+            "code" => "admin.users.read",
+            "scope" => "admin",
+            "label" => "Read users",
+        ]);
+        AccessPermission::query()->create([
+            "code" => "admin.roles.delete",
+            "scope" => "admin",
+            "label" => "Delete roles",
+        ]);
+
+        $createResponse = $this->withHeaders($auth["headers"])
+            ->postJson($this->endpoint(), [
+                "first_name" => "Override",
+                "last_name" => "Target",
+                "email" => "override-user@example.com",
+                "password" => "password123",
+                "password_confirmation" => "password123",
+                "roles" => ["participant"],
+                "permission_overrides" => [
+                    "allow" => ["admin.users.read"],
+                    "deny" => ["admin.roles.delete"],
+                ],
+            ])
+            ->assertCreated();
+
+        $userId = (string) $createResponse->json("data.id");
+        $user = User::query()->findOrFail($userId);
+        $user->roles()->syncWithoutDetaching([$participantRole->id]);
+
+        $this->assertDatabaseCount("user_access_permissions", 2);
+
+        $this->withHeaders($auth["headers"])
+            ->patchJson($this->endpoint() . "/" . $userId, [
+                "permission_overrides" => [
+                    "allow" => ["admin.users.read"],
+                    "deny" => [],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseCount("user_access_permissions", 1);
+
+        $showResponse = $this->withHeaders($auth["headers"])
+            ->getJson($this->endpoint() . "/" . $userId)
+            ->assertOk();
+
+        $this->assertSame(
+            ["admin.users.read"],
+            $showResponse->json("user.permission_overrides.allow"),
+        );
+        $this->assertSame([], $showResponse->json("user.permission_overrides.deny"));
     }
 
     private function fakePng(string $name = "avatar.png"): UploadedFile

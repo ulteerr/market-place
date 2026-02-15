@@ -13,12 +13,16 @@ final class UsersRepository implements UsersRepositoryInterface
 {
     public function create(array $data): User
     {
-        return User::create(Arr::except($data, ["roles", "avatar", "avatar_delete"]));
+        return User::create(
+            Arr::except($data, ["roles", "avatar", "avatar_delete", "permission_overrides"]),
+        );
     }
 
     public function update(User $user, array $data): User
     {
-        $user->update(Arr::except($data, ["roles", "avatar", "avatar_delete"]));
+        $user->update(
+            Arr::except($data, ["roles", "avatar", "avatar_delete", "permission_overrides"]),
+        );
         return $user;
     }
 
@@ -34,7 +38,13 @@ final class UsersRepository implements UsersRepositoryInterface
 
     public function findById(string $id): ?User
     {
-        return User::find($id);
+        return User::query()
+            ->with([
+                "roles:id,code",
+                "avatar:id,fileable_id,fileable_type,disk,path,original_name,mime_type,size,collection",
+                "permissionOverrides.permission:id,code",
+            ])
+            ->find($id);
     }
 
     public function paginate(

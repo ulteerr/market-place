@@ -16,6 +16,7 @@ final class UserResponseFactory
         int $status = 200,
     ): JsonResponse {
         $user->loadMissing(["roles", "avatar"]);
+        $user->loadMissing(["permissionOverrides.permission"]);
 
         $payload = [
             "status" => "ok",

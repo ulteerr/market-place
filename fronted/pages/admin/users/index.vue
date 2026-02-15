@@ -5,6 +5,7 @@
     :title="t('admin.users.index.title')"
     :subtitle="t('admin.users.index.subtitle')"
     create-to="/admin/users/new"
+    :show-create="canCreateUsers"
     :create-label="t('admin.users.index.createLabel')"
     :search-value="listState.searchInput.value"
     :search-placeholder="t('admin.users.index.searchPlaceholder')"
@@ -110,6 +111,9 @@
                 <AdminCrudActions
                   :show-to="`/admin/users/${item.id}`"
                   :edit-to="`/admin/users/${item.id}/edit`"
+                  :can-show="canReadUsers"
+                  :can-edit="canEditUser(item)"
+                  :can-delete="canDeleteUsers"
                   :deleting="deletingId === item.id"
                   align="end"
                   @delete="removeUser(item)"
@@ -160,6 +164,9 @@
             <AdminCrudActions
               :show-to="`/admin/users/${item.id}`"
               :edit-to="`/admin/users/${item.id}/edit`"
+              :can-show="canReadUsers"
+              :can-edit="canEditUser(item)"
+              :can-delete="canDeleteUsers"
               :deleting="deletingId === item.id"
               @delete="removeUser(item)"
             />
@@ -191,16 +198,32 @@ import AdminTagFilter from '~/components/admin/Listing/AdminTagFilter.vue';
 import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import type { AdminUser } from '~/composables/useAdminUsers';
-import { getAdminUserFullName, resolveAdminUserPanelAccess } from '~/composables/useAdminUsers';
+import {
+  getHighestRoleLevelForUser,
+  getHighestRoleLevelFromCodes,
+  getAdminUserFullName,
+  resolveAdminUserPanelAccess,
+} from '~/composables/useAdminUsers';
 const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
+  middleware: 'admin-permission',
+  permission: 'admin.users.read',
 });
 
 const usersApi = useAdminUsers();
 const route = useRoute();
 const router = useRouter();
+const { user: authUser } = useAuth();
+const { hasPermission } = usePermissions();
+const canReadUsers = computed(() => hasPermission('admin.users.read'));
+const canCreateUsers = computed(() => hasPermission('admin.users.create'));
+const canUpdateUsers = computed(() => hasPermission('admin.users.update'));
+const canDeleteUsers = computed(() => hasPermission('admin.users.delete'));
+const actorMaxRoleLevel = computed(() =>
+  getHighestRoleLevelFromCodes(Array.isArray(authUser.value?.roles) ? authUser.value.roles : [])
+);
 
 const readAccessGroupFromQuery = (): 'admin' | 'basic' | null => {
   const raw = route.query.access_group;
@@ -312,8 +335,21 @@ const accessClass = (item: AdminUser): string => {
   return access ? 'is-admin' : 'is-basic';
 };
 
+const canEditUser = (item: AdminUser): boolean => {
+  if (!canUpdateUsers.value) {
+    return false;
+  }
+
+  return getHighestRoleLevelForUser(item) <= actorMaxRoleLevel.value;
+};
+
 const removeUser = async (user: AdminUser) => {
+  if (!canDeleteUsers.value) {
+    return;
+  }
+
   removeItem(user, {
+    canDelete: canDeleteUsers.value,
     confirmTitle: t('admin.actions.delete'),
     confirmMessage: t('admin.users.confirmDelete', { name: getAdminUserFullName(user) }),
     confirmLabel: t('admin.actions.delete'),

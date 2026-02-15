@@ -33,6 +33,7 @@
 
         <div class="mt-5 flex gap-2">
           <NuxtLink
+            v-if="canUpdateRoles"
             :to="`/admin/roles/${role.id}/edit`"
             class="admin-button rounded-lg px-4 py-2 text-sm"
             >{{ t('common.edit') }}</NuxtLink
@@ -45,6 +46,7 @@
     </article>
 
     <AdminChangeLogPanel
+      v-if="canReadChangeLog"
       model="role"
       :entity-id="role?.id || String(route.params.id || '')"
       @rolled-back="onRoleRolledBack"
@@ -60,10 +62,15 @@ const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
+  middleware: 'admin-permission',
+  permission: 'admin.roles.read',
 });
 
 const route = useRoute();
 const rolesApi = useAdminRoles();
+const { hasPermission } = usePermissions();
+const canUpdateRoles = computed(() => hasPermission('admin.roles.update'));
+const canReadChangeLog = computed(() => hasPermission('admin.changelog.read'));
 
 const role = ref<AdminRole | null>(null);
 const loading = ref(false);

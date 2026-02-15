@@ -1,0 +1,88 @@
+.root {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  align-items: start;
+  gap: 0.62rem;
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+}
+
+.rootDisabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.native {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.box {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.08rem;
+  border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.root:hover .box {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+
+.native:focus-visible + .box {
+  border-color: var(--form-focus);
+  box-shadow: 0 0 0 3px var(--form-focus-ring);
+}
+
+.boxChecked {
+  background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 84%, #fff);
+  border-color: color-mix(in srgb, var(--text) 22%, var(--border));
+  color: color-mix(in srgb, var(--text) 88%, #fff);
+}
+
+.boxError {
+  border-color: var(--form-error-border);
+}
+
+.icon {
+  width: 0.84rem;
+  height: 0.84rem;
+}
+
+.content {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.label {
+  font-size: 0.94rem;
+  line-height: 1.25rem;
+  color: var(--text);
+}
+
+.description {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--form-hint);
+}
+
+.error {
+  font-size: 0.75rem;
+  color: var(--form-error);
+}
