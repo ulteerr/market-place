@@ -55,6 +55,12 @@ paths:
   /api/admin/roles/{id}:
     $ref: ./modules/users.yaml#/admin_roles_by_id
 
+  /api/admin/children:
+    $ref: ./modules/children.yaml#/admin_children
+
+  /api/admin/children/{id}:
+    $ref: ./modules/children.yaml#/admin_children_by_id
+
   /api/admin/changelog:
     $ref: ./modules/changelog.yaml#/admin_changelog
 

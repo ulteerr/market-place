@@ -59,6 +59,7 @@ final class UsersRepository implements UsersRepositoryInterface
                 "first_name",
                 "last_name",
                 "middle_name",
+                "gender",
                 "phone",
                 "created_at",
                 "updated_at",
@@ -79,7 +80,8 @@ final class UsersRepository implements UsersRepositoryInterface
 
             $query->where(function (Builder $subQuery) use ($like, $nameTerms) {
                 $subQuery
-                    ->where("email", "like", $like)
+                    ->where("id", "like", $like)
+                    ->orWhere("email", "like", $like)
                     ->orWhere("phone", "like", $like)
                     ->orWhereHas("roles", function (Builder $roleQuery) use ($like) {
                         $roleQuery->where("code", "like", $like)->orWhere("label", "like", $like);
@@ -96,7 +98,8 @@ final class UsersRepository implements UsersRepositoryInterface
                                 $singleTermQuery
                                     ->where("first_name", "like", $termLike)
                                     ->orWhere("last_name", "like", $termLike)
-                                    ->orWhere("middle_name", "like", $termLike);
+                                    ->orWhere("middle_name", "like", $termLike)
+                                    ->orWhere("gender", "like", $termLike);
                             });
                         }
                     });
@@ -123,7 +126,7 @@ final class UsersRepository implements UsersRepositoryInterface
             $sortDir = "desc";
         }
 
-        $allowedSorts = ["id", "first_name", "last_name", "middle_name", "created_at"];
+        $allowedSorts = ["id", "first_name", "last_name", "middle_name", "gender", "created_at"];
 
         if ($sortBy === "name") {
             $query

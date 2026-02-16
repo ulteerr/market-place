@@ -293,6 +293,7 @@ const modelOptions = computed(() => [
   { value: 'all', label: t('admin.actionLogs.filters.modelAll') },
   { value: 'user', label: t('admin.actionLogs.filters.modelUser') },
   { value: 'role', label: t('admin.actionLogs.filters.modelRole') },
+  { value: 'child', label: t('admin.actionLogs.filters.modelChild') },
 ]);
 
 const showPagination = computed(() => pagination.last_page > 1);
@@ -331,6 +332,9 @@ const resolveModelLabel = (modelType: string): string => {
   if (modelType.endsWith('\\Role') || modelType === 'role') {
     return t('admin.actionLogs.models.role');
   }
+  if (modelType.endsWith('\\Child') || modelType === 'child') {
+    return t('admin.actionLogs.models.child');
+  }
 
   const tail = modelType.split('\\').pop();
   return tail || modelType;
@@ -362,6 +366,18 @@ const resolveModelTitle = (item: AdminActionLogItem): string => {
       : code
         ? `${modelLabel}: ${code}`
         : `${modelLabel} #${item.model_id}`;
+  }
+
+  if (item.model_type.endsWith('\\Child') || item.model_type === 'child') {
+    const partsAfter = [after.last_name, after.first_name, after.middle_name]
+      .filter((part): part is string => typeof part === 'string' && part.trim() !== '')
+      .map((part) => part.trim());
+    const partsBefore = [before.last_name, before.first_name, before.middle_name]
+      .filter((part): part is string => typeof part === 'string' && part.trim() !== '')
+      .map((part) => part.trim());
+
+    const title = (partsAfter.length ? partsAfter : partsBefore).join(' ');
+    return title !== '' ? `${modelLabel}: ${title}` : `${modelLabel} #${item.model_id}`;
   }
 
   return `${modelLabel} #${item.model_id}`;
@@ -687,37 +703,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-.admin-card {
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-}
-
-.admin-muted {
-  color: var(--muted);
-}
-
-.admin-error {
-  color: #b91c1c;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table th,
-.admin-table td {
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  padding: 0.75rem;
-  text-align: left;
-  font-size: 0.85rem;
-}
-
-.admin-table th {
-  font-weight: 600;
-  color: var(--muted);
-}
-
 .th-sort {
   display: inline-flex;
   align-items: center;

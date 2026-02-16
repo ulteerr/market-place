@@ -8,6 +8,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\ActionLog\Models\ActionLog;
+use Modules\Children\Models\Child;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 
@@ -52,6 +53,8 @@ final class ActionLogService
                 "users" => User::class,
                 "role" => Role::class,
                 "roles" => Role::class,
+                "child" => Child::class,
+                "children" => Child::class,
             ];
 
             if (isset($modelAliases[$normalizedModel])) {

@@ -9,7 +9,7 @@ use Modules\Children\Repositories\ChildRepository;
 
 final class ChildrenServiceProvider extends ModuleServiceProvider
 {
-    protected string $moduleName = 'Children';
+    protected string $moduleName = "Children";
 
     public function register(): void
     {

@@ -30,6 +30,15 @@
           :disabled="saving"
           :error="fieldErrors.middle_name"
         />
+        <UiSelect
+          v-model="form.gender"
+          :label="t('admin.users.edit.fields.gender')"
+          :options="genderOptions"
+          :placeholder="t('admin.users.edit.genderPlaceholder')"
+          clearable
+          :disabled="saving"
+          :error="fieldErrors.gender"
+        />
         <UiInput
           v-model="form.email"
           preset="email"
@@ -210,6 +219,7 @@ const form = reactive({
   first_name: '',
   last_name: '',
   middle_name: '',
+  gender: '' as 'male' | 'female' | '',
   email: '',
   phone: '',
   password: '',
@@ -244,11 +254,17 @@ const fieldErrors = reactive<Record<string, string>>({
   first_name: '',
   last_name: '',
   middle_name: '',
+  gender: '',
   email: '',
   phone: '',
   password: '',
   roles: '',
 });
+
+const genderOptions = computed(() => [
+  { value: 'male', label: t('admin.genders.male') },
+  { value: 'female', label: t('admin.genders.female') },
+]);
 
 const roleOptions = computed(() => {
   return roles.value.map((role) => ({
@@ -321,6 +337,7 @@ const resetErrors = () => {
   fieldErrors.first_name = '';
   fieldErrors.last_name = '';
   fieldErrors.middle_name = '';
+  fieldErrors.gender = '';
   fieldErrors.email = '';
   fieldErrors.phone = '';
   fieldErrors.password = '';
@@ -429,6 +446,7 @@ const fetchUser = async () => {
     form.first_name = user.first_name || '';
     form.last_name = user.last_name || '';
     form.middle_name = user.middle_name || '';
+    form.gender = user.gender || '';
     form.email = user.email || '';
     form.phone = user.phone || '';
     form.roles = normalizeAssignableRoles(userRoleCodes);
@@ -453,6 +471,7 @@ const submitForm = async () => {
       first_name: form.first_name.trim(),
       last_name: form.last_name.trim(),
       middle_name: form.middle_name.trim() || null,
+      gender: form.gender || null,
       email: form.email.trim(),
       phone: form.phone.trim() || null,
       roles: [...safeRoles],
@@ -483,6 +502,7 @@ const submitForm = async () => {
     fieldErrors.first_name = getFieldError(payload.errors, 'first_name');
     fieldErrors.last_name = getFieldError(payload.errors, 'last_name');
     fieldErrors.middle_name = getFieldError(payload.errors, 'middle_name');
+    fieldErrors.gender = getFieldError(payload.errors, 'gender');
     fieldErrors.email = getFieldError(payload.errors, 'email');
     fieldErrors.phone = getFieldError(payload.errors, 'phone');
     fieldErrors.password = getFieldError(payload.errors, 'password');

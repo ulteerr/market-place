@@ -13,10 +13,12 @@ export default {
       settings: 'Настройки',
       users: 'Пользователи',
       roles: 'Роли',
+      children: 'Дети',
       actionLogs: 'Журнал изменений',
     },
     sections: {
       system: 'Система',
+      organization: 'Организация',
     },
     user: {
       guest: 'Гость',
@@ -169,6 +171,7 @@ export default {
         first_name: 'Имя',
         last_name: 'Фамилия',
         middle_name: 'Отчество',
+        gender: 'Пол',
         email: 'Email',
         phone: 'Телефон',
         roles: 'Роли',
@@ -179,6 +182,14 @@ export default {
         code: 'Code',
         label: 'Label',
         is_system: 'Системная роль',
+      },
+      child: {
+        first_name: 'Имя',
+        last_name: 'Фамилия',
+        middle_name: 'Отчество',
+        gender: 'Пол',
+        birth_date: 'Дата рождения',
+        user_id: 'Пользователь',
       },
     },
     events: {
@@ -238,18 +249,24 @@ export default {
       hint: 'Управляет шириной sidebar в админке',
     },
   },
+  genders: {
+    male: 'Мужской',
+    female: 'Женский',
+  },
   users: {
     index: {
       title: 'Пользователи',
       subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
       createLabel: 'Новый пользователь',
-      searchPlaceholder: 'Поиск: фамилия, имя, отчество, email, телефон, роль',
+      searchPlaceholder: 'Поиск: ID, фамилия, имя, отчество, email, телефон, роль',
       empty: 'Пользователи не найдены.',
       headers: {
+        id: 'ID',
         thumbnail: 'Аватар',
         lastName: 'Фамилия',
         firstName: 'Имя',
         middleName: 'Отчество',
+        gender: 'Пол',
         access: 'Доступ',
         actions: 'Действия',
       },
@@ -258,14 +275,18 @@ export default {
         open: 'Открыть изображение',
       },
       card: {
+        id: 'ID: {value}',
         lastName: 'Фамилия: {value}',
         firstName: 'Имя: {value}',
         middleName: 'Отчество: {value}',
+        gender: 'Пол: {value}',
       },
       sort: {
+        id: 'ID',
         lastName: 'Фамилия',
         firstName: 'Имя',
         middleName: 'Отчество',
+        gender: 'Пол',
         access: 'Доступ',
       },
       access: {
@@ -285,6 +306,7 @@ export default {
         firstName: 'Имя',
         lastName: 'Фамилия',
         middleName: 'Отчество',
+        gender: 'Пол',
         email: 'Email',
         phone: 'Телефон',
         password: 'Пароль',
@@ -292,6 +314,7 @@ export default {
         roles: 'Роли',
         avatar: 'Аватар',
       },
+      genderPlaceholder: 'Выберите пол',
       rolesPlaceholder: 'Выберите роли',
       saving: 'Сохраняем...',
       errors: {
@@ -305,6 +328,7 @@ export default {
         firstName: 'Имя',
         lastName: 'Фамилия',
         middleName: 'Отчество',
+        gender: 'Пол',
         email: 'Email',
         phone: 'Телефон',
         roles: 'Роли',
@@ -321,6 +345,7 @@ export default {
         firstName: 'Имя',
         lastName: 'Фамилия',
         middleName: 'Отчество',
+        gender: 'Пол',
         email: 'Email',
         phone: 'Телефон',
         newPassword: 'Новый пароль',
@@ -328,6 +353,7 @@ export default {
         roles: 'Роли',
         avatar: 'Аватар',
       },
+      genderPlaceholder: 'Выберите пол',
       rolesPlaceholder: 'Выберите роли',
       saving: 'Сохраняем...',
       errors: {
@@ -340,6 +366,96 @@ export default {
       },
     },
     confirmDelete: 'Удалить пользователя {name}?',
+  },
+  children: {
+    index: {
+      title: 'Дети',
+      subtitle: 'CRUD детей в админке.',
+      createLabel: 'Новый ребенок',
+      searchPlaceholder: 'Поиск: ФИО ребенка или ID пользователя',
+      empty: 'Дети не найдены.',
+      headers: {
+        fullName: 'ФИО',
+        birthDate: 'Дата рождения',
+        gender: 'Пол',
+        user: 'Родитель',
+        userId: 'ID пользователя',
+        actions: 'Действия',
+      },
+      card: {
+        birthDate: 'Дата рождения: {value}',
+        gender: 'Пол: {value}',
+        user: 'Родитель: {value}',
+        userId: 'ID пользователя: {value}',
+      },
+      sort: {
+        firstName: 'Имя',
+        lastName: 'Фамилия',
+        middleName: 'Отчество',
+        gender: 'Пол',
+        birthDate: 'Дата рождения',
+        user: 'Родитель',
+        userId: 'ID пользователя',
+      },
+    },
+    new: {
+      title: 'Новый ребенок',
+      subtitle: 'Создание записи ребенка в `/api/admin/children`.',
+      fields: {
+        firstName: 'Имя',
+        lastName: 'Фамилия',
+        middleName: 'Отчество',
+        gender: 'Пол',
+        birthDate: 'Дата рождения',
+        userId: 'ID пользователя',
+      },
+      genderPlaceholder: 'Выберите пол',
+      userPlaceholder: 'Поиск пользователя: ФИО или ID',
+      saving: 'Сохраняем...',
+      errors: {
+        create: 'Не удалось создать ребенка.',
+      },
+    },
+    show: {
+      title: 'Профиль ребенка',
+      subtitle: 'Show-страница ребенка.',
+      labels: {
+        fullName: 'ФИО',
+        birthDate: 'Дата рождения',
+        gender: 'Пол',
+        user: 'Пользователь',
+        userId: 'ID пользователя',
+      },
+      errors: {
+        invalidId: 'Некорректный идентификатор ребенка.',
+        load: 'Не удалось загрузить ребенка.',
+      },
+    },
+    edit: {
+      title: 'Редактирование ребенка',
+      subtitle: 'Edit-страница ребенка.',
+      fields: {
+        firstName: 'Имя',
+        lastName: 'Фамилия',
+        middleName: 'Отчество',
+        gender: 'Пол',
+        birthDate: 'Дата рождения',
+        userId: 'ID пользователя',
+      },
+      genderPlaceholder: 'Выберите пол',
+      userPlaceholder: 'Поиск пользователя: ФИО или ID',
+      saving: 'Сохраняем...',
+      errors: {
+        invalidId: 'Некорректный идентификатор ребенка.',
+        load: 'Не удалось загрузить ребенка.',
+        update: 'Не удалось обновить ребенка.',
+      },
+    },
+    confirmDelete: 'Удалить запись ребенка {name}?',
+    errors: {
+      loadList: 'Не удалось загрузить список детей.',
+      delete: 'Не удалось удалить ребенка.',
+    },
   },
   roles: {
     index: {
@@ -431,6 +547,7 @@ export default {
     models: {
       user: 'Пользователь',
       role: 'Роль',
+      child: 'Ребенок',
     },
     filters: {
       event: 'Событие',
@@ -450,6 +567,7 @@ export default {
       modelAll: 'Все',
       modelUser: 'Пользователь',
       modelRole: 'Роль',
+      modelChild: 'Ребенок',
     },
     errors: {
       load: 'Не удалось загрузить журнал действий.',

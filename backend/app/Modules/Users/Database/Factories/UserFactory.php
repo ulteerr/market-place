@@ -20,6 +20,7 @@ final class UserFactory extends Factory
             "first_name" => $this->faker->firstName(),
             "last_name" => $this->faker->lastName(),
             "middle_name" => null,
+            "gender" => $this->faker->randomElement(["male", "female"]),
             "email" => $this->faker->unique()->safeEmail(),
             "password" => "password123",
             "phone" => $this->faker->optional()->phoneNumber(),

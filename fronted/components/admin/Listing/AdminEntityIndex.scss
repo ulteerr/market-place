@@ -8,6 +8,33 @@
 .admin-error {
   color: #b91c1c;
 }
+
+.admin-table {
+  border-collapse: collapse;
+  width: auto;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 0.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sort-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
 .mode-select-wrap {
   min-width: 12rem;
   max-width: 100%;

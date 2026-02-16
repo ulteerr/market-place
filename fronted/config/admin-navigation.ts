@@ -47,4 +47,17 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
       },
     ],
   },
+  {
+    key: 'organization',
+    labelKey: 'admin.layout.sections.organization',
+    icon: 'users',
+    items: [
+      {
+        key: 'children',
+        to: '/admin/children',
+        labelKey: 'admin.layout.menu.children',
+        icon: 'users',
+      },
+    ],
+  },
 ];

@@ -1,0 +1,151 @@
+components:
+  schemas:
+    AdminChildParent:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        first_name:
+          type: string
+          nullable: true
+          example: Иван
+        last_name:
+          type: string
+          nullable: true
+          example: Иванов
+        middle_name:
+          type: string
+          nullable: true
+          example: Иванович
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: ivanov@example.com
+
+    AdminChild:
+      type: object
+      required: [id, user_id, first_name, last_name]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        user_id:
+          type: string
+          format: uuid
+          example: d3302fd5-360b-48ba-a049-40aa4accf26f
+        first_name:
+          type: string
+          example: Артем
+        last_name:
+          type: string
+          example: Иванов
+        middle_name:
+          type: string
+          nullable: true
+          example: Сергеевич
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+          example: male
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: 2018-01-01
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        user:
+          allOf:
+            - $ref: '#/components/schemas/AdminChildParent'
+          nullable: true
+
+    CreateAdminChildRequest:
+      type: object
+      required: [user_id, first_name, last_name]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        middle_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+
+    UpdateAdminChildRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        middle_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+
+    AdminChildrenPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminChild'

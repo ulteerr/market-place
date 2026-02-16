@@ -13,7 +13,7 @@ final class ActionLog extends Model
 {
     use HasUuid;
 
-    protected $table = "model_action_logs";
+    protected $table = "action_logs";
 
     public $timestamps = false;
 

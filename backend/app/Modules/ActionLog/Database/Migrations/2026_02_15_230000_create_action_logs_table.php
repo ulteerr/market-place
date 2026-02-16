@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create("model_action_logs", function (Blueprint $table): void {
+        Schema::create("action_logs", function (Blueprint $table): void {
             $table->uuid("id")->primary();
             $table->foreignUuid("user_id")->nullable()->constrained("users")->nullOnDelete();
             $table->string("event", 24)->index();
@@ -25,6 +25,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists("model_action_logs");
+        Schema::dropIfExists("action_logs");
     }
 };

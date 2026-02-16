@@ -13,10 +13,12 @@ export default {
       settings: 'Settings',
       users: 'Users',
       roles: 'Roles',
+      children: 'Children',
       actionLogs: 'Change log',
     },
     sections: {
       system: 'System',
+      organization: 'Organization',
     },
     user: {
       guest: 'Guest',
@@ -170,6 +172,7 @@ export default {
         first_name: 'First name',
         last_name: 'Last name',
         middle_name: 'Middle name',
+        gender: 'Gender',
         email: 'Email',
         phone: 'Phone',
         roles: 'Roles',
@@ -180,6 +183,14 @@ export default {
         code: 'Code',
         label: 'Label',
         is_system: 'System role',
+      },
+      child: {
+        first_name: 'First name',
+        last_name: 'Last name',
+        middle_name: 'Middle name',
+        gender: 'Gender',
+        birth_date: 'Birth date',
+        user_id: 'User',
       },
     },
     events: {
@@ -239,18 +250,24 @@ export default {
       hint: 'Controls admin sidebar width',
     },
   },
+  genders: {
+    male: 'Male',
+    female: 'Female',
+  },
   users: {
     index: {
       title: 'Users',
       subtitle: 'Search, sorting, limit and server pagination.',
       createLabel: 'New user',
-      searchPlaceholder: 'Search: last name, first name, middle name, email, phone, role',
+      searchPlaceholder: 'Search: ID, last name, first name, middle name, email, phone, role',
       empty: 'No users found.',
       headers: {
+        id: 'ID',
         thumbnail: 'Avatar',
         lastName: 'Last name',
         firstName: 'First name',
         middleName: 'Middle name',
+        gender: 'Gender',
         access: 'Access',
         actions: 'Actions',
       },
@@ -259,14 +276,18 @@ export default {
         open: 'Open image',
       },
       card: {
+        id: 'ID: {value}',
         lastName: 'Last name: {value}',
         firstName: 'First name: {value}',
         middleName: 'Middle name: {value}',
+        gender: 'Gender: {value}',
       },
       sort: {
+        id: 'ID',
         lastName: 'Last name',
         firstName: 'First name',
         middleName: 'Middle name',
+        gender: 'Gender',
         access: 'Access',
       },
       access: {
@@ -286,6 +307,7 @@ export default {
         firstName: 'First name',
         lastName: 'Last name',
         middleName: 'Middle name',
+        gender: 'Gender',
         email: 'Email',
         phone: 'Phone',
         password: 'Password',
@@ -293,6 +315,7 @@ export default {
         roles: 'Roles',
         avatar: 'Avatar',
       },
+      genderPlaceholder: 'Select gender',
       rolesPlaceholder: 'Select roles',
       saving: 'Saving...',
       errors: {
@@ -306,6 +329,7 @@ export default {
         firstName: 'First name',
         lastName: 'Last name',
         middleName: 'Middle name',
+        gender: 'Gender',
         email: 'Email',
         phone: 'Phone',
         roles: 'Roles',
@@ -322,6 +346,7 @@ export default {
         firstName: 'First name',
         lastName: 'Last name',
         middleName: 'Middle name',
+        gender: 'Gender',
         email: 'Email',
         phone: 'Phone',
         newPassword: 'New password',
@@ -329,6 +354,7 @@ export default {
         roles: 'Roles',
         avatar: 'Avatar',
       },
+      genderPlaceholder: 'Select gender',
       rolesPlaceholder: 'Select roles',
       saving: 'Saving...',
       errors: {
@@ -340,6 +366,96 @@ export default {
       },
     },
     confirmDelete: 'Delete user {name}?',
+  },
+  children: {
+    index: {
+      title: 'Children',
+      subtitle: 'Children CRUD in admin.',
+      createLabel: 'New child',
+      searchPlaceholder: 'Search: child full name or user ID',
+      empty: 'No children found.',
+      headers: {
+        fullName: 'Full name',
+        birthDate: 'Birth date',
+        gender: 'Gender',
+        user: 'Parent',
+        userId: 'User ID',
+        actions: 'Actions',
+      },
+      card: {
+        birthDate: 'Birth date: {value}',
+        gender: 'Gender: {value}',
+        user: 'Parent: {value}',
+        userId: 'User ID: {value}',
+      },
+      sort: {
+        firstName: 'First name',
+        lastName: 'Last name',
+        middleName: 'Middle name',
+        gender: 'Gender',
+        birthDate: 'Birth date',
+        user: 'Parent',
+        userId: 'User ID',
+      },
+    },
+    new: {
+      title: 'New child',
+      subtitle: 'Create child record in `/api/admin/children`.',
+      fields: {
+        firstName: 'First name',
+        lastName: 'Last name',
+        middleName: 'Middle name',
+        gender: 'Gender',
+        birthDate: 'Birth date',
+        userId: 'User ID',
+      },
+      genderPlaceholder: 'Select gender',
+      userPlaceholder: 'Search user: full name or ID',
+      saving: 'Saving...',
+      errors: {
+        create: 'Failed to create child.',
+      },
+    },
+    show: {
+      title: 'Child profile',
+      subtitle: 'Child show page.',
+      labels: {
+        fullName: 'Full name',
+        birthDate: 'Birth date',
+        gender: 'Gender',
+        user: 'User',
+        userId: 'User ID',
+      },
+      errors: {
+        invalidId: 'Invalid child identifier.',
+        load: 'Failed to load child.',
+      },
+    },
+    edit: {
+      title: 'Edit child',
+      subtitle: 'Child edit page.',
+      fields: {
+        firstName: 'First name',
+        lastName: 'Last name',
+        middleName: 'Middle name',
+        gender: 'Gender',
+        birthDate: 'Birth date',
+        userId: 'User ID',
+      },
+      genderPlaceholder: 'Select gender',
+      userPlaceholder: 'Search user: full name or ID',
+      saving: 'Saving...',
+      errors: {
+        invalidId: 'Invalid child identifier.',
+        load: 'Failed to load child.',
+        update: 'Failed to update child.',
+      },
+    },
+    confirmDelete: 'Delete child record {name}?',
+    errors: {
+      loadList: 'Failed to load children list.',
+      delete: 'Failed to delete child.',
+    },
   },
   roles: {
     index: {
@@ -431,6 +547,7 @@ export default {
     models: {
       user: 'User',
       role: 'Role',
+      child: 'Child',
     },
     filters: {
       event: 'Event',
@@ -450,6 +567,7 @@ export default {
       modelAll: 'All',
       modelUser: 'User',
       modelRole: 'Role',
+      modelChild: 'Child',
     },
     errors: {
       load: 'Failed to load action logs.',

@@ -26,7 +26,7 @@
     :last-page="pagination.last_page"
     :pagination-per-page="pagination.per_page"
     :pagination-items="paginationItems"
-    :table-skeleton-columns="6"
+    :table-skeleton-columns="8"
     @update:search-value="(value) => (listState.searchInput.value = value)"
     @update:per-page="onUpdatePerPage"
     @update:mode="onModeChange"
@@ -49,6 +49,12 @@
         <table class="admin-table min-w-[980px]">
           <thead>
             <tr>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('id')">
+                  {{ t('admin.users.index.headers.id') }}
+                  {{ listState.sortMark('id') }}
+                </button>
+              </th>
               <th>{{ t('admin.users.index.headers.thumbnail') }}</th>
               <th>
                 <button type="button" class="sort-btn" @click="onToggleSort('last_name')">
@@ -69,6 +75,12 @@
                 </button>
               </th>
               <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('gender')">
+                  {{ t('admin.users.index.headers.gender') }}
+                  {{ listState.sortMark('gender') }}
+                </button>
+              </th>
+              <th>
                 <button type="button" class="sort-btn" @click="onToggleSort('access')">
                   {{ t('admin.users.index.headers.access') }} {{ listState.sortMark('access') }}
                 </button>
@@ -78,16 +90,17 @@
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="6" class="admin-muted py-5 text-center text-sm">
+              <td colspan="8" class="admin-muted py-5 text-center text-sm">
                 {{ t('common.loading') }}
               </td>
             </tr>
             <tr v-else-if="!users.length">
-              <td colspan="6" class="admin-muted py-5 text-center text-sm">
+              <td colspan="8" class="admin-muted py-5 text-center text-sm">
                 {{ t('admin.users.index.empty') }}
               </td>
             </tr>
             <tr v-for="item in users" :key="item.id">
+              <td class="font-mono text-xs">{{ item.id }}</td>
               <td>
                 <UiImagePreview
                   :src="item.avatar?.url ?? null"
@@ -104,6 +117,7 @@
               </td>
               <td>{{ item.first_name || t('common.dash') }}</td>
               <td>{{ item.middle_name || t('common.dash') }}</td>
+              <td>{{ resolveGenderLabel(item.gender) }}</td>
               <td>
                 <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
               </td>
@@ -141,6 +155,9 @@
             {{ getAdminUserFullName(item) }}
           </h4>
           <p class="admin-muted text-xs">
+            {{ t('admin.users.index.card.id', { value: item.id }) }}
+          </p>
+          <p class="admin-muted text-xs">
             {{
               t('admin.users.index.card.lastName', { value: item.last_name || t('common.dash') })
             }}
@@ -156,6 +173,9 @@
                 value: item.middle_name || t('common.dash'),
               })
             }}
+          </p>
+          <p class="admin-muted text-xs">
+            {{ t('admin.users.index.card.gender', { value: resolveGenderLabel(item.gender) }) }}
           </p>
           <div class="mt-2">
             <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
@@ -280,9 +300,11 @@ const {
 });
 
 const cardSortFields = computed(() => [
+  { value: 'id', label: t('admin.users.index.sort.id') },
   { value: 'last_name', label: t('admin.users.index.sort.lastName') },
   { value: 'first_name', label: t('admin.users.index.sort.firstName') },
   { value: 'middle_name', label: t('admin.users.index.sort.middleName') },
+  { value: 'gender', label: t('admin.users.index.sort.gender') },
   { value: 'access', label: t('admin.users.index.sort.access') },
 ]);
 
@@ -333,6 +355,18 @@ const accessClass = (item: AdminUser): string => {
   }
 
   return access ? 'is-admin' : 'is-basic';
+};
+
+const resolveGenderLabel = (gender: string | null | undefined): string => {
+  if (gender === 'male') {
+    return t('admin.genders.male');
+  }
+
+  if (gender === 'female') {
+    return t('admin.genders.female');
+  }
+
+  return t('common.dash');
 };
 
 const canEditUser = (item: AdminUser): boolean => {

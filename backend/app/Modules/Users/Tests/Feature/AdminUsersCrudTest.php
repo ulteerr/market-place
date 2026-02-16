@@ -176,6 +176,12 @@ final class AdminUsersCrudTest extends AdminCrudTestCase
             ->assertOk()
             ->assertJsonCount(1, "data.data")
             ->assertJsonPath("data.data.0.email", "ivan.petrov@example.com");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson($this->endpoint() . "?search=" . $secondUser->id)
+            ->assertOk()
+            ->assertJsonCount(1, "data.data")
+            ->assertJsonPath("data.data.0.id", (string) $secondUser->id);
     }
 
     #[Test]

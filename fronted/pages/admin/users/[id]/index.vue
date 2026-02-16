@@ -37,6 +37,10 @@
             <dd>{{ user.middle_name || t('common.dash') }}</dd>
           </div>
           <div>
+            <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.gender') }}</dt>
+            <dd>{{ resolveGenderLabel(user.gender) }}</dd>
+          </div>
+          <div>
             <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.email') }}</dt>
             <dd>{{ user.email }}</dd>
           </div>
@@ -135,6 +139,18 @@ const userInitials = computed(() => {
 
   return initials || user.value.email?.[0]?.toUpperCase() || 'US';
 });
+
+const resolveGenderLabel = (gender: string | null | undefined): string => {
+  if (gender === 'male') {
+    return t('admin.genders.male');
+  }
+
+  if (gender === 'female') {
+    return t('admin.genders.female');
+  }
+
+  return t('common.dash');
+};
 
 const canEditViewedUser = computed(() => {
   if (!user.value || !canUpdateUsers.value) {

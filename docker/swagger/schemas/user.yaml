@@ -23,6 +23,11 @@ components:
           type: string
           nullable: true
           example: Michael
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+          example: male
         phone:
           type: string
           nullable: true
@@ -67,8 +72,22 @@ components:
       properties:
         first_name:
           type: string
+          maxLength: 255
         last_name:
           type: string
+          maxLength: 255
+        middle_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+        phone:
+          type: string
+          nullable: true
+          maxLength: 20
         email:
           type: string
           format: email
@@ -171,6 +190,11 @@ components:
           nullable: true
           maxLength: 255
           example: M
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+          example: male
         email:
           type: string
           format: email
@@ -215,6 +239,11 @@ components:
           nullable: true
           maxLength: 255
           example: M
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+          example: male
         email:
           type: string
           format: email
@@ -290,6 +319,11 @@ components:
           type: string
           nullable: true
           example: Michael
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+          example: female
         phone:
           type: string
           nullable: true

@@ -123,6 +123,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (event: 'update:modelValue', value: SelectValue | SelectValue[]): void;
   (event: 'create', value: SelectOption): void;
+  (event: 'search', value: string): void;
 }>();
 
 const uid = useId();
@@ -174,6 +175,10 @@ const inputValue = computed(() => {
 
 const filteredOptions = computed(() => {
   const currentQuery = normalizedQuery.value.toLowerCase();
+  const queryTokens = currentQuery
+    .split(/\s+/u)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0);
 
   return allOptions.value.filter((option) => {
     if (props.multiple && selectedValues.value.includes(option.value)) {
@@ -184,7 +189,8 @@ const filteredOptions = computed(() => {
       return true;
     }
 
-    return option.label.toLowerCase().includes(currentQuery);
+    const normalizedLabel = option.label.toLowerCase();
+    return queryTokens.every((token) => normalizedLabel.includes(token));
   });
 });
 
@@ -207,6 +213,7 @@ const onInput = (event: Event) => {
 
   const target = event.target as HTMLInputElement | null;
   query.value = target?.value ?? '';
+  emit('search', query.value);
 };
 
 const open = () => {
@@ -215,6 +222,7 @@ const open = () => {
   }
 
   isOpen.value = true;
+  emit('search', query.value);
 };
 
 const close = () => {

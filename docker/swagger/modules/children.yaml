@@ -1,0 +1,186 @@
+admin_children:
+  get:
+    tags: [Admin Children]
+    summary: List children (admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+          example: Иванов
+        description: Search by child full name, gender, parent id, parent full name or parent email.
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [first_name, last_name, middle_name, gender, birth_date, user_id, created_at]
+          example: last_name
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          example: asc
+    responses:
+      '200':
+        description: Paginated children list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/child.yaml#/components/schemas/AdminChildrenPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+  post:
+    tags: [Admin Children]
+    summary: Create child (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/child.yaml#/components/schemas/CreateAdminChildRequest
+    responses:
+      '201':
+        description: Child created
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Created successfully
+                data:
+                  $ref: ../schemas/child.yaml#/components/schemas/AdminChild
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_children_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Admin Children]
+    summary: Get child by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Child details
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  $ref: ../schemas/child.yaml#/components/schemas/AdminChild
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+  patch:
+    tags: [Admin Children]
+    summary: Update child (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/child.yaml#/components/schemas/UpdateAdminChildRequest
+    responses:
+      '200':
+        description: Child updated
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Updated successfully
+                data:
+                  $ref: ../schemas/child.yaml#/components/schemas/AdminChild
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+  delete:
+    tags: [Admin Children]
+    summary: Delete child (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Child deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Deleted successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
