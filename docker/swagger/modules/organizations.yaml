@@ -1,0 +1,562 @@
+admin_organizations:
+  get:
+    tags: [Admin Organizations]
+    summary: List organizations (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated organizations list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/organization.yaml#/components/schemas/OrganizationPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+  post:
+    tags: [Admin Organizations]
+    summary: Create organization (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+                nullable: true
+              address:
+                type: string
+                nullable: true
+              phone:
+                type: string
+                nullable: true
+              email:
+                type: string
+                format: email
+                nullable: true
+              status:
+                type: string
+                enum: [draft, active, suspended, archived]
+              source_type:
+                type: string
+                enum: [manual, import, parsed, self_registered]
+              ownership_status:
+                type: string
+                enum: [unclaimed, pending_claim, claimed]
+              owner_user_id:
+                type: string
+                format: uuid
+                nullable: true
+    responses:
+      '201':
+        description: Organization created
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Created successfully
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/Organization
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_organizations_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Admin Organizations]
+    summary: Get organization by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Organization details
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/Organization
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+  patch:
+    tags: [Admin Organizations]
+    summary: Update organization (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+                nullable: true
+              address:
+                type: string
+                nullable: true
+              phone:
+                type: string
+                nullable: true
+              email:
+                type: string
+                format: email
+                nullable: true
+              status:
+                type: string
+                enum: [draft, active, suspended, archived]
+              source_type:
+                type: string
+                enum: [manual, import, parsed, self_registered]
+              ownership_status:
+                type: string
+                enum: [unclaimed, pending_claim, claimed]
+              owner_user_id:
+                type: string
+                format: uuid
+                nullable: true
+    responses:
+      '200':
+        description: Organization updated
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Updated successfully
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/Organization
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+  delete:
+    tags: [Admin Organizations]
+    summary: Delete organization (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Organization deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Deleted successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+my_organizations:
+  get:
+    tags: [Organizations]
+    summary: List current user organizations
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated organizations list for current user
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/organization.yaml#/components/schemas/OrganizationPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
+organization_owner_transfer:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  patch:
+    tags: [Organizations]
+    summary: Transfer organization ownership
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [target_user_id]
+            properties:
+              target_user_id:
+                type: string
+                format: uuid
+    responses:
+      '200':
+        description: Ownership transferred
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Organization ownership transferred
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/Organization
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+organization_join_requests:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  post:
+    tags: [Organizations]
+    summary: Submit join request to organization
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                nullable: true
+    responses:
+      '201':
+        description: Join request created
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Join request submitted
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/OrganizationJoinRequest
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+  get:
+    tags: [Organizations]
+    summary: List organization join requests (owner/admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated join requests list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/organization.yaml#/components/schemas/OrganizationJoinRequestsPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+organization_join_requests_my:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  get:
+    tags: [Organizations]
+    summary: List current user join requests for organization
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated join requests list for current user
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/organization.yaml#/components/schemas/OrganizationJoinRequestsPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
+organization_join_requests_review:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  patch:
+    tags: [Organizations]
+    summary: Review organization join request
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              role_code:
+                type: string
+                enum: [owner, admin, manager, member]
+              review_note:
+                type: string
+                nullable: true
+    responses:
+      '200':
+        description: Join request reviewed
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Join request reviewed
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/OrganizationJoinRequest
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+organization_members:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  get:
+    tags: [Organizations]
+    summary: List organization members (owner/admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated members list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/organization.yaml#/components/schemas/OrganizationMembersPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+  post:
+    tags: [Organizations]
+    summary: Add organization member (owner/admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user_id]
+            properties:
+              user_id:
+                type: string
+                format: uuid
+              role_code:
+                type: string
+                enum: [owner, admin, manager, member]
+              status:
+                type: string
+                enum: [active, invited, blocked]
+    responses:
+      '201':
+        description: Member created
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Organization member created
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/OrganizationMember
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+organization_members_by_id:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: memberId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  patch:
+    tags: [Organizations]
+    summary: Update organization member (owner/admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              role_code:
+                type: string
+                enum: [owner, admin, manager, member]
+              status:
+                type: string
+                enum: [active, invited, blocked]
+    responses:
+      '200':
+        description: Member updated
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Organization member updated
+                data:
+                  $ref: ../schemas/organization.yaml#/components/schemas/OrganizationMember
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+  delete:
+    tags: [Organizations]
+    summary: Delete organization member (owner/admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Member deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Deleted successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError

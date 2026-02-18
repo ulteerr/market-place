@@ -55,11 +55,41 @@ paths:
   /api/admin/roles/{id}:
     $ref: ./modules/users.yaml#/admin_roles_by_id
 
+  /api/admin/organizations:
+    $ref: ./modules/organizations.yaml#/admin_organizations
+
+  /api/admin/organizations/{id}:
+    $ref: ./modules/organizations.yaml#/admin_organizations_by_id
+
   /api/admin/children:
     $ref: ./modules/children.yaml#/admin_children
 
   /api/admin/children/{id}:
     $ref: ./modules/children.yaml#/admin_children_by_id
+
+  /api/organizations/my:
+    $ref: ./modules/organizations.yaml#/my_organizations
+
+  /api/organizations/{organizationId}/owner/transfer:
+    $ref: ./modules/organizations.yaml#/organization_owner_transfer
+
+  /api/organizations/{organizationId}/join-requests:
+    $ref: ./modules/organizations.yaml#/organization_join_requests
+
+  /api/organizations/{organizationId}/join-requests/my:
+    $ref: ./modules/organizations.yaml#/organization_join_requests_my
+
+  /api/organizations/{organizationId}/join-requests/{requestId}/approve:
+    $ref: ./modules/organizations.yaml#/organization_join_requests_review
+
+  /api/organizations/{organizationId}/join-requests/{requestId}/reject:
+    $ref: ./modules/organizations.yaml#/organization_join_requests_review
+
+  /api/organizations/{organizationId}/members:
+    $ref: ./modules/organizations.yaml#/organization_members
+
+  /api/organizations/{organizationId}/members/{memberId}:
+    $ref: ./modules/organizations.yaml#/organization_members_by_id
 
   /api/admin/changelog:
     $ref: ./modules/changelog.yaml#/admin_changelog

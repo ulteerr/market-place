@@ -1200,6 +1200,321 @@ paths:
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/admin/organizations:
+    get:
+      tags:
+        - Admin Organizations
+      summary: List organizations (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated organizations list
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1organizations~1my/get/responses/200/content/application~1json/schema'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+    post:
+      tags:
+        - Admin Organizations
+      summary: Create organization (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                  nullable: true
+                address:
+                  type: string
+                  nullable: true
+                phone:
+                  type: string
+                  nullable: true
+                email:
+                  type: string
+                  format: email
+                  nullable: true
+                status:
+                  type: string
+                  enum:
+                    - draft
+                    - active
+                    - suspended
+                    - archived
+                source_type:
+                  type: string
+                  enum:
+                    - manual
+                    - import
+                    - parsed
+                    - self_registered
+                ownership_status:
+                  type: string
+                  enum:
+                    - unclaimed
+                    - pending_claim
+                    - claimed
+                owner_user_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Created successfully
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - name
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      description:
+                        type: string
+                        nullable: true
+                      address:
+                        type: string
+                        nullable: true
+                      phone:
+                        type: string
+                        nullable: true
+                      email:
+                        type: string
+                        format: email
+                        nullable: true
+                      status:
+                        type: string
+                        example: active
+                      source_type:
+                        type: string
+                        example: manual
+                      ownership_status:
+                        type: string
+                        example: claimed
+                      owner_user_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      created_by_user_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      claimed_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      created_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      updated_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      owner:
+                        allOf:
+                          - type: object
+                            required:
+                              - id
+                            properties:
+                              id:
+                                type: string
+                                format: uuid
+                              first_name:
+                                type: string
+                                nullable: true
+                              last_name:
+                                type: string
+                                nullable: true
+                              middle_name:
+                                type: string
+                                nullable: true
+                              email:
+                                type: string
+                                format: email
+                                nullable: true
+                        nullable: true
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/admin/organizations/{id}':
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Admin Organizations
+      summary: Get organization by id (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Organization details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
+    patch:
+      tags:
+        - Admin Organizations
+      summary: Update organization (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                  nullable: true
+                address:
+                  type: string
+                  nullable: true
+                phone:
+                  type: string
+                  nullable: true
+                email:
+                  type: string
+                  format: email
+                  nullable: true
+                status:
+                  type: string
+                  enum:
+                    - draft
+                    - active
+                    - suspended
+                    - archived
+                source_type:
+                  type: string
+                  enum:
+                    - manual
+                    - import
+                    - parsed
+                    - self_registered
+                ownership_status:
+                  type: string
+                  enum:
+                    - unclaimed
+                    - pending_claim
+                    - claimed
+                owner_user_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: Organization updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Updated successfully
+                  data:
+                    $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '404':
+          $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    delete:
+      tags:
+        - Admin Organizations
+      summary: Delete organization (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Organization deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Deleted successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
   /api/admin/children:
     get:
       tags:
@@ -1543,6 +1858,591 @@ paths:
       responses:
         '200':
           description: Child deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Deleted successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/organizations/my:
+    get:
+      tags:
+        - Organizations
+      summary: List current user organizations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated organizations list for current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 3
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 56
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+  '/api/organizations/{organizationId}/owner/transfer':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags:
+        - Organizations
+      summary: Transfer organization ownership
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_user_id
+              properties:
+                target_user_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Ownership transferred
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Organization ownership transferred
+                  data:
+                    $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/organizations/{organizationId}/join-requests':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Organizations
+      summary: Submit join request to organization
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Join request created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Join request submitted
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - organization_id
+                      - user_id
+                      - status
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      organization_id:
+                        type: string
+                        format: uuid
+                      user_id:
+                        type: string
+                        format: uuid
+                      status:
+                        type: string
+                        enum:
+                          - pending
+                          - approved
+                          - rejected
+                          - canceled
+                      message:
+                        type: string
+                        nullable: true
+                      review_note:
+                        type: string
+                        nullable: true
+                      reviewed_by_user_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      reviewed_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      created_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      updated_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      user:
+                        allOf:
+                          - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
+                        nullable: true
+                      reviewedBy:
+                        allOf:
+                          - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
+                        nullable: true
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    get:
+      tags:
+        - Organizations
+      summary: List organization join requests (owner/admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated join requests list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1join-requests/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  '/api/organizations/{organizationId}/join-requests/my':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Organizations
+      summary: List current user join requests for organization
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated join requests list for current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1join-requests/get/responses/200/content/application~1json/schema'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+  '/api/organizations/{organizationId}/join-requests/{requestId}/approve':
+    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1join-requests~1%7BrequestId%7D~1reject'
+  '/api/organizations/{organizationId}/join-requests/{requestId}/reject':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags:
+        - Organizations
+      summary: Review organization join request
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_code:
+                  type: string
+                  enum:
+                    - owner
+                    - admin
+                    - manager
+                    - member
+                review_note:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Join request reviewed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Join request reviewed
+                  data:
+                    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1join-requests/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/organizations/{organizationId}/members':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Organizations
+      summary: List organization members (owner/admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated members list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1members/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+    post:
+      tags:
+        - Organizations
+      summary: Add organization member (owner/admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                role_code:
+                  type: string
+                  enum:
+                    - owner
+                    - admin
+                    - manager
+                    - member
+                status:
+                  type: string
+                  enum:
+                    - active
+                    - invited
+                    - blocked
+      responses:
+        '201':
+          description: Member created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Organization member created
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - organization_id
+                      - user_id
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      organization_id:
+                        type: string
+                        format: uuid
+                      user_id:
+                        type: string
+                        format: uuid
+                      role_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      role_code:
+                        type: string
+                        nullable: true
+                        example: member
+                      status:
+                        type: string
+                        example: active
+                      invited_by_user_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      joined_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      created_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      updated_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      user:
+                        allOf:
+                          - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
+                        nullable: true
+                      invitedBy:
+                        allOf:
+                          - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
+                        nullable: true
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/organizations/{organizationId}/members/{memberId}':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: memberId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags:
+        - Organizations
+      summary: Update organization member (owner/admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_code:
+                  type: string
+                  enum:
+                    - owner
+                    - admin
+                    - manager
+                    - member
+                status:
+                  type: string
+                  enum:
+                    - active
+                    - invited
+                    - blocked
+      responses:
+        '200':
+          description: Member updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Organization member updated
+                  data:
+                    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1members/post/responses/201/content/application~1json/schema/properties/data'
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    delete:
+      tags:
+        - Organizations
+      summary: Delete organization member (owner/admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Member deleted
           content:
             application/json:
               schema:

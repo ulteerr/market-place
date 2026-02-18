@@ -1,0 +1,250 @@
+components:
+  schemas:
+    OrganizationUserShort:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+          nullable: true
+        middle_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+
+    Organization:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        status:
+          type: string
+          example: active
+        source_type:
+          type: string
+          example: manual
+        ownership_status:
+          type: string
+          example: claimed
+        owner_user_id:
+          type: string
+          format: uuid
+          nullable: true
+        created_by_user_id:
+          type: string
+          format: uuid
+          nullable: true
+        claimed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        owner:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationUserShort'
+          nullable: true
+
+    OrganizationMember:
+      type: object
+      required: [id, organization_id, user_id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        role_id:
+          type: string
+          format: uuid
+          nullable: true
+        role_code:
+          type: string
+          nullable: true
+          example: member
+        status:
+          type: string
+          example: active
+        invited_by_user_id:
+          type: string
+          format: uuid
+          nullable: true
+        joined_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        user:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationUserShort'
+          nullable: true
+        invitedBy:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationUserShort'
+          nullable: true
+
+    OrganizationJoinRequest:
+      type: object
+      required: [id, organization_id, user_id, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, approved, rejected, canceled]
+        message:
+          type: string
+          nullable: true
+        review_note:
+          type: string
+          nullable: true
+        reviewed_by_user_id:
+          type: string
+          format: uuid
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        user:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationUserShort'
+          nullable: true
+        reviewedBy:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationUserShort'
+          nullable: true
+
+    OrganizationPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Organization'
+
+    OrganizationMembersPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+            last_page:
+              type: integer
+            per_page:
+              type: integer
+            total:
+              type: integer
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrganizationMember'
+
+    OrganizationJoinRequestsPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+            last_page:
+              type: integer
+            per_page:
+              type: integer
+            total:
+              type: integer
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrganizationJoinRequest'
