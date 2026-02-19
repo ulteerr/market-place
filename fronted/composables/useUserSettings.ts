@@ -81,7 +81,7 @@ export const useUserSettings = () => {
     syncInFlight = true;
 
     try {
-      await updateRemoteSettings(payload);
+      await updateRemoteSettings(payload as unknown as Record<string, unknown>);
       lastSyncedSettingsSnapshot = snapshot;
     } catch {
       // keep local settings and retry on next update

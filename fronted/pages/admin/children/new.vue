@@ -109,7 +109,7 @@ const form = reactive({
   first_name: '',
   last_name: '',
   middle_name: '',
-  gender: '' as string | null,
+  gender: null as 'male' | 'female' | null,
   birth_date: '' as string | null,
 });
 

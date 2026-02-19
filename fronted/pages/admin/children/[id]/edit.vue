@@ -126,7 +126,7 @@ const form = reactive({
   first_name: '',
   last_name: '',
   middle_name: '',
-  gender: '' as string | null,
+  gender: null as 'male' | 'female' | null,
   birth_date: '' as string | null,
 });
 
@@ -151,7 +151,7 @@ const normalizeIsoDate = (value: string | null | undefined): string => {
 
   const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
   if (match) {
-    return match[1];
+    return match[1] ?? '';
   }
 
   const parsed = new Date(value);

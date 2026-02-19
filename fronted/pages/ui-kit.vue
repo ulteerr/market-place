@@ -120,12 +120,12 @@ const statusOptions = [
 
 const images = ref([
   {
-    id: 1,
+    id: '1',
     src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     caption: 'Обложка',
   },
   {
-    id: 2,
+    id: '2',
     src: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=800&q=80',
     caption: 'Деталь',
   },
@@ -154,7 +154,7 @@ const onRemoveImage = (index: number) => {
 
 const onAddImage = () => {
   images.value.push({
-    id: Date.now(),
+    id: String(Date.now()),
     src: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
     caption: 'Новое фото',
   });

@@ -56,7 +56,7 @@ describe('user settings normalize', () => {
         system: { open: false },
         invalid: { open: 'yes' },
       },
-    });
+    } as unknown as Partial<UserSettings>);
 
     expect(merged.locale).toBe('en');
     expect(merged.theme).toBe('dark');

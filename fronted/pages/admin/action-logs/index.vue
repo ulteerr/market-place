@@ -114,7 +114,7 @@
                 </td>
                 <td>{{ resolveModelTitle(item) }}</td>
                 <td>
-                  <AdminLink v-if="resolveActorLink(item)" :to="resolveActorLink(item)">
+                  <AdminLink v-if="resolveActorLink(item)" :to="resolveActorLink(item)!">
                     {{ resolveUserLabel(item) }}
                   </AdminLink>
                   <span v-else>{{ resolveUserLabel(item) }}</span>
@@ -179,7 +179,7 @@
           <p class="mt-2 text-sm">{{ resolveModelTitle(item) }}</p>
           <p class="mt-1 text-sm">
             <span class="admin-muted">{{ t('admin.actionLogs.headers.user') }}: </span>
-            <AdminLink v-if="resolveActorLink(item)" :to="resolveActorLink(item)">
+            <AdminLink v-if="resolveActorLink(item)" :to="resolveActorLink(item)!">
               {{ resolveUserLabel(item) }}
             </AdminLink>
             <span v-else>{{ resolveUserLabel(item) }}</span>
@@ -294,6 +294,7 @@ const modelOptions = computed(() => [
   { value: 'user', label: t('admin.actionLogs.filters.modelUser') },
   { value: 'role', label: t('admin.actionLogs.filters.modelRole') },
   { value: 'child', label: t('admin.actionLogs.filters.modelChild') },
+  { value: 'organization', label: t('admin.actionLogs.filters.modelOrganization') },
 ]);
 
 const showPagination = computed(() => pagination.last_page > 1);

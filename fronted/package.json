@@ -7,6 +7,7 @@
     "build": "nuxt build",
     "preview": "nuxt preview --host 0.0.0.0 --port 3000",
     "prepare": "nuxt prepare",
+    "pretest": "playwright install --with-deps chrome firefox webkit",
     "test": "playwright test --project=chrome --project=mozilla-firefox --project=safari-webkit tests/e2e",
     "pretest:e2e": "playwright install --with-deps chrome firefox webkit",
     "test:e2e": "playwright test",

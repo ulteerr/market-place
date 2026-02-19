@@ -136,7 +136,7 @@ export const buildPaginationItems = (
   const result: PaginationItem[] = [];
 
   for (let index = 0; index < normalizedPages.length; index += 1) {
-    const page = normalizedPages[index];
+    const page = normalizedPages[index] ?? 1;
     const previous = normalizedPages[index - 1];
 
     if (index > 0 && previous !== undefined && page - previous > 1) {

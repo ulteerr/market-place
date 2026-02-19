@@ -63,7 +63,7 @@
                       'is-active'
                     "
                     :title="section.label"
-                    :aria-expanded="String(isSectionOpen(section.key))"
+                    :aria-expanded="isSectionOpen(section.key)"
                     :aria-controls="`admin-nav-section-${section.key}`"
                     @click="toggleSection(section.key)"
                   >
@@ -118,7 +118,7 @@
                     'is-active'
                   "
                   :title="isCollapsedNavigation ? section.label : undefined"
-                  :aria-expanded="String(isSectionOpen(section.key))"
+                  :aria-expanded="isSectionOpen(section.key)"
                   :aria-controls="`admin-nav-section-${section.key}`"
                   @click="toggleSection(section.key)"
                 >
@@ -333,6 +333,7 @@ type NavigationSectionView = Omit<AdminNavigationSectionDefinition, 'items'> & {
 const navigationPermissions: Record<string, string> = {
   users: 'admin.users.read',
   roles: 'admin.roles.read',
+  organizations: 'org.company.profile.read',
   children: 'org.children.read',
   'action-logs': 'admin.action-log.read',
 };

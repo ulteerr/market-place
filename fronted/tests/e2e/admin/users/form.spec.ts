@@ -168,7 +168,7 @@ test.describe('Admin users form pages', () => {
     await setupUsersForm(page);
 
     let currentUser = { ...existingUser };
-    let changeLogPage = {
+    let changeLogPage: Record<string, any> = {
       status: 'ok',
       data: {
         list_mode: 'latest',

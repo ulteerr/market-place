@@ -81,7 +81,7 @@
               <td>{{ formatDate(child.birth_date) }}</td>
               <td>{{ resolveGenderLabel(child.gender) }}</td>
               <td class="max-w-[240px] truncate" :title="resolveUserLabel(child)">
-                <AdminLink v-if="resolveUserLink(child)" :to="resolveUserLink(child)">
+                <AdminLink v-if="resolveUserLink(child)" :to="resolveUserLink(child)!">
                   {{ resolveUserLabel(child) }}
                 </AdminLink>
                 <span v-else>{{ resolveUserLabel(child) }}</span>

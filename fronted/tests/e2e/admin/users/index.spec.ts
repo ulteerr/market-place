@@ -176,7 +176,7 @@ test.describe('Admin users page', () => {
     await setupUsersPage(page);
     await page.goto('/admin/users');
 
-    const secondRowThumbnailCell = page.locator('tbody tr').nth(1).locator('td').nth(0);
+    const secondRowThumbnailCell = page.locator('tbody tr').nth(1).locator('td').nth(1);
     await expect(secondRowThumbnailCell).toContainText('—');
   });
 
@@ -184,7 +184,7 @@ test.describe('Admin users page', () => {
     await setupUsersPage(page);
     await page.goto('/admin/users');
 
-    const firstLastNameCell = page.locator('tbody tr').nth(0).locator('td').nth(1);
+    const firstLastNameCell = page.locator('tbody tr').nth(0).locator('td').nth(2);
     await expect(firstLastNameCell).toContainText('Иванов');
 
     await page.getByRole('button', { name: 'Фамилия ↑' }).click();

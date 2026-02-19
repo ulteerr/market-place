@@ -37,6 +37,10 @@ export const setupRolesCollectionApi = async (
     const sortBy = url.searchParams.get('sort_by') ?? 'code';
     const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
     const perPage = Number(url.searchParams.get('per_page') ?? 10);
+    const sortableFields: Array<keyof AdminRole> = ['id', 'code', 'label', 'is_system'];
+    const resolvedSortBy: keyof AdminRole = sortableFields.includes(sortBy as keyof AdminRole)
+      ? (sortBy as keyof AdminRole)
+      : 'code';
 
     const filtered = dataset.filter((item) => {
       if (!search) {
@@ -49,8 +53,8 @@ export const setupRolesCollectionApi = async (
     });
 
     const sorted = [...filtered].sort((left, right) => {
-      const leftValue = String((left as Record<string, unknown>)[sortBy] ?? '').toLowerCase();
-      const rightValue = String((right as Record<string, unknown>)[sortBy] ?? '').toLowerCase();
+      const leftValue = String(left[resolvedSortBy] ?? '').toLowerCase();
+      const rightValue = String(right[resolvedSortBy] ?? '').toLowerCase();
       const compare = leftValue.localeCompare(rightValue, 'ru');
 
       return sortDir === 'desc' ? -compare : compare;

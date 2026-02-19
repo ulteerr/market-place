@@ -215,8 +215,12 @@ export const useAdminUsers = () => {
       ) {
         body.append('permission_overrides_present', '1');
 
-        const allow = Array.isArray(value.allow) ? value.allow : [];
-        const deny = Array.isArray(value.deny) ? value.deny : [];
+        const allow: string[] = Array.isArray(value.allow)
+          ? value.allow.filter((code: unknown): code is string => typeof code === 'string')
+          : [];
+        const deny: string[] = Array.isArray(value.deny)
+          ? value.deny.filter((code: unknown): code is string => typeof code === 'string')
+          : [];
 
         allow.forEach((code) => body.append('permission_overrides[allow][]', code));
         deny.forEach((code) => body.append('permission_overrides[deny][]', code));

@@ -121,7 +121,6 @@ html[data-ui-ready='1'] #app-boot-loader {
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'ru',
-    lazy: true,
     langDir: 'locales',
     detectBrowserLanguage: {
       useCookie: true,

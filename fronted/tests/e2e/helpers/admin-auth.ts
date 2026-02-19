@@ -21,6 +21,7 @@ export interface AdminAuthUser {
   roles?: string[];
   permissions?: string[];
   settings?: {
+    locale?: 'ru' | 'en' | null;
     theme: 'light' | 'dark';
     collapse_menu: boolean;
     admin_crud_preferences: Record<string, unknown>;

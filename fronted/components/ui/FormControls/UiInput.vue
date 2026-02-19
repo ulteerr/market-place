@@ -68,10 +68,11 @@
 import styles from './UiInput.module.scss';
 
 type UiInputPreset = 'text' | 'email' | 'password' | 'number' | 'phone' | 'url' | 'search';
+type UiInputMode = 'text' | 'none' | 'search' | 'email' | 'tel' | 'url' | 'numeric' | 'decimal';
 
 const INPUT_PRESETS: Record<
   UiInputPreset,
-  { type: string; autocomplete: string; inputmode?: string }
+  { type: string; autocomplete: string; inputmode?: UiInputMode }
 > = {
   text: { type: 'text', autocomplete: 'off' },
   email: { type: 'email', autocomplete: 'email', inputmode: 'email' },
@@ -92,7 +93,7 @@ const props = withDefaults(
     type?: string;
     placeholder?: string;
     autocomplete?: string;
-    inputmode?: string;
+    inputmode?: UiInputMode;
     passwordToggle?: boolean;
     hint?: string;
     error?: string;
@@ -108,7 +109,7 @@ const props = withDefaults(
     type: '',
     placeholder: '',
     autocomplete: '',
-    inputmode: '',
+    inputmode: undefined,
     passwordToggle: false,
     hint: '',
     error: '',

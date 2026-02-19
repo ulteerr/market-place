@@ -5,7 +5,7 @@
         :id="resolvedId"
         type="button"
         role="switch"
-        :aria-checked="String(modelValue)"
+        :aria-checked="modelValue"
         :aria-label="label || name || 'Switch'"
         :disabled="disabled"
         :class="[
