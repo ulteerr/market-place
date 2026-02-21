@@ -18,6 +18,12 @@
             @update:model-value="onThemeToggle"
           />
 
+          <UiCheckbox
+            v-model="form.agreement"
+            label="Согласие на обработку данных"
+            description="Показывает UiCheckbox в базовом состоянии"
+          />
+
           <UiInput v-model="form.title" label="Название" placeholder="Введите название" />
 
           <UiTextarea
@@ -25,6 +31,14 @@
             label="Описание"
             placeholder="Опишите товар"
             hint="Кратко и по делу"
+          />
+
+          <UiCodeEditor
+            v-model="form.payload"
+            label="JSON payload"
+            language="json"
+            hint="Поддерживает подсветку синтаксиса и tab-вставку"
+            min-height="10rem"
           />
 
           <UiSelect
@@ -52,6 +66,19 @@
             :options="statusOptions"
             placeholder="Выберите статус"
           />
+
+          <UiDatePicker
+            v-model="form.publishedAt"
+            label="Дата публикации"
+            hint="Одиночный выбор даты"
+          />
+
+          <UiDatePicker
+            v-model="form.saleRange"
+            mode="range"
+            label="Период акции"
+            hint="Диапазон дат"
+          />
         </div>
       </article>
 
@@ -68,21 +95,73 @@
             @add="onAddImage"
             @remove="onRemoveImage"
           />
+
+          <div :class="styles.previewGrid">
+            <UiImagePreview
+              :src="images[0]?.src || null"
+              alt="Preview table"
+              variant="table"
+              preview-title="Preview table variant"
+            />
+            <UiImagePreview
+              :src="images[1]?.src || null"
+              alt="Preview card"
+              variant="card"
+              preview-title="Preview card variant"
+            />
+            <UiImagePreview :src="null" fallback-text="Нет картинки" variant="table" />
+          </div>
+        </div>
+      </article>
+
+      <article :class="styles.card">
+        <h2 :class="styles.cardTitle">Modal</h2>
+
+        <div :class="styles.stack">
+          <button type="button" :class="styles.demoButton" @click="isModalOpen = true">
+            Открыть обычную модалку
+          </button>
+          <button type="button" :class="styles.demoButton" @click="isConfirmModalOpen = true">
+            Открыть confirm-модалку
+          </button>
+          <span :class="styles.modalStatus">{{ modalStatus }}</span>
         </div>
       </article>
     </section>
+
+    <UiModal v-model="isModalOpen" title="Пример UiModal">
+      <p>Это базовый режим UiModal с произвольным контентом.</p>
+    </UiModal>
+
+    <UiModal
+      v-model="isConfirmModalOpen"
+      mode="confirm"
+      title="Удалить запись?"
+      message="Действие нельзя отменить."
+      confirm-label="Удалить"
+      cancel-label="Отмена"
+      :destructive="true"
+      @confirm="onConfirmModal"
+      @cancel="modalStatus = 'Отменено'"
+      @close="onModalClosed"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import PageHero from '~/components/ui/PageHero/PageHero.vue';
+import UiCheckbox from '~/components/ui/FormControls/UiCheckbox/UiCheckbox.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
+import UiCodeEditor from '~/components/ui/FormControls/UiCodeEditor/UiCodeEditor.vue';
+import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiDropdown from '~/components/ui/FormControls/UiDropdown/UiDropdown.vue';
 import UiSwitch from '~/components/ui/FormControls/UiSwitch/UiSwitch.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';
 import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone/UiImageDropzone.vue';
+import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
+import UiModal from '~/components/ui/Modal/UiModal.vue';
 import styles from './ui-kit.module.scss';
 
 interface SelectOption {
@@ -91,11 +170,15 @@ interface SelectOption {
 }
 
 const form = reactive({
+  agreement: false,
   title: '',
   description: '',
+  payload: '{\n  "id": 1,\n  "name": "Sample"\n}',
   category: '',
   tags: [] as string[],
   status: '',
+  publishedAt: null as string | null,
+  saleRange: [null, null] as [string | null, string | null],
 });
 
 const { isDark, setTheme } = useUserSettings();
@@ -132,6 +215,9 @@ const images = ref([
 ]);
 
 const uploadedFiles = ref<File[]>([]);
+const isModalOpen = ref(false);
+const isConfirmModalOpen = ref(false);
+const modalStatus = ref('Ожидает действия');
 
 const onFilesAdded = (files: File[]) => {
   files.forEach((file) => {
@@ -162,5 +248,16 @@ const onAddImage = () => {
 
 const onThemeToggle = (value: boolean) => {
   setTheme(value ? 'dark' : 'light');
+};
+
+const onConfirmModal = () => {
+  modalStatus.value = 'Подтверждено';
+  isConfirmModalOpen.value = false;
+};
+
+const onModalClosed = () => {
+  if (modalStatus.value !== 'Подтверждено') {
+    modalStatus.value = 'Закрыто';
+  }
 };
 </script>

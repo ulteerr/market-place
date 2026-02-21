@@ -50,13 +50,19 @@ interface MeResponse {
 
 export const useAuth = () => {
   const config = useRuntimeConfig();
+  const authCookieMaxAge = 60 * 60 * 24 * 30;
+  const authCookieOptions = {
+    sameSite: 'lax' as const,
+    maxAge: authCookieMaxAge,
+    secure: process.env.NODE_ENV === 'production',
+  };
 
   const token = useCookie<string | null>('auth_token', {
-    sameSite: 'lax',
+    ...authCookieOptions,
   });
 
   const user = useCookie<AuthUser | null>('auth_user', {
-    sameSite: 'lax',
+    ...authCookieOptions,
   });
 
   const isAuthenticated = computed(() => Boolean(token.value));

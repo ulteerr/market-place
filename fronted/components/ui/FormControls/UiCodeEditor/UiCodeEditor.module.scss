@@ -1,0 +1,233 @@
+@use '../_shared' as shared;
+
+.field {
+  @include shared.field-base;
+}
+
+.label {
+  @include shared.label-base;
+}
+
+.required {
+  @include shared.required-base;
+}
+
+.control {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--form-control-border);
+  border-radius: 0.75rem;
+  background-color: var(--form-control-bg);
+  color: var(--form-control-text);
+  outline: 0;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  min-height: var(--ui-code-min-height, 12rem);
+  max-height: var(--ui-code-max-height, none);
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--form-focus);
+    box-shadow: 0 0 0 3px var(--form-focus-ring);
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--form-control-border) 80%, transparent);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+.toolbarGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.toolbarButton,
+.toolbarIconButton {
+  border: 1px solid var(--form-control-border);
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--form-control-text);
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 0.22rem 0.45rem;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 65%, var(--form-control-border));
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+.toolbarIconButton {
+  min-width: 2rem;
+}
+
+.modeLabel {
+  font-size: 0.72rem;
+  color: var(--form-hint);
+}
+
+.modeSelect {
+  border: 1px solid var(--form-control-border);
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--form-control-text);
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 0.2rem 0.35rem;
+  outline: 0;
+}
+
+.colorLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--form-hint);
+  border: 1px solid var(--form-control-border);
+  border-radius: 0.45rem;
+  padding: 0.14rem 0.28rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+.colorPicker {
+  width: 1.25rem;
+  height: 1.1rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.controlError {
+  border-color: var(--form-error-border);
+
+  &:focus-within {
+    border-color: var(--form-error-focus);
+    box-shadow: 0 0 0 3px var(--form-error-ring);
+  }
+}
+
+.controlDisabled {
+  cursor: not-allowed;
+  background-color: var(--form-control-disabled-bg);
+  color: var(--form-control-disabled-text);
+}
+
+.editor {
+  width: 100%;
+  min-height: var(--ui-code-min-height, 12rem);
+  max-height: var(--ui-code-max-height, none);
+  overflow: auto;
+
+  :global(.cm-editor) {
+    min-height: inherit;
+    background: transparent;
+    color: inherit;
+  }
+
+  :global(.cm-scroller) {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    padding: 0.62rem 0.75rem;
+  }
+
+  :global(.cm-content) {
+    caret-color: var(--form-control-text);
+  }
+
+  :global(.cm-lineNumbers .cm-gutterElement) {
+    color: color-mix(in srgb, var(--form-control-disabled-text) 85%, transparent);
+  }
+}
+
+.richEditor {
+  width: 100%;
+  min-height: var(--ui-code-min-height, 12rem);
+  max-height: var(--ui-code-max-height, none);
+  padding: 0.62rem 0.75rem;
+  overflow: auto;
+  outline: 0;
+  line-height: 1.5;
+
+  &[contenteditable='false'] {
+    cursor: not-allowed;
+    opacity: 0.85;
+  }
+
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: var(--form-placeholder);
+  }
+
+  :global(blockquote) {
+    margin: 0.55rem 0;
+    padding-left: 0.65rem;
+    border-left: 3px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    color: var(--muted);
+  }
+
+  :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.45rem;
+  }
+}
+
+.fallback {
+  width: 100%;
+  min-height: var(--ui-code-min-height, 12rem);
+  max-height: var(--ui-code-max-height, none);
+  border: 0;
+  padding: 0.62rem 0.75rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  background: transparent;
+  color: inherit;
+  resize: vertical;
+  outline: 0;
+
+  &::placeholder {
+    color: var(--form-placeholder);
+  }
+}
+
+.hiddenInput,
+.hiddenFileInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.hint {
+  @include shared.hint-base;
+}
+
+.error {
+  @include shared.error-base;
+}
