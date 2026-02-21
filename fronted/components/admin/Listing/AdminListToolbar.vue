@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 const { t } = useI18n();
 
 const props = withDefaults(

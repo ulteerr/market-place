@@ -76,13 +76,13 @@
 
 <script setup lang="ts">
 import PageHero from '~/components/ui/PageHero/PageHero.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
-import UiTextarea from '~/components/ui/FormControls/UiTextarea.vue';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
-import UiDropdown from '~/components/ui/FormControls/UiDropdown.vue';
-import UiSwitch from '~/components/ui/FormControls/UiSwitch.vue';
-import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
-import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
+import UiDropdown from '~/components/ui/FormControls/UiDropdown/UiDropdown.vue';
+import UiSwitch from '~/components/ui/FormControls/UiSwitch/UiSwitch.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone/UiImageDropzone.vue';
 import styles from './ui-kit.module.scss';
 
 interface SelectOption {

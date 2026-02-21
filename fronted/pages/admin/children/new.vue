@@ -77,9 +77,9 @@
 </template>
 
 <script setup lang="ts">
-import UiDatePicker from '~/components/ui/FormControls/UiDatePicker.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import type { CreateChildPayload } from '~/composables/useAdminChildren';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import {

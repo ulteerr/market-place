@@ -1,0 +1,25 @@
+@mixin field-base {
+  display: grid;
+  gap: 0.4rem;
+}
+
+@mixin label-base {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-label);
+}
+
+@mixin required-base {
+  margin-left: 0.2rem;
+  color: var(--form-required);
+}
+
+@mixin hint-base {
+  font-size: 0.75rem;
+  color: var(--form-hint);
+}
+
+@mixin error-base {
+  font-size: 0.75rem;
+  color: var(--form-error);
+}

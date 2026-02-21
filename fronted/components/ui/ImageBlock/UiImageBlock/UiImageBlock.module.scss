@@ -1,9 +1,9 @@
+@use '../_shared' as shared;
+
 .block {
   display: grid;
   gap: 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  @include shared.card-surface;
   padding: 1rem;
 }
 
@@ -15,30 +15,20 @@
 }
 
 .title {
+  @include shared.title-base;
   font-size: 1rem;
-  font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--text);
 }
 
 .description {
+  @include shared.description-base;
   margin-top: 0.2rem;
-  font-size: 0.82rem;
-  color: var(--muted);
 }
 
 .addButton {
-  border: 1px solid var(--border);
-  border-radius: 0.65rem;
+  @include shared.action-button-base;
   background-color: color-mix(in srgb, var(--surface) 75%, transparent);
-  color: var(--text);
-  font-size: 0.8rem;
-  font-weight: 600;
   padding: 0.45rem 0.7rem;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
 
   &:hover {
     border-color: color-mix(in srgb, var(--accent) 65%, var(--border));

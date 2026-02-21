@@ -1,0 +1,31 @@
+@mixin card-surface {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+@mixin title-base {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+@mixin description-base {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+@mixin action-button-base {
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}

@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import UiSwitch from '~/components/ui/FormControls/UiSwitch.vue';
+import UiSwitch from '~/components/ui/FormControls/UiSwitch/UiSwitch.vue';
 const { t } = useI18n();
 
 definePageMeta({

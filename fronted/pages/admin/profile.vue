@@ -91,9 +91,9 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
-import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
-import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone/UiImageDropzone.vue';
 import {
   getApiErrorPayload,
   getApiErrorMessage,

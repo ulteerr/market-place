@@ -170,11 +170,11 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import UiCheckbox from '~/components/ui/FormControls/UiCheckbox.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
-import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock.vue';
-import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone.vue';
+import UiCheckbox from '~/components/ui/FormControls/UiCheckbox/UiCheckbox.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
+import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';
+import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone/UiImageDropzone.vue';
 import type { AdminAccessPermission } from '~/composables/useAdminPermissions';
 import type { AdminRole } from '~/composables/useAdminRoles';
 import type { UpdateUserPayload } from '~/composables/useAdminUsers';

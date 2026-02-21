@@ -301,7 +301,7 @@ import {
 } from '~/config/admin-navigation';
 import AdminNavIcon from '~/components/admin/Layout/AdminNavIcon.vue';
 import AdminUserMenu from '~/components/admin/Layout/AdminUserMenu.vue';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 
 const { t, locale, setLocale } = useI18n();
 const route = useRoute();

@@ -228,9 +228,9 @@
 <script setup lang="ts">
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import AdminLink from '~/components/admin/AdminLink.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
-import UiDatePicker from '~/components/ui/FormControls/UiDatePicker.vue';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import type { AdminActionLogItem } from '~/composables/useAdminActionLogs';
 import type { AdminCrudContentMode } from '~/composables/useUserSettings';
 import {

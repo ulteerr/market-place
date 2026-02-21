@@ -1,13 +1,12 @@
+@use '../_shared' as shared;
+
 .dropdown {
   position: relative;
-  display: grid;
-  gap: 0.4rem;
+  @include shared.field-base;
 }
 
 .label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--form-label);
+  @include shared.label-base;
 }
 
 .trigger {
@@ -101,11 +100,9 @@
 }
 
 .hint {
-  font-size: 0.75rem;
-  color: var(--form-hint);
+  @include shared.hint-base;
 }
 
 .error {
-  font-size: 0.75rem;
-  color: var(--form-error);
+  @include shared.error-base;
 }

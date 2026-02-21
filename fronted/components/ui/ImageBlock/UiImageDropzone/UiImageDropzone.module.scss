@@ -1,7 +1,8 @@
+@use '../_shared' as shared;
+
 .zone {
-  border: 1px dashed var(--border);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  @include shared.card-surface;
+  border-style: dashed;
   padding: 1.1rem;
   text-align: center;
   display: grid;
@@ -26,31 +27,17 @@
 }
 
 .title {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
+  @include shared.title-base;
 }
 
 .description {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--muted);
+  @include shared.description-base;
 }
 
 .browse {
   justify-self: center;
-  border: 1px solid var(--border);
-  border-radius: 0.65rem;
+  @include shared.action-button-base;
   background: color-mix(in srgb, var(--surface) 70%, transparent);
-  color: var(--text);
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.45rem 0.75rem;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
 
   &:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--accent) 65%, var(--border));

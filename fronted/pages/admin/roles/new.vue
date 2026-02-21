@@ -67,8 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import UiCheckbox from '~/components/ui/FormControls/UiCheckbox.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiCheckbox from '~/components/ui/FormControls/UiCheckbox/UiCheckbox.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import type { AdminAccessPermission } from '~/composables/useAdminPermissions';
 import type { CreateRolePayload } from '~/composables/useAdminRoles';
 import {

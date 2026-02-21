@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import styles from './LoginForm.module.scss';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 
 type LoginFormVariant = 'page' | 'popup';
 

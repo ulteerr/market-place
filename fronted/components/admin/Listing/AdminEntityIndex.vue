@@ -111,7 +111,7 @@
 
 <script setup lang="ts">
 import type { PaginationItem } from '~/composables/useAdminCrudCommon';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import AdminListToolbar from '~/components/admin/Listing/AdminListToolbar.vue';
 import AdminPagination from '~/components/admin/Listing/AdminPagination.vue';
 import AdminContentView from '~/components/admin/Listing/AdminContentView.vue';

@@ -112,9 +112,9 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
-import UiSelect from '~/components/ui/FormControls/UiSelect.vue';
-import UiTextarea from '~/components/ui/FormControls/UiTextarea.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
+import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
 import type {
   OrganizationOwnershipStatus,
   OrganizationSourceType,

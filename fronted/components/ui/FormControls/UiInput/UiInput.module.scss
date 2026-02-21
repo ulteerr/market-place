@@ -1,17 +1,15 @@
+@use '../_shared' as shared;
+
 .field {
-  display: grid;
-  gap: 0.4rem;
+  @include shared.field-base;
 }
 
 .label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--form-label);
+  @include shared.label-base;
 }
 
 .required {
-  margin-left: 0.2rem;
-  color: var(--form-required);
+  @include shared.required-base;
 }
 
 .controlWrap {
@@ -103,11 +101,9 @@
 }
 
 .hint {
-  font-size: 0.75rem;
-  color: var(--form-hint);
+  @include shared.hint-base;
 }
 
 .error {
-  font-size: 0.75rem;
-  color: var(--form-error);
+  @include shared.error-base;
 }

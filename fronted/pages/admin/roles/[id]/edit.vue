@@ -81,8 +81,8 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import UiCheckbox from '~/components/ui/FormControls/UiCheckbox.vue';
-import UiInput from '~/components/ui/FormControls/UiInput.vue';
+import UiCheckbox from '~/components/ui/FormControls/UiCheckbox/UiCheckbox.vue';
+import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import type { AdminAccessPermission } from '~/composables/useAdminPermissions';
 import type { UpdateRolePayload } from '~/composables/useAdminRoles';
 import {
