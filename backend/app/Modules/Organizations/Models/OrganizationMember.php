@@ -8,6 +8,7 @@ use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Organizations\Database\Factories\OrganizationMemberFactory;
 use Modules\Users\Models\User;
 
 final class OrganizationMember extends Model
@@ -48,5 +49,10 @@ final class OrganizationMember extends Model
     public function invitedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, "invited_by_user_id");
+    }
+
+    protected static function newFactory(): OrganizationMemberFactory
+    {
+        return OrganizationMemberFactory::new();
     }
 }

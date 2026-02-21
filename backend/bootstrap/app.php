@@ -5,8 +5,9 @@ use App\Shared\Http\Middleware\CanPermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -33,6 +34,29 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return null;
+        });
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if (!$request->is("api/*")) {
+                return null;
+            }
+
+            $statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+            if ($statusCode < 500) {
+                return null;
+            }
+
+            $response = [
+                "status" => "error",
+                "message" => "Server error",
+                "errors" => null,
+            ];
+
+            if (config("app.debug")) {
+                $response["debug"] = $e->getMessage();
+            }
+
+            return response()->json($response, $statusCode);
         });
     })
     ->create();

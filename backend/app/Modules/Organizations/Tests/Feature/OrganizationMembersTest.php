@@ -20,7 +20,7 @@ final class OrganizationMembersTest extends TestCase
         $owner = User::factory()->create();
         $target = User::factory()->create();
 
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Members organization",
             "status" => "active",
             "source_type" => "manual",
@@ -75,7 +75,7 @@ final class OrganizationMembersTest extends TestCase
         $orgAdmin = User::factory()->create();
         $target = User::factory()->create();
 
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Admin organization",
             "status" => "active",
             "source_type" => "manual",
@@ -83,10 +83,10 @@ final class OrganizationMembersTest extends TestCase
             "owner_user_id" => (string) $owner->id,
         ]);
 
-        $adminRole = OrganizationRole::query()->firstOrCreate(["code" => "admin"]);
-        $memberRole = OrganizationRole::query()->firstOrCreate(["code" => "member"]);
+        $adminRole = OrganizationRole::factory()->create(["code" => "admin"]);
+        $memberRole = OrganizationRole::factory()->create(["code" => "member"]);
 
-        OrganizationMember::query()->create([
+        OrganizationMember::factory()->create([
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $orgAdmin->id,
             "role_id" => (string) $adminRole->id,
@@ -114,7 +114,7 @@ final class OrganizationMembersTest extends TestCase
             ])
             ->assertStatus(422);
 
-        $ownerMember = OrganizationMember::query()->create([
+        $ownerMember = OrganizationMember::factory()->create([
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $owner->id,
             "role_id" => (string) $memberRole->id,
@@ -132,7 +132,7 @@ final class OrganizationMembersTest extends TestCase
         $owner = User::factory()->create();
         $outsider = User::factory()->create();
 
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Protected organization members",
             "status" => "active",
             "source_type" => "manual",

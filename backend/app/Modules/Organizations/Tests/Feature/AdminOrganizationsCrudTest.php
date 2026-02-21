@@ -23,7 +23,7 @@ final class AdminOrganizationsCrudTest extends AdminCrudTestCase
     protected function seedForList(int $count): void
     {
         for ($index = 0; $index <= $count; $index += 1) {
-            Organization::query()->create([
+            Organization::factory()->create([
                 "name" => "Организация{$index}",
                 "description" => "Тест {$index}",
                 "status" => "active",
@@ -62,7 +62,7 @@ final class AdminOrganizationsCrudTest extends AdminCrudTestCase
 
     protected function createItem(): mixed
     {
-        return Organization::query()->create([
+        return Organization::factory()->create([
             "name" => "До",
             "description" => "До",
             "status" => "active",

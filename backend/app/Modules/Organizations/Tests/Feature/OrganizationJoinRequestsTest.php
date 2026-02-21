@@ -16,7 +16,7 @@ final class OrganizationJoinRequestsTest extends TestCase
 
     public function test_authenticated_user_can_submit_join_request(): void
     {
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Test organization",
             "status" => "active",
             "source_type" => "manual",
@@ -51,7 +51,7 @@ final class OrganizationJoinRequestsTest extends TestCase
         $owner = User::factory()->create();
         $applicant = User::factory()->create();
 
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Owned organization",
             "status" => "active",
             "source_type" => "manual",
@@ -59,7 +59,7 @@ final class OrganizationJoinRequestsTest extends TestCase
             "owner_user_id" => (string) $owner->id,
         ]);
 
-        $request = OrganizationJoinRequest::query()->create([
+        $request = OrganizationJoinRequest::factory()->create([
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $applicant->id,
             "status" => "pending",
@@ -106,7 +106,7 @@ final class OrganizationJoinRequestsTest extends TestCase
         $reviewer = User::factory()->create();
         $applicant = User::factory()->create();
 
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Protected organization",
             "status" => "active",
             "source_type" => "manual",
@@ -114,7 +114,7 @@ final class OrganizationJoinRequestsTest extends TestCase
             "owner_user_id" => (string) $owner->id,
         ]);
 
-        $request = OrganizationJoinRequest::query()->create([
+        $request = OrganizationJoinRequest::factory()->create([
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $applicant->id,
             "status" => "pending",

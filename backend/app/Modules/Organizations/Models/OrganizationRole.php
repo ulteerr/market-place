@@ -7,6 +7,7 @@ namespace Modules\Organizations\Models;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Organizations\Database\Factories\OrganizationRoleFactory;
 
 final class OrganizationRole extends Model
 {
@@ -20,4 +21,9 @@ final class OrganizationRole extends Model
     public $incrementing = false;
 
     protected $fillable = ["code"];
+
+    protected static function newFactory(): OrganizationRoleFactory
+    {
+        return OrganizationRoleFactory::new();
+    }
 }

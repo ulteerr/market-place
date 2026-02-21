@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Organizations\Database\Factories\OrganizationFactory;
 use Modules\Users\Models\User;
 
 final class Organization extends Model
@@ -79,5 +80,10 @@ final class Organization extends Model
     public function joinRequests(): HasMany
     {
         return $this->hasMany(OrganizationJoinRequest::class, "organization_id");
+    }
+
+    protected static function newFactory(): OrganizationFactory
+    {
+        return OrganizationFactory::new();
     }
 }

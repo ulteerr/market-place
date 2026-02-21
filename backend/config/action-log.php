@@ -9,5 +9,7 @@ return [
         "user" => \Modules\Users\Models\User::class,
         "role" => \Modules\Users\Models\Role::class,
         "child" => \Modules\Children\Models\Child::class,
+        "organization" => \Modules\Organizations\Models\Organization::class,
+        "organizations" => \Modules\Organizations\Models\Organization::class,
     ],
 ];

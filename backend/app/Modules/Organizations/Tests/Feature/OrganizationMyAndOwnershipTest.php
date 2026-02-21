@@ -20,28 +20,28 @@ final class OrganizationMyAndOwnershipTest extends TestCase
         $owner = User::factory()->create();
         $member = User::factory()->create();
 
-        $ownedOrganization = Organization::query()->create([
+        $ownedOrganization = Organization::factory()->create([
             "name" => "Owned org",
             "status" => "active",
             "source_type" => "manual",
             "ownership_status" => "claimed",
             "owner_user_id" => (string) $owner->id,
         ]);
-        $memberOrganization = Organization::query()->create([
+        $memberOrganization = Organization::factory()->create([
             "name" => "Member org",
             "status" => "active",
             "source_type" => "manual",
             "ownership_status" => "claimed",
         ]);
-        Organization::query()->create([
+        Organization::factory()->create([
             "name" => "Other org",
             "status" => "active",
             "source_type" => "manual",
             "ownership_status" => "unclaimed",
         ]);
 
-        $memberRole = OrganizationRole::query()->firstOrCreate(["code" => "member"]);
-        OrganizationMember::query()->create([
+        $memberRole = OrganizationRole::factory()->create(["code" => "member"]);
+        OrganizationMember::factory()->create([
             "organization_id" => (string) $memberOrganization->id,
             "user_id" => (string) $owner->id,
             "role_id" => (string) $memberRole->id,
@@ -62,7 +62,7 @@ final class OrganizationMyAndOwnershipTest extends TestCase
     {
         $oldOwner = User::factory()->create();
         $newOwner = User::factory()->create();
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Transfer org",
             "status" => "active",
             "source_type" => "manual",
@@ -70,8 +70,8 @@ final class OrganizationMyAndOwnershipTest extends TestCase
             "owner_user_id" => (string) $oldOwner->id,
         ]);
 
-        $memberRole = OrganizationRole::query()->firstOrCreate(["code" => "member"]);
-        OrganizationMember::query()->create([
+        $memberRole = OrganizationRole::factory()->create(["code" => "member"]);
+        OrganizationMember::factory()->create([
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $newOwner->id,
             "role_id" => (string) $memberRole->id,
@@ -112,7 +112,7 @@ final class OrganizationMyAndOwnershipTest extends TestCase
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
-        $organization = Organization::query()->create([
+        $organization = Organization::factory()->create([
             "name" => "Forbidden transfer",
             "status" => "active",
             "source_type" => "manual",
