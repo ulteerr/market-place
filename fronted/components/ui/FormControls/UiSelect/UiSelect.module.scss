@@ -92,6 +92,11 @@
     cursor: not-allowed;
     color: var(--form-control-disabled-text);
   }
+
+  &:read-only {
+    cursor: pointer;
+    caret-color: transparent;
+  }
 }
 
 .toggle {
