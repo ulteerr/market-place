@@ -1,0 +1,67 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/Data and API" />
+
+<div class="doc-locale-en">
+
+# Data and API Integration
+
+## API access pattern
+
+- `composables/useApi.ts` provides configured fetch client.
+- Feature composables call API endpoints and map responses for pages/components.
+- Authorization header is derived from auth cookie state.
+
+## Composable responsibilities
+
+- Handle request parameters and response parsing.
+- Provide typed return values where practical.
+- Normalize backend-specific payload shapes before exposing to UI.
+- Surface failures with actionable error messages.
+
+## Error handling principles
+
+- Transport errors and validation errors are treated differently.
+- Logout clears local auth state even when backend logout call fails.
+- UI should not depend on raw backend error formats.
+
+## API evolution workflow
+
+1. Backend/OpenAPI contract changes.
+2. Frontend composables and UI adapters are updated.
+3. E2E and unit tests updated for behavior changes.
+4. Frontend docs updated when integration contract changes.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Данные и интеграция с API
+
+## Паттерн доступа к API
+
+- `composables/useApi.ts` предоставляет настроенный fetch-клиент.
+- Feature-composables вызывают endpoint'ы и маппят ответы для pages/components.
+- Заголовок авторизации строится из auth-cookie состояния.
+
+## Ответственность composables
+
+- Обработка параметров запроса и парсинг ответа.
+- Типизированные возвращаемые значения там, где это практично.
+- Нормализация backend-специфичных форматов перед отдачей в UI.
+- Поверхностные ошибки переводятся в понятные сообщения для пользователя.
+
+## Принципы обработки ошибок
+
+- Транспортные и валидационные ошибки обрабатываются по-разному.
+- Logout очищает локальное auth-состояние даже при ошибке logout API.
+- UI не должен зависеть от сырого формата backend-ошибок.
+
+## Процесс эволюции API
+
+1. Изменяется backend/OpenAPI контракт.
+2. Обновляются frontend composables и UI-адаптеры.
+3. Обновляются e2e и unit тесты под новое поведение.
+4. При изменении интеграционного контракта обновляется документация фронтенда.
+
+</div>

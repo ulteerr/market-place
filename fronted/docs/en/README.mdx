@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Overview" />
+
+# Frontend Documentation
+
+This folder contains architecture and process docs for the Nuxt frontend (`fronted/`).
+
+## Scope
+
+- Current focus is admin area implementation.
+- Public pages are present but documented only where they affect shared infrastructure.
+
+## Sections
+
+- `architecture.mdx`: app structure, runtime layers, and boundaries.
+- `routing-and-layouts.mdx`: route model, middleware, and layout rules.
+- `auth-and-session.mdx`: authentication flow and session persistence behavior.
+- `ui-system.mdx`: UI component principles and Storybook usage.
+- `data-and-api.mdx`: API integration model and conventions.
+- `state-and-settings.mdx`: settings/state synchronization rules.
+- `testing.mdx`: unit/e2e strategy and quality gates.
+- `workflow.mdx`: day-to-day development workflow in Docker.
+
+## Storybook
+
+- URL in Docker: `http://localhost:6006`
+- Run: `make front-storybook`
+- Build: `make front-storybook-build`
+- Story docs pages live in `fronted/docs/*.mdx`
+- Visual regression scaffold: `.github/workflows/storybook-visual.yml` (requires `CHROMATIC_PROJECT_TOKEN`)
+
+## Change policy
+
+- Keep docs in this folder updated in the same PR as behavior changes.
+- Update Storybook stories when component API or visual behavior changes.

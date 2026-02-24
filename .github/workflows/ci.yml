@@ -26,6 +26,10 @@ jobs:
         working-directory: fronted
         run: npm run test:unit
 
+      - name: Build Storybook
+        working-directory: fronted
+        run: npm run build-storybook
+
       - name: Install Playwright browsers
         working-directory: fronted
         run: npx playwright install --with-deps chrome firefox webkit

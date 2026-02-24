@@ -1,0 +1,35 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Auth and Session" />
+
+# Auth and Session
+
+## Auth model
+
+- Backend auth uses bearer token (Sanctum-compatible flow).
+- Frontend stores:
+  - `auth_token` cookie
+  - `auth_user` cookie
+- Session is restored on app mount via `/api/me`.
+
+## Lifecycle
+
+1. Login page submits credentials.
+2. Frontend receives token and user payload.
+3. Cookies are updated.
+4. On next app load, user is refreshed by token.
+5. On logout, frontend clears local auth state regardless of logout API result.
+
+## Access control
+
+- Route-level checks prevent access to admin pages for unauthenticated users.
+- Capability flags and permissions from user payload drive UI access and actions.
+
+## Session persistence expectations
+
+- Cookies must be configured as persistent (not session-only) if auth should survive browser restart.
+- Any cookie policy changes must be reflected in this document and tested manually:
+  - login
+  - close browser
+  - reopen browser
+  - verify `/admin` access state

@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Routing and Layouts" />
+
+# Routing and Layouts
+
+## Route groups
+
+- Public routes: general pages and login.
+- Admin routes: `/admin/**` pages.
+
+## Layouts
+
+- `layouts/admin.vue` is the shell for admin pages.
+- Default layout wraps non-admin pages.
+- Global app setup happens in `app.vue`.
+
+## Middleware model
+
+- `middleware/admin-auth.ts` and `middleware/admin-guard.global.ts` protect admin access.
+- Unauthorized users are redirected to `/login`.
+- Permission-specific checks are done per feature page/composable.
+
+## Routing conventions
+
+- CRUD resources use predictable route patterns:
+  - list: `/admin/{entity}`
+  - create: `/admin/{entity}/new`
+  - detail: `/admin/{entity}/{id}`
+  - edit: `/admin/{entity}/{id}/edit`
+- Keep route naming and page placement aligned with this model.

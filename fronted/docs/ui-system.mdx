@@ -1,0 +1,90 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/UI System" />
+
+<div class="doc-locale-en">
+
+# UI System
+
+## Goals
+
+- Reusable controls for admin and future public pages.
+- Consistent labels/errors/hints/spacing.
+- Predictable component APIs (`v-model`, props, emits).
+
+## UI component layers
+
+- Base UI controls: `components/ui/FormControls/*`
+- Composite UI blocks: image block, modal, preview, page hero
+- Feature UI: admin-specific components in `components/admin/*`
+
+## Storybook usage
+
+Storybook is the source of truth for component usage examples and visual documentation.
+
+- Local URL: `http://localhost:6006`
+- Start in Docker: `make front-storybook`
+- Build static docs: `make front-storybook-build`
+
+## Story requirements
+
+- Add stories for each reusable UI component.
+- Cover at least:
+  - default state
+  - disabled state
+  - validation/error state
+  - edge state (long text, empty options, etc.)
+- Keep labels and copy bilingual only if component explicitly supports i18n content.
+- Add `play` interaction checks for critical behavior (typing, toggles, opening overlays).
+- Keep token references aligned with `UI/Design Tokens/Palette` Storybook story.
+
+## Styling rules
+
+- Component-local styles use `*.module.scss`.
+- Shared tokens/helpers use `_shared.scss` in component domain folders.
+- Avoid hardcoding one-off style values in pages if a reusable control already exists.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# UI-система
+
+## Цели
+
+- Переиспользуемые контролы для админки и будущих public-страниц.
+- Консистентные labels/errors/hints/spacing.
+- Предсказуемые API компонентов (`v-model`, props, emits).
+
+## Слои UI-компонентов
+
+- Базовые контролы: `components/ui/FormControls/*`
+- Композитные блоки: image block, modal, preview, page hero
+- Feature UI: admin-специфичные компоненты в `components/admin/*`
+
+## Использование Storybook
+
+Storybook — источник правды по примерам использования и визуальной документации компонентов.
+
+- Локальный URL: `http://localhost:6006`
+- Запуск в Docker: `make front-storybook`
+- Сборка статической документации: `make front-storybook-build`
+
+## Требования к stories
+
+- Для каждого переиспользуемого UI-компонента добавлять stories.
+- Покрывать минимум:
+  - default state
+  - disabled state
+  - validation/error state
+  - edge cases (long text, empty options и т.д.)
+- Добавлять `play`-проверки для критичных сценариев (typing, toggles, overlays).
+- Поддерживать соответствие токенов story `UI/Design Tokens/Palette`.
+
+## Правила стилизации
+
+- Локальные стили компонента: `*.module.scss`.
+- Общие токены/хелперы: `_shared.scss` внутри доменной папки.
+- Не хардкодить одноразовые стили на страницах, если есть переиспользуемый контрол.
+
+</div>

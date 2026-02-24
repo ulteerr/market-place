@@ -1,0 +1,67 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/Routing and Layouts" />
+
+<div class="doc-locale-en">
+
+# Routing and Layouts
+
+## Route groups
+
+- Public routes: general pages and login.
+- Admin routes: `/admin/**` pages.
+
+## Layouts
+
+- `layouts/admin.vue` is the shell for admin pages.
+- Default layout wraps non-admin pages.
+- Global app setup happens in `app.vue`.
+
+## Middleware model
+
+- `middleware/admin-auth.ts` and `middleware/admin-guard.global.ts` protect admin access.
+- Unauthorized users are redirected to `/login`.
+- Permission-specific checks are done per feature page/composable.
+
+## Routing conventions
+
+- CRUD resources use predictable route patterns:
+  - list: `/admin/{entity}`
+  - create: `/admin/{entity}/new`
+  - detail: `/admin/{entity}/{id}`
+  - edit: `/admin/{entity}/{id}/edit`
+- Keep route naming and page placement aligned with this model.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Роутинг и Layouts
+
+## Группы роутов
+
+- Public routes: общие страницы и login.
+- Admin routes: страницы вида `/admin/**`.
+
+## Layouts
+
+- `layouts/admin.vue` — оболочка админских страниц.
+- Default layout оборачивает неадминские страницы.
+- Глобальная инициализация приложения происходит в `app.vue`.
+
+## Модель middleware
+
+- `middleware/admin-auth.ts` и `middleware/admin-guard.global.ts` защищают админский доступ.
+- Неавторизованные пользователи редиректятся на `/login`.
+- Permission-специфичные проверки выполняются на уровне feature-page/composable.
+
+## Соглашения по маршрутам
+
+- CRUD-ресурсы используют предсказуемые паттерны:
+  - list: `/admin/{entity}`
+  - create: `/admin/{entity}/new`
+  - detail: `/admin/{entity}/{id}`
+  - edit: `/admin/{entity}/{id}/edit`
+- Именование роутов и размещение страниц должны соответствовать этой модели.
+
+</div>

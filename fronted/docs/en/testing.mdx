@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Testing" />
+
+# Testing Strategy
+
+## Test types
+
+- Unit tests: `vitest`
+- End-to-end tests: `playwright` (chrome, firefox, webkit profile)
+
+## Commands
+
+- Full frontend test flow: `make front-test`
+- Unit only: `make front-npm cmd="run test:unit"`
+- E2E only: `make front-npm cmd="run test:e2e"`
+- Storybook build check: `make front-npm cmd="run build-storybook"`
+
+## Quality gates
+
+- New business behavior should be covered by at least one automated test.
+- Auth/session behavior changes require explicit regression checks.
+- Admin navigation and CRUD critical paths should remain e2e-covered.
+- Reusable UI components should have Storybook stories with canonical states.
+
+## Storybook and tests
+
+- Storybook documents component behavior.
+- Storybook `play` scenarios verify critical UI interactions on component level.
+- E2E validates integrated behavior in real routes.
+- They complement each other and should evolve together.

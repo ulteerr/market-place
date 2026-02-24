@@ -380,6 +380,7 @@ const controlStyle = computed(() => ({
   '--ui-code-min-height': props.minHeight,
   '--ui-code-max-height': props.maxHeight || 'none',
 }));
+const isClientRuntime = typeof window !== 'undefined';
 
 let editorView: any = null;
 let languageCompartment: any = null;
@@ -586,7 +587,7 @@ const onFormatClick = () => {
 };
 
 const applyRichCommand = (command: string, value?: string) => {
-  if (!process.client || !isWysiwygMode.value || props.disabled || props.readonly) {
+  if (!isClientRuntime || !isWysiwygMode.value || props.disabled || props.readonly) {
     return;
   }
 
@@ -610,7 +611,7 @@ const onBackgroundColorInput = (event: Event) => {
 };
 
 const insertLink = () => {
-  if (!process.client || props.disabled || props.readonly) {
+  if (!isClientRuntime || props.disabled || props.readonly) {
     return;
   }
 
@@ -657,7 +658,7 @@ const onImageFilesSelected = async (event: Event) => {
 };
 
 const initEditor = async () => {
-  if (!process.client || !editorHostRef.value || editorView || !isCodeMode.value) {
+  if (!isClientRuntime || !editorHostRef.value || editorView || !isCodeMode.value) {
     return;
   }
 

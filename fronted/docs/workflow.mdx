@@ -1,0 +1,77 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/Workflow" />
+
+<div class="doc-locale-en">
+
+# Frontend Workflow
+
+## Daily development (Docker)
+
+1. Start stack: `make up`
+2. Frontend app: `make front`
+3. Storybook: `make front-storybook`
+4. Run tests as needed: `make front-test`
+
+## Dependency changes
+
+- After `fronted/package.json` updates, run:
+  - `make front-install`
+- This is required for both Nuxt runtime and Storybook runtime in containers.
+
+## Documentation workflow
+
+- Update `fronted/docs/*` when:
+  - architecture boundaries change
+  - API integration model changes
+  - auth/session behavior changes
+  - new reusable UI components are introduced
+- Add/update Storybook stories in the same change set as UI component changes.
+
+## PR checklist (frontend)
+
+- Feature behavior implemented.
+- Unit/e2e tests updated where applicable.
+- Storybook stories updated for changed reusable components.
+- Storybook docs pages updated when architectural/process context changes.
+- `npm run build-storybook` passes locally/in CI.
+- `fronted/docs` updated for architectural or contract changes.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Процесс разработки фронтенда
+
+## Ежедневная разработка (Docker)
+
+1. Поднять стек: `make up`
+2. Frontend-приложение: `make front`
+3. Storybook: `make front-storybook`
+4. Запуск тестов по необходимости: `make front-test`
+
+## Изменения зависимостей
+
+- После обновления `fronted/package.json` выполнить:
+  - `make front-install`
+- Это требуется и для Nuxt runtime, и для Storybook runtime в контейнерах.
+
+## Процесс обновления документации
+
+- Обновляйте `fronted/docs/*`, когда меняется:
+  - архитектурная граница
+  - модель API-интеграции
+  - auth/session поведение
+  - набор переиспользуемых UI-компонентов
+- Stories в Storybook обновляются в том же change set, что и UI-компоненты.
+
+## PR-чеклист (frontend)
+
+- Фича-логика реализована.
+- Unit/e2e тесты обновлены там, где нужно.
+- Stories в Storybook обновлены для затронутых переиспользуемых компонентов.
+- Docs-страницы Storybook обновлены при изменениях архитектуры/процесса.
+- `npm run build-storybook` проходит локально и в CI.
+- `fronted/docs` обновлён при изменении архитектурных или контрактных договорённостей.
+
+</div>

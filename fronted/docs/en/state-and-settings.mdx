@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/State and Settings" />
+
+# State and Settings
+
+## State model
+
+- Local page state stays in page/component scope.
+- Cross-page behavioral state is handled by composables.
+- User settings are synced between server and client runtime.
+
+## Current shared areas
+
+- Auth user/token state.
+- User UI settings:
+  - theme
+  - menu collapse
+  - admin table/card preferences
+  - navigation section open state
+
+## Persistence model
+
+- Auth data persists via cookies.
+- Non-auth UI preferences may use local storage where appropriate.
+- Server-side settings remain the canonical source for authenticated users.
+
+## Rules
+
+- Do not duplicate the same preference in multiple persistence layers without clear conflict resolution.
+- Apply server settings after successful user refresh.
+- If auth is lost, clear auth-dependent local UI state safely.

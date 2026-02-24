@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Workflow" />
+
+# Frontend Workflow
+
+## Daily development (Docker)
+
+1. Start stack: `make up`
+2. Frontend app: `make front`
+3. Storybook: `make front-storybook`
+4. Run tests as needed: `make front-test`
+
+## Dependency changes
+
+- After `fronted/package.json` updates, run:
+  - `make front-install`
+- This is required for both Nuxt runtime and Storybook runtime in containers.
+
+## Documentation workflow
+
+- Update `fronted/docs/*` when:
+  - architecture boundaries change
+  - API integration model changes
+  - auth/session behavior changes
+  - new reusable UI components are introduced
+- Add/update Storybook stories in the same change set as UI component changes.
+
+## PR checklist (frontend)
+
+- Feature behavior implemented.
+- Unit/e2e tests updated where applicable.
+- Storybook stories updated for changed reusable components.
+- Storybook docs pages updated when architectural/process context changes.
+- `npm run build-storybook` passes locally/in CI.
+- `fronted/docs` updated for architectural or contract changes.

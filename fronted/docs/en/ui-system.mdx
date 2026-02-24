@@ -1,0 +1,43 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/UI System" />
+
+# UI System
+
+## Goals
+
+- Reusable controls for admin and future public pages.
+- Consistent labels/errors/hints/spacing.
+- Predictable component APIs (`v-model`, props, emits).
+
+## UI component layers
+
+- Base UI controls: `components/ui/FormControls/*`
+- Composite UI blocks: image block, modal, preview, page hero
+- Feature UI: admin-specific components in `components/admin/*`
+
+## Storybook usage
+
+Storybook is the source of truth for component usage examples and visual documentation.
+
+- Local URL: `http://localhost:6006`
+- Start in Docker: `make front-storybook`
+- Build static docs: `make front-storybook-build`
+
+## Story requirements
+
+- Add stories for each reusable UI component.
+- Cover at least:
+  - default state
+  - disabled state
+  - validation/error state
+  - edge state (long text, empty options, etc.)
+- Keep labels and copy bilingual only if component explicitly supports i18n content.
+- Add `play` interaction checks for critical behavior (typing, toggles, opening overlays).
+- Keep token references aligned with `UI/Design Tokens/Palette` Storybook story.
+
+## Styling rules
+
+- Component-local styles use `*.module.scss`.
+- Shared tokens/helpers use `_shared.scss` in component domain folders.
+- Avoid hardcoding one-off style values in pages if a reusable control already exists.

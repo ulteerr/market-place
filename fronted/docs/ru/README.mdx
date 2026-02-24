@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/RU/Overview" />
+
+# Документация Frontend
+
+В этой папке собрана архитектурная и процессная документация Nuxt-фронтенда (`fronted/`).
+
+## Область
+
+- Текущий фокус разработки: админская часть.
+- Публичные страницы документируются в той степени, в которой они затрагивают общую инфраструктуру.
+
+## Разделы
+
+- `architecture.mdx`: структура приложения, runtime-слои и границы.
+- `routing-and-layouts.mdx`: маршрутизация, middleware и правила layout.
+- `auth-and-session.mdx`: аутентификация и поведение сессии.
+- `ui-system.mdx`: принципы UI-компонентов и работа со Storybook.
+- `data-and-api.mdx`: модель интеграции с API и соглашения.
+- `state-and-settings.mdx`: синхронизация состояния и настроек.
+- `testing.mdx`: стратегия unit/e2e тестирования и quality gates.
+- `workflow.mdx`: ежедневный процесс разработки в Docker.
+
+## Storybook
+
+- URL в Docker: `http://localhost:6006`
+- Запуск: `make front-storybook`
+- Сборка: `make front-storybook-build`
+- Документационные страницы: `fronted/docs/**/*.mdx`
+- Каркас visual-regression: `.github/workflows/storybook-visual.yml` (нужен `CHROMATIC_PROJECT_TOKEN`)
+
+## Политика изменений
+
+- Обновляйте docs в этой папке в том же PR, где меняется поведение.
+- Обновляйте stories в Storybook при изменении API или визуального поведения компонентов.

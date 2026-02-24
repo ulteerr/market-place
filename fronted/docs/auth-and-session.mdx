@@ -1,0 +1,75 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/Auth and Session" />
+
+<div class="doc-locale-en">
+
+# Auth and Session
+
+## Auth model
+
+- Backend auth uses bearer token (Sanctum-compatible flow).
+- Frontend stores:
+  - `auth_token` cookie
+  - `auth_user` cookie
+- Session is restored on app mount via `/api/me`.
+
+## Lifecycle
+
+1. Login page submits credentials.
+2. Frontend receives token and user payload.
+3. Cookies are updated.
+4. On next app load, user is refreshed by token.
+5. On logout, frontend clears local auth state regardless of logout API result.
+
+## Access control
+
+- Route-level checks prevent access to admin pages for unauthenticated users.
+- Capability flags and permissions from user payload drive UI access and actions.
+
+## Session persistence expectations
+
+- Cookies must be configured as persistent (not session-only) if auth should survive browser restart.
+- Any cookie policy changes must be reflected in this document and tested manually:
+  - login
+  - close browser
+  - reopen browser
+  - verify `/admin` access state
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Аутентификация и сессия
+
+## Модель авторизации
+
+- Backend использует bearer token (Sanctum-совместимый flow).
+- Frontend хранит:
+  - cookie `auth_token`
+  - cookie `auth_user`
+- Сессия восстанавливается при инициализации приложения через `/api/me`.
+
+## Жизненный цикл
+
+1. Форма логина отправляет credentials.
+2. Frontend получает token и user payload.
+3. Cookies обновляются.
+4. При следующей загрузке приложение обновляет пользователя по token.
+5. При logout frontend очищает локальное auth-состояние независимо от результата logout API.
+
+## Контроль доступа
+
+- Проверки на уровне роутов закрывают доступ в админку для неавторизованных пользователей.
+- Capability-флаги и permissions из user payload управляют доступом к UI и действиям.
+
+## Ожидания по персистентности сессии
+
+- Cookies должны быть persistent (а не session-only), если сессия должна переживать перезапуск браузера.
+- Любые изменения cookie-политики нужно отражать в этом документе и проверять вручную:
+  - login
+  - закрыть браузер
+  - открыть браузер
+  - проверить состояние доступа к `/admin`
+
+</div>

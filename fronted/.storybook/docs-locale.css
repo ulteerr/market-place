@@ -1,0 +1,12 @@
+.doc-locale-en,
+.doc-locale-ru {
+  display: block;
+}
+
+:root[data-locale='ru'] .doc-locale-en {
+  display: none;
+}
+
+:root[data-locale='en'] .doc-locale-ru {
+  display: none;
+}

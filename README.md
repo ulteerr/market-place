@@ -169,12 +169,22 @@ make db-seed
 | Service        | URL                   |
 | -------------- | --------------------- |
 | Fronted (Nuxt) | http://localhost:3000 |
+| Storybook UI   | http://localhost:6006 |
 | Backend API    | http://localhost:8080 |
 | Swagger UI     | http://localhost:8081 |
 | ReDoc CE       | http://localhost:8082 |
 | PostgreSQL     | localhost:5433        |
 | pgAdmin        | http://localhost:5050 |
 | Redis          | localhost:6381        |
+
+---
+
+## 📚 Frontend Documentation
+
+- Storybook component docs: `http://localhost:6006`
+- Architecture/process docs: `fronted/docs/*`
+- Local run: `make front-storybook`
+- CI gate: `npm run build-storybook` (frontend job)
 
 ---
 
@@ -285,6 +295,8 @@ make comp cmd="dump-autoload"
 make front-install        # Install npm deps inside frontend container
 make front-npm cmd="run build"
 make front-nuxi cmd="add page profile"
+make front-storybook      # Start Storybook container on :6006
+make front-storybook-build
 ```
 
 `node_modules` is stored in the container volume (`/app/node_modules`), so all dependency operations run through Docker.
@@ -343,6 +355,11 @@ make front-npm cmd="run test:e2e -- --project=safari-webkit"
 ```
 
 Примечание по Safari: на Linux нельзя запустить нативный Safari, но `safari-webkit` в Playwright проверяет движок WebKit (ближайший эквивалент Safari).
+
+### Fronted documentation
+
+- Архитектура и процессы: `fronted/docs/README.mdx`
+- Storybook UI-каталог: `http://localhost:6006`
 
 ### OpenAPI
 

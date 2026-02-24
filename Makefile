@@ -2,7 +2,7 @@
         cache-clear config-cache route-cache view-clear \
         test test-auth swagger redoc openapi-validate openapi-bundle docs \
         hooks-install \
-        front front-install front-npm front-nuxi front-test
+        front front-install front-npm front-nuxi front-test front-storybook front-storybook-build
 
 # --------------------------
 # Containers
@@ -128,3 +128,9 @@ front-nuxi:
 front-test:
 	docker-compose exec frontend npm run test:unit
 	docker-compose exec frontend npm run test
+
+front-storybook:
+	docker-compose up -d frontend-storybook
+
+front-storybook-build:
+	docker-compose run --rm frontend-storybook npm run build-storybook

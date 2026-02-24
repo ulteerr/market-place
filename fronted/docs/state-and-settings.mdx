@@ -1,0 +1,69 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/State and Settings" />
+
+<div class="doc-locale-en">
+
+# State and Settings
+
+## State model
+
+- Local page state stays in page/component scope.
+- Cross-page behavioral state is handled by composables.
+- User settings are synced between server and client runtime.
+
+## Current shared areas
+
+- Auth user/token state.
+- User UI settings:
+  - theme
+  - menu collapse
+  - admin table/card preferences
+  - navigation section open state
+
+## Persistence model
+
+- Auth data persists via cookies.
+- Non-auth UI preferences may use local storage where appropriate.
+- Server-side settings remain the canonical source for authenticated users.
+
+## Rules
+
+- Do not duplicate the same preference in multiple persistence layers without clear conflict resolution.
+- Apply server settings after successful user refresh.
+- If auth is lost, clear auth-dependent local UI state safely.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Состояние и настройки
+
+## Модель состояния
+
+- Локальное состояние страницы остаётся в области page/component.
+- Межстраничное поведенческое состояние выносится в composables.
+- Пользовательские настройки синхронизируются между сервером и клиентским runtime.
+
+## Текущие общие зоны
+
+- Auth user/token state.
+- Пользовательские UI-настройки:
+  - theme
+  - сворачивание меню
+  - предпочтения admin table/card
+  - состояние раскрытия разделов навигации
+
+## Модель хранения
+
+- Auth-данные сохраняются в cookies.
+- Не-auth UI-настройки при необходимости могут храниться в local storage.
+- Для авторизованных пользователей серверные настройки остаются каноничным источником.
+
+## Правила
+
+- Не дублировать одну и ту же настройку в нескольких слоях без явного разрешения конфликтов.
+- Серверные настройки применять после успешного refresh пользователя.
+- При потере авторизации безопасно очищать auth-зависимое локальное UI-состояние.
+
+</div>

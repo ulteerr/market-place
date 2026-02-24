@@ -1,0 +1,89 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/Architecture" />
+
+<div class="doc-locale-en">
+
+# Frontend Architecture
+
+## Stack
+
+- Nuxt 4 (Vue 3 + composables)
+- TypeScript in `script setup`
+- SCSS modules per component
+- Tailwind (global utilities)
+- i18n via `@nuxtjs/i18n`
+
+## Top-level structure
+
+- `pages/`: route-level pages (admin and public).
+- `layouts/`: shared shells (`admin` and default).
+- `components/`: reusable UI and feature components.
+- `composables/`: business logic and API access.
+- `middleware/`: auth and access control.
+- `i18n/`: localization dictionaries.
+- `tests/`: unit and e2e coverage.
+
+## Architectural boundaries
+
+- Pages orchestrate data loading and pass it to components.
+- Feature components render feature-specific UI and interactions.
+- UI components in `components/ui` are presentation-first and reusable.
+- Composables own side effects (API calls, auth/session, settings sync).
+- Middleware enforces navigation access rules, not UI business behavior.
+
+## Admin-first strategy
+
+Current implementation priority is admin functionality:
+
+- Users CRUD
+- Roles CRUD
+- Action logs and changelog tooling
+- Profile/settings management
+
+The system is structured so the same UI/data conventions can be reused for public pages later.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Архитектура Frontend
+
+## Стек
+
+- Nuxt 4 (Vue 3 + composables)
+- TypeScript в `script setup`
+- SCSS-модули на уровне компонентов
+- Tailwind (глобальные утилиты)
+- i18n через `@nuxtjs/i18n`
+
+## Верхнеуровневая структура
+
+- `pages/`: роутовые страницы (admin и public).
+- `layouts/`: общие оболочки (`admin` и default).
+- `components/`: переиспользуемые UI и feature-компоненты.
+- `composables/`: бизнес-логика и API-доступ.
+- `middleware/`: авторизация и контроль доступа.
+- `i18n/`: словари локализации.
+- `tests/`: unit и e2e покрытие.
+
+## Архитектурные границы
+
+- Страницы оркестрируют загрузку данных и передают их в компоненты.
+- Feature-компоненты рендерят предметный UI и интеракции.
+- UI-компоненты в `components/ui` ориентированы на представление и переиспользование.
+- Composables владеют сайд-эффектами (API, auth/session, sync настроек).
+- Middleware отвечает за навигационные правила доступа, а не за UI-бизнес-логику.
+
+## Стратегия admin-first
+
+Приоритет реализации сейчас:
+
+- CRUD пользователей
+- CRUD ролей
+- Action logs и changelog-инструменты
+- Профиль и пользовательские настройки
+
+Структура системы позволяет переиспользовать те же UI/data-паттерны для публичной части в дальнейшем.
+
+</div>

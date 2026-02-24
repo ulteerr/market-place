@@ -9,11 +9,29 @@ services:
       - "3000:3000"
     environment:
       NUXT_PUBLIC_API_BASE: http://localhost:8080
+      FRONTEND_INSTALL_OWNER: "1"
     volumes:
       - ./fronted:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     depends_on:
       - backend
+    networks:
+      - app
+
+  frontend-storybook:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    container_name: frontend-storybook
+    restart: unless-stopped
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./fronted:/app
+      - frontend_node_modules:/app/node_modules
+    command: ["npm", "run", "storybook"]
+    depends_on:
+      - frontend
     networks:
       - app
 
@@ -130,3 +148,6 @@ services:
 networks:
   app:
     driver: bridge
+
+volumes:
+  frontend_node_modules:
