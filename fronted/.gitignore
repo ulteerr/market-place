@@ -6,6 +6,5 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .env
-package-lock.json
 playwright-report
 test-results
