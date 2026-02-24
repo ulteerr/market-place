@@ -17,18 +17,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: fronted/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: fronted
-        run: npm install
+        run: npm ci
 
       - name: Run frontend unit tests
         working-directory: fronted
         run: npm run test:unit
-
-      - name: Build Storybook
-        working-directory: fronted
-        run: npm run build-storybook
 
       - name: Install Playwright browsers
         working-directory: fronted
@@ -36,7 +34,7 @@ jobs:
 
       - name: Run frontend e2e tests
         working-directory: fronted
-        run: npm test
+        run: npm run test:e2e
 
   backend-tests:
     name: Backend tests (PHP ${{ matrix.php }})
