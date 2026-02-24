@@ -35,11 +35,15 @@
           :disabled="saving"
           :error="fieldErrors.address"
         />
-        <UiInput
+        <UiSelect
           v-model="form.owner_user_id"
           :label="t('admin.organizations.fields.ownerUserId')"
+          :options="userOptions"
+          :placeholder="t('admin.organizations.ownerPlaceholder')"
+          searchable
           :disabled="saving"
           :error="fieldErrors.owner_user_id"
+          @search="onUserSearch"
         />
 
         <div class="grid gap-3 sm:grid-cols-2">
@@ -115,6 +119,7 @@ import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPane
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
+import { useAdminUserSelectOptions } from '~/composables/useAdminUserSelectOptions';
 import type {
   OrganizationOwnershipStatus,
   OrganizationSourceType,
@@ -138,6 +143,8 @@ definePageMeta({
 
 const route = useRoute();
 const organizationsApi = useAdminOrganizations();
+const { userOptions, loadUserOptions, onUserSearch, ensureSelectedUserOption } =
+  useAdminUserSelectOptions();
 const { hasPermission } = usePermissions();
 const canReadChangeLog = computed(() => hasPermission('admin.changelog.read'));
 
@@ -221,6 +228,7 @@ const loadOrganization = async () => {
     form.ownership_status =
       (organization.ownership_status as OrganizationOwnershipStatus | null) || '';
     form.owner_user_id = organization.owner_user_id || '';
+    await ensureSelectedUserOption(form.owner_user_id);
   } catch (error) {
     loadError.value = getApiErrorMessage(error, t('admin.organizations.edit.errors.load'));
   } finally {
@@ -274,5 +282,8 @@ const onRolledBack = async () => {
   await loadOrganization();
 };
 
-onMounted(loadOrganization);
+onMounted(async () => {
+  await loadUserOptions('');
+  await loadOrganization();
+});
 </script>

@@ -32,11 +32,15 @@
           :disabled="saving"
           :error="fieldErrors.address"
         />
-        <UiInput
+        <UiSelect
           v-model="form.owner_user_id"
           :label="t('admin.organizations.fields.ownerUserId')"
+          :options="userOptions"
+          :placeholder="t('admin.organizations.ownerPlaceholder')"
+          searchable
           :disabled="saving"
           :error="fieldErrors.owner_user_id"
+          @search="onUserSearch"
         />
 
         <div class="grid gap-3 sm:grid-cols-2">
@@ -104,6 +108,7 @@
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
+import { useAdminUserSelectOptions } from '~/composables/useAdminUserSelectOptions';
 import type {
   CreateOrganizationPayload,
   OrganizationOwnershipStatus,
@@ -125,6 +130,7 @@ definePageMeta({
 });
 
 const organizationsApi = useAdminOrganizations();
+const { userOptions, loadUserOptions, onUserSearch } = useAdminUserSelectOptions();
 
 const saving = ref(false);
 const formError = ref('');
@@ -215,4 +221,8 @@ const submitForm = async () => {
     saving.value = false;
   }
 };
+
+onMounted(async () => {
+  await loadUserOptions('');
+});
 </script>

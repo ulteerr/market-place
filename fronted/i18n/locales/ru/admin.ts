@@ -537,6 +537,7 @@ export default {
       claimedAt: 'Дата подтверждения',
       createdAt: 'Дата создания',
     },
+    ownerPlaceholder: 'Поиск пользователя: ФИО или ID',
     status: {
       draft: 'Черновик',
       active: 'Активна',

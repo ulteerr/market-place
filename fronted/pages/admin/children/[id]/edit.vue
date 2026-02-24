@@ -91,8 +91,8 @@ import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPane
 import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
+import { useAdminUserSelectOptions } from '~/composables/useAdminUserSelectOptions';
 import type { UpdateChildPayload } from '~/composables/useAdminChildren';
-import type { AdminUser } from '~/composables/useAdminUsers';
 import {
   getApiErrorPayload,
   getApiErrorMessage,
@@ -109,7 +109,8 @@ definePageMeta({
 
 const route = useRoute();
 const childrenApi = useAdminChildren();
-const usersApi = useAdminUsers();
+const { userOptions, loadUserOptions, onUserSearch, ensureSelectedUserOption } =
+  useAdminUserSelectOptions();
 const { hasPermission } = usePermissions();
 const canReadChangeLog = computed(() => hasPermission('admin.changelog.read'));
 
@@ -117,9 +118,6 @@ const loading = ref(false);
 const loadError = ref('');
 const saving = ref(false);
 const formError = ref('');
-const loadingUsers = ref(false);
-const userOptions = ref<Array<{ label: string; value: string }>>([]);
-let userSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const form = reactive({
   user_id: '' as string | null,
@@ -160,53 +158,6 @@ const normalizeIsoDate = (value: string | null | undefined): string => {
   }
 
   return parsed.toISOString().slice(0, 10);
-};
-
-const resolveUserLabel = (user: AdminUser): string => {
-  const fullName = [user.first_name, user.last_name, user.middle_name]
-    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
-    .join(' ');
-
-  const title = fullName || user.email || user.id;
-  return `${title} - ${user.id}`;
-};
-
-const loadUserOptions = async (search = '') => {
-  loadingUsers.value = true;
-
-  try {
-    const payload = await usersApi.list({
-      per_page: 20,
-      search: search.trim() || undefined,
-      sort_by: 'last_name',
-      sort_dir: 'asc',
-    });
-
-    userOptions.value = payload.data.map((user) => ({
-      value: user.id,
-      label: resolveUserLabel(user),
-    }));
-  } finally {
-    loadingUsers.value = false;
-  }
-};
-
-const ensureSelectedUserOption = async (userId: string) => {
-  if (!userId || userOptions.value.some((option) => option.value === userId)) {
-    return;
-  }
-
-  await loadUserOptions(userId);
-};
-
-const onUserSearch = (query: string) => {
-  if (userSearchTimer) {
-    clearTimeout(userSearchTimer);
-  }
-
-  userSearchTimer = setTimeout(() => {
-    loadUserOptions(query);
-  }, 250);
 };
 
 const resetErrors = () => {
@@ -280,13 +231,6 @@ const submitForm = async () => {
 onMounted(async () => {
   await loadUserOptions('');
   await fetchChild();
-});
-
-onBeforeUnmount(() => {
-  if (userSearchTimer) {
-    clearTimeout(userSearchTimer);
-    userSearchTimer = null;
-  }
 });
 
 const onChildRolledBack = async () => {

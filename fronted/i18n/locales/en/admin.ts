@@ -537,6 +537,7 @@ export default {
       claimedAt: 'Claimed at',
       createdAt: 'Created at',
     },
+    ownerPlaceholder: 'Search user: full name or ID',
     status: {
       draft: 'Draft',
       active: 'Active',
