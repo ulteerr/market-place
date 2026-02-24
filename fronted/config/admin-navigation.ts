@@ -1,4 +1,13 @@
-export type AdminNavIcon = 'home' | 'system' | 'settings' | 'users' | 'roles' | 'activity';
+export type AdminNavIcon =
+  | 'home'
+  | 'system'
+  | 'settings'
+  | 'users'
+  | 'roles'
+  | 'activity'
+  | 'organization'
+  | 'organizations'
+  | 'children';
 
 export interface AdminNavigationItemDefinition {
   key: string;
@@ -50,19 +59,19 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
   {
     key: 'organization',
     labelKey: 'admin.layout.sections.organization',
-    icon: 'users',
+    icon: 'organization',
     items: [
       {
         key: 'organizations',
         to: '/admin/organizations',
         labelKey: 'admin.layout.menu.organizations',
-        icon: 'users',
+        icon: 'organizations',
       },
       {
         key: 'children',
         to: '/admin/children',
         labelKey: 'admin.layout.menu.children',
-        icon: 'users',
+        icon: 'children',
       },
     ],
   },
