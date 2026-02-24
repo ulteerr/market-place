@@ -29,12 +29,13 @@ jobs:
         run: npm run test:unit
 
   frontend-e2e:
-    name: Frontend e2e (shard ${{ matrix.shard }})
+    name: Frontend e2e (${{ matrix.project }} shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        project: [chrome, mozilla-firefox, safari-webkit]
+        shard: [1, 2]
 
     steps:
       - uses: actions/checkout@v4
@@ -50,6 +51,15 @@ jobs:
         working-directory: fronted
         run: npm ci
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('fronted/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright browsers
         working-directory: fronted
         run: npx playwright install --with-deps chrome firefox webkit
@@ -58,7 +68,7 @@ jobs:
         working-directory: fronted
         env:
           PLAYWRIGHT_WORKERS: 2
-        run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
+        run: npm run test:e2e -- --project=${{ matrix.project }} --shard=${{ matrix.shard }}/2
 
   backend-tests:
     name: Backend tests (PHP ${{ matrix.php }})
