@@ -6,17 +6,17 @@ echo "Running Prettier checks in Docker for staged files..."
 mapfile -t staged_files < <(git diff --cached --name-only --diff-filter=ACMR)
 
 backend_files=()
-fronted_files=()
+frontend_files=()
 
 for file in "${staged_files[@]}"; do
   if [[ "$file" =~ ^backend/.*\.(php|blade\.php|js|css|scss|yml|yaml|md)$ ]]; then
     backend_files+=("${file#backend/}")
-  elif [[ "$file" =~ ^fronted/.*\.(vue|ts|js|css|scss|yml|yaml|md)$ ]]; then
-    fronted_files+=("${file#fronted/}")
+  elif [[ "$file" =~ ^frontend/.*\.(vue|ts|js|css|scss|yml|yaml|md)$ ]]; then
+    frontend_files+=("${file#frontend/}")
   fi
 done
 
-if [ "${#backend_files[@]}" -eq 0 ] && [ "${#fronted_files[@]}" -eq 0 ]; then
+if [ "${#backend_files[@]}" -eq 0 ] && [ "${#frontend_files[@]}" -eq 0 ]; then
   echo "No staged files for Prettier check."
   exit 0
 fi
@@ -28,7 +28,7 @@ if [ "${#backend_files[@]}" -gt 0 ]; then
   docker-compose exec -T backend-node npx prettier --check "${backend_files[@]}"
 fi
 
-if [ "${#fronted_files[@]}" -gt 0 ]; then
+if [ "${#frontend_files[@]}" -gt 0 ]; then
   docker-compose exec -T frontend sh -lc 'if [ ! -f node_modules/.bin/prettier ]; then npm install; fi'
-  docker-compose exec -T frontend npx prettier --check "${fronted_files[@]}"
+  docker-compose exec -T frontend npx prettier --check "${frontend_files[@]}"
 fi

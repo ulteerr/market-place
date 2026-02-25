@@ -3,10 +3,10 @@ name: Storybook Visual Tests
 on:
   pull_request:
     paths:
-      - 'fronted/components/**'
-      - 'fronted/.storybook/**'
-      - 'fronted/package.json'
-      - 'fronted/package-lock.json'
+      - 'frontend/components/**'
+      - 'frontend/.storybook/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
       - '.github/workflows/storybook-visual.yml'
 
 jobs:
@@ -23,9 +23,9 @@ jobs:
           node-version: 20
 
       - name: Install frontend dependencies
-        working-directory: fronted
+        working-directory: frontend
         run: npm install
 
       - name: Publish to Chromatic
-        working-directory: fronted
+        working-directory: frontend
         run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --exit-once-uploaded

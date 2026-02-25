@@ -1,49 +1,10 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Frontend/Overview" />
-
-<div class="doc-locale-en">
-
-# Frontend Documentation
-
-This folder contains architecture and process docs for the Nuxt frontend (`fronted/`).
-
-## Scope
-
-- Current focus is admin area implementation.
-- Public pages are present but documented only where they affect shared infrastructure.
-
-## Sections
-
-- `architecture.mdx`: app structure, runtime layers, and boundaries.
-- `routing-and-layouts.mdx`: route model, middleware, and layout rules.
-- `auth-and-session.mdx`: authentication flow and session persistence behavior.
-- `ui-system.mdx`: UI component principles and Storybook usage.
-- `data-and-api.mdx`: API integration model and conventions.
-- `state-and-settings.mdx`: settings/state synchronization rules.
-- `testing.mdx`: unit/e2e strategy and quality gates.
-- `workflow.mdx`: day-to-day development workflow in Docker.
-
-## Storybook
-
-- URL in Docker: `http://localhost:6006`
-- Run: `make front-storybook`
-- Build: `make front-storybook-build`
-- Story docs pages live in `fronted/docs/*.mdx`
-- Visual regression scaffold: `.github/workflows/storybook-visual.yml` (requires `CHROMATIC_PROJECT_TOKEN`)
-
-## Change policy
-
-- Keep docs in this folder updated in the same PR as behavior changes.
-- Update Storybook stories when component API or visual behavior changes.
-
-</div>
-
-<div class="doc-locale-ru">
+<Meta title="Docs/Frontend/RU/Overview" />
 
 # Документация Frontend
 
-В этой папке собрана архитектурная и процессная документация Nuxt-фронтенда (`fronted/`).
+В этой папке собрана архитектурная и процессная документация Nuxt-фронтенда (`frontend/`).
 
 ## Область
 
@@ -66,12 +27,10 @@ This folder contains architecture and process docs for the Nuxt frontend (`front
 - URL в Docker: `http://localhost:6006`
 - Запуск: `make front-storybook`
 - Сборка: `make front-storybook-build`
-- Документационные страницы: `fronted/docs/*.mdx`
+- Документационные страницы: `frontend/docs/**/*.mdx`
 - Каркас visual-regression: `.github/workflows/storybook-visual.yml` (нужен `CHROMATIC_PROJECT_TOKEN`)
 
 ## Политика изменений
 
 - Обновляйте docs в этой папке в том же PR, где меняется поведение.
 - Обновляйте stories в Storybook при изменении API или визуального поведения компонентов.
-
-</div>

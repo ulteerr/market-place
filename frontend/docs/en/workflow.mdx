@@ -13,13 +13,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Dependency changes
 
-- After `fronted/package.json` updates, run:
+- After `frontend/package.json` updates, run:
   - `make front-install`
 - This is required for both Nuxt runtime and Storybook runtime in containers.
 
 ## Documentation workflow
 
-- Update `fronted/docs/*` when:
+- Update `frontend/docs/*` when:
   - architecture boundaries change
   - API integration model changes
   - auth/session behavior changes
@@ -33,4 +33,4 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - Storybook stories updated for changed reusable components.
 - Storybook docs pages updated when architectural/process context changes.
 - `npm run build-storybook` passes locally/in CI.
-- `fronted/docs` updated for architectural or contract changes.
+- `frontend/docs` updated for architectural or contract changes.

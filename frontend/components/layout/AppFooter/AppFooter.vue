@@ -1,7 +1,7 @@
 <template>
   <footer :class="styles.footer">
     <div :class="styles.container">
-      <p>Marketplace Fronted</p>
+      <p>Marketplace Frontend</p>
       <p>Backend API: {{ apiBase }}</p>
     </div>
   </footer>

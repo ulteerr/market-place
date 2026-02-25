@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Marketplace Fronted',
+      title: 'Marketplace Frontend',
       meta: [
         {
           name: 'description',
