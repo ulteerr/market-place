@@ -1,5 +1,51 @@
 components:
   schemas:
+    OrganizationLocation:
+      type: object
+      required: [id, organization_id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+        country_id:
+          type: string
+          format: uuid
+          nullable: true
+        region_id:
+          type: string
+          format: uuid
+          nullable: true
+        city_id:
+          type: string
+          format: uuid
+          nullable: true
+        district_id:
+          type: string
+          format: uuid
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          format: float
+          nullable: true
+        lng:
+          type: number
+          format: float
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+
     OrganizationUserShort:
       type: object
       required: [id]
@@ -31,9 +77,6 @@ components:
         name:
           type: string
         description:
-          type: string
-          nullable: true
-        address:
           type: string
           nullable: true
         phone:
@@ -76,6 +119,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/OrganizationUserShort'
           nullable: true
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationLocation'
 
     OrganizationMember:
       type: object

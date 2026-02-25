@@ -6,8 +6,10 @@ namespace Modules\Organizations\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Modules\Geo\Models\City;
 use Modules\Organizations\Models\Organization;
 use Modules\Organizations\Models\OrganizationJoinRequest;
+use Modules\Organizations\Models\OrganizationLocation;
 use Modules\Organizations\Models\OrganizationMember;
 use Modules\Organizations\Models\OrganizationRole;
 use Modules\Users\Models\User;
@@ -34,7 +36,6 @@ final class OrganizationsSeeder extends Seeder
             $organizationData = [
                 "name" => sprintf("Организация %d", $i + 1),
                 "description" => sprintf("Тестовая организация %d", $i + 1),
-                "address" => sprintf("г. Москва, ул. Тестовая, д. %d", $i + 1),
                 "phone" => sprintf("+7999000%04d", $i + 101),
                 "email" => sprintf("org%d@example.com", $i + 1),
                 "user_id" => (string) $owner->id,
@@ -60,6 +61,22 @@ final class OrganizationsSeeder extends Seeder
             }
 
             $organization = Organization::query()->create($organizationData);
+
+            $city = City::query()
+                ->with(["region.country", "districts"])
+                ->inRandomOrder()
+                ->first();
+
+            OrganizationLocation::query()->create([
+                "organization_id" => (string) $organization->id,
+                "country_id" => $city?->country_id ?? $city?->region?->country_id,
+                "region_id" => $city?->region_id,
+                "city_id" => $city?->id,
+                "district_id" => $city?->districts?->first()?->id,
+                "address" => sprintf("г. Москва, ул. Тестовая, д. %d", $i + 1),
+                "lat" => 55.7 + $i / 100,
+                "lng" => 37.5 + $i / 100,
+            ]);
 
             if ($claimed) {
                 OrganizationMember::query()->updateOrCreate(

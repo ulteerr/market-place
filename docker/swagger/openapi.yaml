@@ -91,6 +91,42 @@ paths:
   /api/organizations/{organizationId}/members/{memberId}:
     $ref: ./modules/organizations.yaml#/organization_members_by_id
 
+  /api/geo/countries:
+    $ref: ./modules/geo.yaml#/geo_countries
+
+  /api/geo/regions:
+    $ref: ./modules/geo.yaml#/geo_regions
+
+  /api/geo/cities:
+    $ref: ./modules/geo.yaml#/geo_cities
+
+  /api/geo/districts:
+    $ref: ./modules/geo.yaml#/geo_districts
+
+  /api/admin/geo/countries:
+    $ref: ./modules/geo.yaml#/admin_geo_countries
+
+  /api/admin/geo/countries/{id}:
+    $ref: ./modules/geo.yaml#/admin_geo_countries_by_id
+
+  /api/admin/geo/regions:
+    $ref: ./modules/geo.yaml#/admin_geo_regions
+
+  /api/admin/geo/regions/{id}:
+    $ref: ./modules/geo.yaml#/admin_geo_regions_by_id
+
+  /api/admin/geo/cities:
+    $ref: ./modules/geo.yaml#/admin_geo_cities
+
+  /api/admin/geo/cities/{id}:
+    $ref: ./modules/geo.yaml#/admin_geo_cities_by_id
+
+  /api/admin/geo/districts:
+    $ref: ./modules/geo.yaml#/admin_geo_districts
+
+  /api/admin/geo/districts/{id}:
+    $ref: ./modules/geo.yaml#/admin_geo_districts_by_id
+
   /api/admin/changelog:
     $ref: ./modules/changelog.yaml#/admin_changelog
 

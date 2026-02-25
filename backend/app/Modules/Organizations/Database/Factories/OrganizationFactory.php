@@ -20,7 +20,6 @@ final class OrganizationFactory extends Factory
         return [
             "name" => "Организация " . $this->faker->unique()->company(),
             "description" => $this->faker->optional()->sentence(),
-            "address" => $this->faker->optional()->address(),
             "phone" => $this->faker->optional()->phoneNumber(),
             "email" => $this->faker->optional()->safeEmail(),
             "status" => $this->faker->randomElement(["draft", "active", "suspended", "archived"]),

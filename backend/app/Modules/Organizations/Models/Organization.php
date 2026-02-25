@@ -31,7 +31,6 @@ final class Organization extends Model
     protected $fillable = [
         "name",
         "description",
-        "address",
         "phone",
         "email",
         "status",
@@ -80,6 +79,11 @@ final class Organization extends Model
     public function joinRequests(): HasMany
     {
         return $this->hasMany(OrganizationJoinRequest::class, "organization_id");
+    }
+
+    public function locations(): HasMany
+    {
+        return $this->hasMany(OrganizationLocation::class, "organization_id");
     }
 
     protected static function newFactory(): OrganizationFactory

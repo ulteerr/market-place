@@ -6,6 +6,7 @@ namespace Modules\Organizations\Tests\Feature;
 
 use App\Shared\Testing\AdminCrudTestCase;
 use Modules\Organizations\Models\Organization;
+use Modules\Organizations\Models\OrganizationLocation;
 use Modules\Users\Models\Role;
 
 final class AdminOrganizationsCrudTest extends AdminCrudTestCase
@@ -48,6 +49,18 @@ final class AdminOrganizationsCrudTest extends AdminCrudTestCase
             "status" => "active",
             "source_type" => "manual",
             "ownership_status" => "unclaimed",
+            "locations" => [
+                [
+                    "address" => "Москва, ул. Первая, 1",
+                    "lat" => 55.751244,
+                    "lng" => 37.618423,
+                ],
+                [
+                    "address" => "Санкт-Петербург, ул. Вторая, 2",
+                    "lat" => 59.93428,
+                    "lng" => 30.335099,
+                ],
+            ],
         ];
     }
 
@@ -87,6 +100,13 @@ final class AdminOrganizationsCrudTest extends AdminCrudTestCase
             "name" => "После",
             "description" => "После",
             "ownership_status" => "claimed",
+            "locations" => [
+                [
+                    "address" => "Казань, ул. Новая, 3",
+                    "lat" => 55.78874,
+                    "lng" => 49.12214,
+                ],
+            ],
         ];
     }
 
@@ -107,5 +127,59 @@ final class AdminOrganizationsCrudTest extends AdminCrudTestCase
         $auth["user"]->roles()->sync([$adminRole->id]);
 
         return $auth;
+    }
+
+    protected function afterCreateAssertions(): void
+    {
+        $organization = Organization::query()->where("name", "Новая организация")->firstOrFail();
+
+        $this->assertDatabaseHas("organization_locations", [
+            "organization_id" => (string) $organization->id,
+            "address" => "Москва, ул. Первая, 1",
+        ]);
+        $this->assertDatabaseHas("organization_locations", [
+            "organization_id" => (string) $organization->id,
+            "address" => "Санкт-Петербург, ул. Вторая, 2",
+        ]);
+    }
+
+    public function test_update_replaces_locations(): void
+    {
+        $auth = $this->actingAsAdmin();
+        $organization = Organization::factory()->create([
+            "name" => "Старое имя",
+            "status" => "active",
+            "source_type" => "manual",
+            "ownership_status" => "unclaimed",
+        ]);
+
+        OrganizationLocation::query()->create([
+            "organization_id" => (string) $organization->id,
+            "address" => "Старый адрес",
+            "lat" => 55.0,
+            "lng" => 37.0,
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->patchJson("/api/admin/organizations/{$organization->id}", [
+                "locations" => [
+                    [
+                        "address" => "Новый адрес",
+                        "lat" => 56.0,
+                        "lng" => 38.0,
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath("status", "ok");
+
+        $this->assertDatabaseMissing("organization_locations", [
+            "organization_id" => (string) $organization->id,
+            "address" => "Старый адрес",
+        ]);
+        $this->assertDatabaseHas("organization_locations", [
+            "organization_id" => (string) $organization->id,
+            "address" => "Новый адрес",
+        ]);
     }
 }

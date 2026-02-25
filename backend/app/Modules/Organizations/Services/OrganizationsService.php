@@ -6,8 +6,10 @@ namespace Modules\Organizations\Services;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Modules\Organizations\Models\OrganizationLocation;
 use Modules\Organizations\Models\OrganizationMember;
 use Modules\Organizations\Models\OrganizationRole;
 use Modules\Users\Models\User;
@@ -21,7 +23,18 @@ final class OrganizationsService
 
     public function createOrganization(array $data): Organization
     {
-        return $this->repository->create($data);
+        return DB::transaction(function () use ($data): Organization {
+            $organization = $this->repository->create(Arr::except($data, ["locations"]));
+
+            if (array_key_exists("locations", $data)) {
+                $this->syncLocations($organization, (array) $data["locations"]);
+            }
+
+            return $organization->fresh([
+                "owner:id,first_name,last_name,middle_name,email",
+                "locations",
+            ]) ?? $organization;
+        });
     }
 
     public function create(array $data): Organization
@@ -31,7 +44,21 @@ final class OrganizationsService
 
     public function updateOrganization(Organization $organization, array $data): Organization
     {
-        return $this->repository->update($organization, $data);
+        return DB::transaction(function () use ($organization, $data): Organization {
+            $organization = $this->repository->update(
+                $organization,
+                Arr::except($data, ["locations"]),
+            );
+
+            if (array_key_exists("locations", $data)) {
+                $this->syncLocations($organization, (array) $data["locations"]);
+            }
+
+            return $organization->fresh([
+                "owner:id,first_name,last_name,middle_name,email",
+                "locations",
+            ]) ?? $organization;
+        });
     }
 
     public function update(string $id, array $data): Organization
@@ -157,5 +184,28 @@ final class OrganizationsService
         $role = OrganizationRole::query()->firstOrCreate(["code" => $roleCode]);
 
         return (string) $role->id;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $locations
+     */
+    private function syncLocations(Organization $organization, array $locations): void
+    {
+        OrganizationLocation::query()
+            ->where("organization_id", (string) $organization->id)
+            ->delete();
+
+        foreach ($locations as $location) {
+            OrganizationLocation::query()->create([
+                "organization_id" => (string) $organization->id,
+                "country_id" => $location["country_id"] ?? null,
+                "region_id" => $location["region_id"] ?? null,
+                "city_id" => $location["city_id"] ?? null,
+                "district_id" => $location["district_id"] ?? null,
+                "address" => $location["address"] ?? null,
+                "lat" => $location["lat"] ?? null,
+                "lng" => $location["lng"] ?? null,
+            ]);
+        }
     }
 }

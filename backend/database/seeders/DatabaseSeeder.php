@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Children\Database\Seeders\ChildrenSeeder;
+use Modules\Geo\Database\Seeders\GeoSeeder;
 use Modules\Organizations\Database\Seeders\OrganizationsSeeder;
 use Modules\Users\Database\Seeders\RolesSeeder;
 use Modules\Users\Database\Seeders\UsersSeeder;
@@ -19,6 +20,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             UsersSeeder::class,
             ChildrenSeeder::class,
+            GeoSeeder::class,
             OrganizationsSeeder::class,
         ]);
     }

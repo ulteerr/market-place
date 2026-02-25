@@ -6,6 +6,7 @@ use Modules\Auth\AuthServiceProvider;
 use Modules\Children\ChildrenServiceProvider;
 use Modules\ChangeLog\ChangeLogServiceProvider;
 use Modules\Files\FilesServiceProvider;
+use Modules\Geo\GeoServiceProvider;
 use Modules\Organizations\OrganizationsServiceProvider;
 use Modules\Users\UsersServiceProvider;
 
@@ -16,6 +17,7 @@ return [
     AuthServiceProvider::class,
     UsersServiceProvider::class,
     ChildrenServiceProvider::class,
+    GeoServiceProvider::class,
     OrganizationsServiceProvider::class,
     FilesServiceProvider::class,
     ChangeLogServiceProvider::class,

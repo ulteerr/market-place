@@ -1,0 +1,106 @@
+components:
+  schemas:
+    GeoCountry:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        iso_code:
+          type: string
+          nullable: true
+
+    GeoRegion:
+      type: object
+      required: [id, name, country_id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        country_id:
+          type: string
+          format: uuid
+
+    GeoCity:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        country_id:
+          type: string
+          format: uuid
+          nullable: true
+        region_id:
+          type: string
+          format: uuid
+          nullable: true
+
+    GeoDistrict:
+      type: object
+      required: [id, name, city_id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        city_id:
+          type: string
+          format: uuid
+
+    GeoCountriesResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoCountry'
+
+    GeoRegionsResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoRegion'
+
+    GeoCitiesResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoCity'
+
+    GeoDistrictsResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoDistrict'

@@ -25,7 +25,7 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
     public function findById(string $id): ?Organization
     {
         return Organization::query()
-            ->with(["owner:id,first_name,last_name,middle_name,email"])
+            ->with(["owner:id,first_name,last_name,middle_name,email", "locations"])
             ->find($id);
     }
 
@@ -38,7 +38,6 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
             "id",
             "name",
             "description",
-            "address",
             "phone",
             "email",
             "status",
@@ -51,7 +50,7 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
             "updated_at",
         ]);
 
-        $query->with(["owner:id,first_name,last_name,middle_name,email"]);
+        $query->with(["owner:id,first_name,last_name,middle_name,email", "locations"]);
 
         if (!empty($with)) {
             $query->with($with);
@@ -67,10 +66,14 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
                     ->orWhere("description", "like", $like)
                     ->orWhere("email", "like", $like)
                     ->orWhere("phone", "like", $like)
-                    ->orWhere("address", "like", $like)
                     ->orWhere("status", "like", $like)
                     ->orWhere("ownership_status", "like", $like)
-                    ->orWhere("source_type", "like", $like);
+                    ->orWhere("source_type", "like", $like)
+                    ->orWhereHas("locations", function (Builder $locationBuilder) use (
+                        $like,
+                    ): void {
+                        $locationBuilder->where("address", "like", $like);
+                    });
             });
         }
 
@@ -116,7 +119,6 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
                 "id",
                 "name",
                 "description",
-                "address",
                 "phone",
                 "email",
                 "status",
@@ -128,7 +130,7 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
                 "created_at",
                 "updated_at",
             ])
-            ->with(["owner:id,first_name,last_name,middle_name,email"]);
+            ->with(["owner:id,first_name,last_name,middle_name,email", "locations"]);
 
         if (!empty($with)) {
             $query->with($with);
@@ -152,7 +154,11 @@ final class OrganizationsRepository implements OrganizationsRepositoryInterface
                     ->orWhere("description", "like", $like)
                     ->orWhere("email", "like", $like)
                     ->orWhere("phone", "like", $like)
-                    ->orWhere("address", "like", $like);
+                    ->orWhereHas("locations", function (Builder $locationBuilder) use (
+                        $like,
+                    ): void {
+                        $locationBuilder->where("address", "like", $like);
+                    });
             });
         }
 
