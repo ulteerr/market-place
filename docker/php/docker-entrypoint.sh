@@ -1,6 +1,34 @@
 #!/bin/sh
 set -e
 
+LOCK_HASH_FILE="/var/www/vendor/.deps-lock-hash"
+CURRENT_LOCK_HASH=""
+
+if [ -f /var/www/composer.lock ]; then
+  CURRENT_LOCK_HASH="$(sha1sum /var/www/composer.lock | awk '{print $1}')"
+fi
+
+needs_install="0"
+if [ ! -d /var/www/vendor ] || [ ! -f /var/www/vendor/autoload.php ]; then
+  needs_install="1"
+fi
+
+if [ -n "$CURRENT_LOCK_HASH" ]; then
+  if [ ! -f "$LOCK_HASH_FILE" ] || [ "$(cat "$LOCK_HASH_FILE" 2>/dev/null || true)" != "$CURRENT_LOCK_HASH" ]; then
+    needs_install="1"
+  fi
+fi
+
+if [ "$needs_install" = "1" ] && [ -f /var/www/composer.json ]; then
+  echo "[backend] Installing composer dependencies inside container..."
+  composer install --working-dir=/var/www --no-interaction --prefer-dist
+
+  if [ -n "$CURRENT_LOCK_HASH" ]; then
+    mkdir -p /var/www/vendor
+    echo "$CURRENT_LOCK_HASH" > "$LOCK_HASH_FILE"
+  fi
+fi
+
 # Проверяем и создаём нужные папки
 mkdir -p /var/www/storage/framework/{sessions,views,cache} /var/www/bootstrap/cache
 
