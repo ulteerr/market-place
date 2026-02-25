@@ -25,7 +25,7 @@ Frontend handles public and admin pages; backend is focused on API and authentic
 
 ```text
 project-root/
-├─ fronted/              # Nuxt 4 frontend (public + admin pages)
+├─ frontend/              # Nuxt 4 frontend (public + admin pages)
 ├─ backend/              # Laravel application
 ├─ docker/
 │  ├─ nginx/             # Nginx config
@@ -59,8 +59,14 @@ Make sure you have installed:
 ## ⚙️ Environment setup
 
 ```bash
+cp .env.example .env
 cp backend/.env.example backend/.env
 ```
+
+В `.env` настраиваются:
+
+- префикс имен контейнеров через `COMPOSE_PROJECT_NAME`
+- внешние порты сервисов (`FRONTEND_PORT`, `WEB_PORT`, и т.д.)
 
 Default configuration works out of the box.
 
@@ -168,7 +174,7 @@ make db-seed
 
 | Service        | URL                   |
 | -------------- | --------------------- |
-| Fronted (Nuxt) | http://localhost:3000 |
+| frontend (Nuxt) | http://localhost:3000 |
 | Storybook UI   | http://localhost:6006 |
 | Backend API    | http://localhost:8080 |
 | Swagger UI     | http://localhost:8081 |
@@ -177,12 +183,14 @@ make db-seed
 | pgAdmin        | http://localhost:5050 |
 | Redis          | localhost:6381        |
 
+Порты можно изменить в корневом `.env`.
+
 ---
 
 ## 📚 Frontend Documentation
 
 - Storybook component docs: `http://localhost:6006`
-- Architecture/process docs: `fronted/docs/*`
+- Architecture/process docs: `frontend/docs/*`
 - Local run: `make front-storybook`
 - CI gate: `npm run build-storybook` (frontend job)
 
@@ -289,13 +297,13 @@ make comp cmd="install"
 make comp cmd="dump-autoload"
 ```
 
-### Fronted (Nuxt)
+### Frontend (Nuxt)
 
 ```bash
 make front-install        # Install npm deps inside frontend container
 make front-npm cmd="run build"
 make front-nuxi cmd="add page profile"
-make front-storybook      # Start Storybook container on :6006
+make front-storybook      # Start Storybook container (port from .env, default :6006)
 make front-storybook-build
 ```
 
@@ -328,7 +336,7 @@ make test
 make test-auth
 ```
 
-### Fronted E2E (Playwright)
+### Frontend E2E (Playwright)
 
 ```bash
 make up
@@ -356,9 +364,9 @@ make front-npm cmd="run test:e2e -- --project=safari-webkit"
 
 Примечание по Safari: на Linux нельзя запустить нативный Safari, но `safari-webkit` в Playwright проверяет движок WebKit (ближайший эквивалент Safari).
 
-### Fronted documentation
+### Frontend documentation
 
-- Архитектура и процессы: `fronted/docs/README.mdx`
+- Архитектура и процессы: `frontend/docs/README.mdx`
 - Storybook UI-каталог: `http://localhost:6006`
 
 ### OpenAPI
@@ -376,7 +384,7 @@ make redoc               # Restart ReDoc CE
 ## 🧠 Architecture Notes
 
 - OpenAPI documentation is manually maintained
-- Fronted is modular: component styles live near components
+- Frontend is modular: component styles live near components
 - Swagger UI runs as a standalone container
 - Backend is fully decoupled from frontend pages (API/Auth only)
 - Errors are centralized and reused across modules

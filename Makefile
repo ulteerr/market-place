@@ -110,7 +110,7 @@ hooks-install:
 	git config core.hooksPath .githooks
 
 # --------------------------
-# Fronted (Nuxt)
+# Frontend (Nuxt)
 # --------------------------
 
 front:

@@ -1,2 +1,3 @@
 docker/data
-fronted/storybook-static
+frontend/storybook-static
+.env
