@@ -60,8 +60,9 @@ Make sure you have installed:
 
 ```bash
 cp .env.example .env
-cp backend/.env.example backend/.env
 ```
+
+Файл `backend/.env` создаётся при первом запуске контейнера из `backend/.env.example`, если его ещё нет. При необходимости внесите в него изменения.
 
 В `.env` настраиваются:
 

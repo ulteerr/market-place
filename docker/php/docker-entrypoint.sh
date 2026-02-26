@@ -32,6 +32,20 @@ fi
 # Проверяем и создаём нужные папки
 mkdir -p /var/www/storage/framework/{sessions,views,cache} /var/www/bootstrap/cache
 
+# Создаём .env из .env.example, если .env отсутствует
+if [ ! -f /var/www/.env ] && [ -f /var/www/.env.example ]; then
+  echo "[backend] Creating .env from .env.example..."
+  cp /var/www/.env.example /var/www/.env
+fi
+
+# Генерируем APP_KEY, если он не задан (избегаем MissingAppKeyException)
+if [ -f /var/www/.env ] && [ -f /var/www/artisan ]; then
+  if ! grep -q '^APP_KEY=base64:' /var/www/.env 2>/dev/null; then
+    echo "[backend] Generating application encryption key..."
+    php /var/www/artisan key:generate --no-interaction
+  fi
+fi
+
 # Создаем storage symlink только если он отсутствует
 if [ ! -e /var/www/public/storage ]; then
   if [ -f /var/www/artisan ]; then
