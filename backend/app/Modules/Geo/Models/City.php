@@ -45,6 +45,16 @@ final class City extends Model
         return $this->hasMany(OrganizationLocation::class, "city_id");
     }
 
+    public function metroStations(): HasMany
+    {
+        return $this->hasMany(MetroStation::class, "city_id");
+    }
+
+    public function metroLines(): HasMany
+    {
+        return $this->hasMany(MetroLine::class, "city_id");
+    }
+
     protected static function newFactory(): CityFactory
     {
         return CityFactory::new();

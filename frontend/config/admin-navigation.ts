@@ -7,7 +7,8 @@ export type AdminNavIcon =
   | 'activity'
   | 'organization'
   | 'organizations'
-  | 'children';
+  | 'children'
+  | 'metro';
 
 export interface AdminNavigationItemDefinition {
   key: string;
@@ -53,6 +54,18 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
         to: '/admin/action-logs',
         labelKey: 'admin.layout.menu.actionLogs',
         icon: 'activity',
+      },
+      {
+        key: 'metro-lines',
+        to: '/admin/metro-lines',
+        labelKey: 'admin.layout.menu.metroLines',
+        icon: 'metro',
+      },
+      {
+        key: 'metro-stations',
+        to: '/admin/metro-stations',
+        labelKey: 'admin.layout.menu.metroStations',
+        icon: 'metro',
       },
     ],
   },

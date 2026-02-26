@@ -8,6 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
+use Modules\Geo\Models\MetroLine;
+use Modules\Geo\Models\MetroStation;
 use Modules\Geo\Models\Region;
 use Modules\Users\Models\Role;
 use PHPUnit\Framework\Attributes\Test;
@@ -34,7 +36,7 @@ final class AdminGeoCrudTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_crud_countries_regions_cities_and_districts(): void
+    public function admin_can_crud_geo_including_metro_lines_and_stations(): void
     {
         $auth = $this->actingAsAdmin();
 
@@ -89,6 +91,29 @@ final class AdminGeoCrudTest extends TestCase
             ->assertJsonPath("status", "ok");
         $districtId = (string) $districtResponse->json("data.id");
 
+        $lineResponse = $this->withHeaders($auth["headers"])
+            ->postJson("/api/admin/geo/metro-lines", [
+                "name" => "Сокольническая",
+                "line_id" => "1",
+                "color" => "#D6083B",
+                "city_id" => $cityId,
+                "source" => "manual",
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath("status", "ok");
+        $lineId = (string) $lineResponse->json("data.id");
+
+        $stationResponse = $this->withHeaders($auth["headers"])
+            ->postJson("/api/admin/geo/metro-stations", [
+                "name" => "Охотный ряд",
+                "metro_line_id" => $lineId,
+                "city_id" => $cityId,
+                "source" => "manual",
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath("status", "ok");
+        $stationId = (string) $stationResponse->json("data.id");
+
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/geo/regions?country_id={$countryId}")
             ->assertOk()
@@ -101,6 +126,40 @@ final class AdminGeoCrudTest extends TestCase
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/geo/districts?city_id={$cityId}")
+            ->assertOk()
+            ->assertJsonPath("status", "ok");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/geo/metro-lines?city_id={$cityId}")
+            ->assertOk()
+            ->assertJsonPath("status", "ok");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/geo/metro-stations?metro_line_id={$lineId}")
+            ->assertOk()
+            ->assertJsonPath("status", "ok");
+
+        $this->withHeaders($auth["headers"])
+            ->patchJson("/api/admin/geo/metro-lines/{$lineId}", [
+                "name" => "Сокольническая линия",
+            ])
+            ->assertOk()
+            ->assertJsonPath("data.name", "Сокольническая линия");
+
+        $this->withHeaders($auth["headers"])
+            ->patchJson("/api/admin/geo/metro-stations/{$stationId}", [
+                "name" => "Охотный Ряд",
+            ])
+            ->assertOk()
+            ->assertJsonPath("data.name", "Охотный Ряд");
+
+        $this->withHeaders($auth["headers"])
+            ->deleteJson("/api/admin/geo/metro-stations/{$stationId}")
+            ->assertOk()
+            ->assertJsonPath("status", "ok");
+
+        $this->withHeaders($auth["headers"])
+            ->deleteJson("/api/admin/geo/metro-lines/{$lineId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 
@@ -128,6 +187,8 @@ final class AdminGeoCrudTest extends TestCase
         $this->assertDatabaseMissing("regions", ["id" => $regionId]);
         $this->assertDatabaseMissing("cities", ["id" => $cityId]);
         $this->assertDatabaseMissing("districts", ["id" => $districtId]);
+        $this->assertDatabaseMissing("metro_lines", ["id" => $lineId]);
+        $this->assertDatabaseMissing("metro_stations", ["id" => $stationId]);
     }
 
     private function actingAsAdmin(): array

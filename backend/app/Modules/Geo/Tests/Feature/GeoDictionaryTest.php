@@ -8,6 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
+use Modules\Geo\Models\MetroLine;
+use Modules\Geo\Models\MetroStation;
 use Modules\Geo\Models\Region;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -23,6 +25,8 @@ final class GeoDictionaryTest extends TestCase
         $this->getJson("/api/geo/regions")->assertUnauthorized();
         $this->getJson("/api/geo/cities")->assertUnauthorized();
         $this->getJson("/api/geo/districts")->assertUnauthorized();
+        $this->getJson("/api/geo/metro-lines")->assertUnauthorized();
+        $this->getJson("/api/geo/metro-stations")->assertUnauthorized();
     }
 
     #[Test]
@@ -62,6 +66,36 @@ final class GeoDictionaryTest extends TestCase
             "city_id" => (string) $cityAlmaty->id,
         ]);
 
+        $lineMoscow = MetroLine::query()->create([
+            "name" => "Сокольническая",
+            "line_id" => "1",
+            "color" => "#D6083B",
+            "city_id" => (string) $cityMoscow->id,
+            "source" => "manual",
+        ]);
+
+        $lineAlmaty = MetroLine::query()->create([
+            "name" => "Алматинская",
+            "line_id" => "2",
+            "color" => "#009A49",
+            "city_id" => (string) $cityAlmaty->id,
+            "source" => "manual",
+        ]);
+
+        MetroStation::query()->create([
+            "name" => "Охотный ряд",
+            "metro_line_id" => (string) $lineMoscow->id,
+            "city_id" => (string) $cityMoscow->id,
+            "source" => "manual",
+        ]);
+
+        MetroStation::query()->create([
+            "name" => "Байконур",
+            "metro_line_id" => (string) $lineAlmaty->id,
+            "city_id" => (string) $cityAlmaty->id,
+            "source" => "manual",
+        ]);
+
         $this->withHeaders($auth["headers"])
             ->getJson("/api/geo/countries?search=Рос")
             ->assertOk()
@@ -85,5 +119,17 @@ final class GeoDictionaryTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, "data")
             ->assertJsonPath("data.0.name", "Центральный");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/geo/metro-lines?city_id={$cityMoscow->id}")
+            ->assertOk()
+            ->assertJsonCount(1, "data")
+            ->assertJsonPath("data.0.name", "Сокольническая");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/geo/metro-stations?metro_line_id={$lineAlmaty->id}")
+            ->assertOk()
+            ->assertJsonCount(1, "data")
+            ->assertJsonPath("data.0.name", "Байконур");
     }
 }

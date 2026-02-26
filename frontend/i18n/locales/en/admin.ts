@@ -16,6 +16,8 @@ export default {
       organizations: 'Organizations',
       children: 'Children',
       actionLogs: 'Change log',
+      metroLines: 'Metro lines',
+      metroStations: 'Metro stations',
     },
     sections: {
       system: 'System',

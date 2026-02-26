@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -14,25 +13,33 @@ return [
     |
     */
 
-    'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
+    "postmark" => [
+        "key" => env("POSTMARK_API_KEY"),
     ],
 
-    'resend' => [
-        'key' => env('RESEND_API_KEY'),
+    "resend" => [
+        "key" => env("RESEND_API_KEY"),
     ],
 
-    'ses' => [
-        'key' => env('AWS_ACCESS_KEY_ID'),
-        'secret' => env('AWS_SECRET_ACCESS_KEY'),
-        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    "ses" => [
+        "key" => env("AWS_ACCESS_KEY_ID"),
+        "secret" => env("AWS_SECRET_ACCESS_KEY"),
+        "region" => env("AWS_DEFAULT_REGION", "us-east-1"),
     ],
 
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+    "slack" => [
+        "notifications" => [
+            "bot_user_oauth_token" => env("SLACK_BOT_USER_OAUTH_TOKEN"),
+            "channel" => env("SLACK_BOT_USER_DEFAULT_CHANNEL"),
         ],
     ],
 
+    "dadata" => [
+        "base_url" => env("DADATA_BASE_URL", "https://suggestions.dadata.ru"),
+        "token" => env("DADATA_API_TOKEN"),
+        "secret" => env("DADATA_API_SECRET"),
+        "timeout_seconds" => env("DADATA_TIMEOUT_SECONDS", 30),
+        "retry_times" => env("DADATA_RETRY_TIMES", 2),
+        "retry_delay_ms" => env("DADATA_RETRY_DELAY_MS", 500),
+    ],
 ];

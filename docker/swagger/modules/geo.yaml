@@ -110,6 +110,68 @@ geo_districts:
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
 
+geo_metro_lines:
+  get:
+    tags: [Geo]
+    summary: List metro lines
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: city_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Metro lines list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/GeoMetroLinesResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
+geo_metro_stations:
+  get:
+    tags: [Geo]
+    summary: List metro stations
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: city_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: metro_line_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Metro stations list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/GeoMetroStationsResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
 admin_geo_countries:
   get:
     tags: [Admin Geo]
@@ -542,6 +604,280 @@ admin_geo_districts_by_id:
     responses:
       '200':
         description: District deleted
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+admin_geo_metro_lines:
+  get:
+    tags: [Admin Geo]
+    summary: List metro lines (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated metro lines list
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+  post:
+    tags: [Admin Geo]
+    summary: Create metro line (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, city_id, source]
+            properties:
+              name:
+                type: string
+              external_id:
+                type: string
+                nullable: true
+              line_id:
+                type: string
+                nullable: true
+              color:
+                type: string
+                nullable: true
+              city_id:
+                type: string
+                format: uuid
+              source:
+                type: string
+    responses:
+      '201':
+        description: Metro line created
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_geo_metro_lines_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  get:
+    tags: [Admin Geo]
+    summary: Get metro line by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Metro line details
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+  patch:
+    tags: [Admin Geo]
+    summary: Update metro line (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              external_id:
+                type: string
+                nullable: true
+              line_id:
+                type: string
+                nullable: true
+              color:
+                type: string
+                nullable: true
+              city_id:
+                type: string
+                format: uuid
+              source:
+                type: string
+    responses:
+      '200':
+        description: Metro line updated
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+  delete:
+    tags: [Admin Geo]
+    summary: Delete metro line (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Metro line deleted
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+admin_geo_metro_stations:
+  get:
+    tags: [Admin Geo]
+    summary: List metro stations (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Paginated metro stations list
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+  post:
+    tags: [Admin Geo]
+    summary: Create metro station (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, metro_line_id, city_id, source]
+            properties:
+              name:
+                type: string
+              external_id:
+                type: string
+                nullable: true
+              line_id:
+                type: string
+                nullable: true
+              geo_lat:
+                type: number
+                format: float
+                nullable: true
+              geo_lon:
+                type: number
+                format: float
+                nullable: true
+              is_closed:
+                type: boolean
+                nullable: true
+              metro_line_id:
+                type: string
+                format: uuid
+              city_id:
+                type: string
+                format: uuid
+              source:
+                type: string
+    responses:
+      '201':
+        description: Metro station created
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_geo_metro_stations_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  get:
+    tags: [Admin Geo]
+    summary: Get metro station by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Metro station details
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+  patch:
+    tags: [Admin Geo]
+    summary: Update metro station (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              external_id:
+                type: string
+                nullable: true
+              line_id:
+                type: string
+                nullable: true
+              geo_lat:
+                type: number
+                format: float
+                nullable: true
+              geo_lon:
+                type: number
+                format: float
+                nullable: true
+              is_closed:
+                type: boolean
+                nullable: true
+              metro_line_id:
+                type: string
+                format: uuid
+              city_id:
+                type: string
+                format: uuid
+              source:
+                type: string
+    responses:
+      '200':
+        description: Metro station updated
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+  delete:
+    tags: [Admin Geo]
+    summary: Delete metro station (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Metro station deleted
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':

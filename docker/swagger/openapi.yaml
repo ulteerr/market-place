@@ -103,6 +103,12 @@ paths:
   /api/geo/districts:
     $ref: ./modules/geo.yaml#/geo_districts
 
+  /api/geo/metro-lines:
+    $ref: ./modules/geo.yaml#/geo_metro_lines
+
+  /api/geo/metro-stations:
+    $ref: ./modules/geo.yaml#/geo_metro_stations
+
   /api/admin/geo/countries:
     $ref: ./modules/geo.yaml#/admin_geo_countries
 
@@ -126,6 +132,18 @@ paths:
 
   /api/admin/geo/districts/{id}:
     $ref: ./modules/geo.yaml#/admin_geo_districts_by_id
+
+  /api/admin/geo/metro-lines:
+    $ref: ./modules/geo.yaml#/admin_geo_metro_lines
+
+  /api/admin/geo/metro-lines/{id}:
+    $ref: ./modules/geo.yaml#/admin_geo_metro_lines_by_id
+
+  /api/admin/geo/metro-stations:
+    $ref: ./modules/geo.yaml#/admin_geo_metro_stations
+
+  /api/admin/geo/metro-stations/{id}:
+    $ref: ./modules/geo.yaml#/admin_geo_metro_stations_by_id
 
   /api/admin/changelog:
     $ref: ./modules/changelog.yaml#/admin_changelog

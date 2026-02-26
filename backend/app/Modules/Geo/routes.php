@@ -6,10 +6,14 @@ use Illuminate\Support\Facades\Route;
 use Modules\Geo\Http\Controllers\AdminCityController;
 use Modules\Geo\Http\Controllers\AdminCountryController;
 use Modules\Geo\Http\Controllers\AdminDistrictController;
+use Modules\Geo\Http\Controllers\AdminMetroLineController;
+use Modules\Geo\Http\Controllers\AdminMetroStationController;
 use Modules\Geo\Http\Controllers\AdminRegionController;
 use Modules\Geo\Http\Controllers\CitiesController;
 use Modules\Geo\Http\Controllers\CountriesController;
 use Modules\Geo\Http\Controllers\DistrictsController;
+use Modules\Geo\Http\Controllers\MetroLinesController;
+use Modules\Geo\Http\Controllers\MetroStationsController;
 use Modules\Geo\Http\Controllers\RegionsController;
 
 Route::middleware(["auth:sanctum"])
@@ -19,6 +23,8 @@ Route::middleware(["auth:sanctum"])
         Route::get("/regions", [RegionsController::class, "index"]);
         Route::get("/cities", [CitiesController::class, "index"]);
         Route::get("/districts", [DistrictsController::class, "index"]);
+        Route::get("/metro-lines", [MetroLinesController::class, "index"]);
+        Route::get("/metro-stations", [MetroStationsController::class, "index"]);
     });
 
 Route::middleware(["auth:sanctum", "can_access_admin_panel"])
@@ -47,4 +53,16 @@ Route::middleware(["auth:sanctum", "can_access_admin_panel"])
         Route::get("/districts/{id}", [AdminDistrictController::class, "show"]);
         Route::patch("/districts/{id}", [AdminDistrictController::class, "update"]);
         Route::delete("/districts/{id}", [AdminDistrictController::class, "destroy"]);
+
+        Route::get("/metro-lines", [AdminMetroLineController::class, "index"]);
+        Route::post("/metro-lines", [AdminMetroLineController::class, "store"]);
+        Route::get("/metro-lines/{id}", [AdminMetroLineController::class, "show"]);
+        Route::patch("/metro-lines/{id}", [AdminMetroLineController::class, "update"]);
+        Route::delete("/metro-lines/{id}", [AdminMetroLineController::class, "destroy"]);
+
+        Route::get("/metro-stations", [AdminMetroStationController::class, "index"]);
+        Route::post("/metro-stations", [AdminMetroStationController::class, "store"]);
+        Route::get("/metro-stations/{id}", [AdminMetroStationController::class, "show"]);
+        Route::patch("/metro-stations/{id}", [AdminMetroStationController::class, "update"]);
+        Route::delete("/metro-stations/{id}", [AdminMetroStationController::class, "destroy"]);
     });

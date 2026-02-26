@@ -336,6 +336,8 @@ const navigationPermissions: Record<string, string> = {
   organizations: 'org.company.profile.read',
   children: 'org.children.read',
   'action-logs': 'admin.action-log.read',
+  'metro-lines': 'admin.panel.access',
+  'metro-stations': 'admin.panel.access',
 };
 const { hasPermission } = usePermissions();
 
