@@ -11,7 +11,7 @@ on:
 
 jobs:
   chromatic:
-    if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:
@@ -27,5 +27,8 @@ jobs:
         run: npm install
 
       - name: Publish to Chromatic
+        if: env.CHROMATIC_TOKEN != ''
         working-directory: frontend
-        run: npx chromatic --project-token=${{ secrets.CHROMATIC_PROJECT_TOKEN }} --exit-once-uploaded
+        env:
+          CHROMATIC_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+        run: npx chromatic --project-token=$CHROMATIC_TOKEN --exit-once-uploaded
