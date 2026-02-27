@@ -16,8 +16,8 @@ export default {
       organizations: 'Организации',
       children: 'Дети',
       actionLogs: 'Журнал изменений',
-      metroLines: 'Ветки метро',
-      metroStations: 'Станции метро',
+      metroLines: 'Ветки',
+      metroStations: 'Станции',
       geoCountries: 'Страны',
       geoRegions: 'Регионы',
       geoCities: 'Города',
@@ -25,6 +25,8 @@ export default {
     },
     sections: {
       system: 'Система',
+      geo: 'География',
+      metro: 'Метро',
       organization: 'Организация',
     },
     user: {

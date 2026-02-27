@@ -16,8 +16,8 @@ export default {
       organizations: 'Organizations',
       children: 'Children',
       actionLogs: 'Change log',
-      metroLines: 'Metro lines',
-      metroStations: 'Metro stations',
+      metroLines: 'Lines',
+      metroStations: 'Stations',
       geoCountries: 'Countries',
       geoRegions: 'Regions',
       geoCities: 'Cities',
@@ -25,6 +25,8 @@ export default {
     },
     sections: {
       system: 'System',
+      geo: 'Geography',
+      metro: 'Metro',
       organization: 'Organization',
     },
     user: {

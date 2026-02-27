@@ -75,7 +75,7 @@ test.describe('Admin navigation responsive', () => {
     await expect(page.locator('.admin-sidebar-toggle')).toBeVisible();
 
     await page.getByRole('button', { name: 'Система' }).click();
-    await expect(page.locator('.admin-nav-submenu')).toBeVisible();
+    await expect(page.locator('#admin-nav-section-system')).toBeVisible();
   });
 
   test('ultra narrow 280: navigation stays expanded mode', async ({ page }) => {
@@ -102,10 +102,10 @@ test.describe('Admin navigation responsive', () => {
 
     const sidebar = page.locator('aside.admin-sidebar');
     await expect(sidebar).toHaveClass(/is-collapsed/);
-    await expect(sidebar.locator('.admin-nav-collapsed-group')).toHaveCount(1);
+    await expect(sidebar.locator('.admin-nav-collapsed-group')).toHaveCount(3);
 
     await page.locator('.admin-nav-section-collapsed-toggle').first().click();
-    await expect(page.locator('.admin-nav-collapsed-panel')).toBeVisible();
+    await expect(page.locator('#admin-nav-section-system')).toBeVisible();
   });
 
   test('desktop collapse mode: sidebar toggle switches collapsed state', async ({ page }) => {

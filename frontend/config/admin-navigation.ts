@@ -9,7 +9,13 @@ export type AdminNavIcon =
   | 'organizations'
   | 'children'
   | 'metro'
-  | 'geo';
+  | 'geo'
+  | 'geoCountry'
+  | 'geoRegion'
+  | 'geoCity'
+  | 'geoDistrict'
+  | 'metroLine'
+  | 'metroStation';
 
 export interface AdminNavigationItemDefinition {
   key: string;
@@ -56,41 +62,55 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
         labelKey: 'admin.layout.menu.actionLogs',
         icon: 'activity',
       },
-      {
-        key: 'metro-lines',
-        to: '/admin/metro-lines',
-        labelKey: 'admin.layout.menu.metroLines',
-        icon: 'metro',
-      },
-      {
-        key: 'metro-stations',
-        to: '/admin/metro-stations',
-        labelKey: 'admin.layout.menu.metroStations',
-        icon: 'metro',
-      },
+    ],
+  },
+  {
+    key: 'geo',
+    labelKey: 'admin.layout.sections.geo',
+    icon: 'geo',
+    items: [
       {
         key: 'geo-countries',
         to: '/admin/geo/countries',
         labelKey: 'admin.layout.menu.geoCountries',
-        icon: 'geo',
+        icon: 'geoCountry',
       },
       {
         key: 'geo-regions',
         to: '/admin/geo/regions',
         labelKey: 'admin.layout.menu.geoRegions',
-        icon: 'geo',
+        icon: 'geoRegion',
       },
       {
         key: 'geo-cities',
         to: '/admin/geo/cities',
         labelKey: 'admin.layout.menu.geoCities',
-        icon: 'geo',
+        icon: 'geoCity',
       },
       {
         key: 'geo-districts',
         to: '/admin/geo/districts',
         labelKey: 'admin.layout.menu.geoDistricts',
-        icon: 'geo',
+        icon: 'geoDistrict',
+      },
+    ],
+  },
+  {
+    key: 'metro',
+    labelKey: 'admin.layout.sections.metro',
+    icon: 'metro',
+    items: [
+      {
+        key: 'metro-lines',
+        to: '/admin/metro-lines',
+        labelKey: 'admin.layout.menu.metroLines',
+        icon: 'metroLine',
+      },
+      {
+        key: 'metro-stations',
+        to: '/admin/metro-stations',
+        labelKey: 'admin.layout.menu.metroStations',
+        icon: 'metroStation',
       },
     ],
   },

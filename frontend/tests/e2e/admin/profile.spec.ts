@@ -38,7 +38,9 @@ test.describe('Admin profile page', () => {
     await page.goto('/admin/profile');
 
     await expect(page.locator('img[src="https://example.com/avatar.png"]').first()).toBeVisible();
-    await expect(page.locator('.admin-user-menu .admin-avatar-image')).toBeVisible();
+    await expect(
+      page.locator('aside.admin-sidebar .admin-user-menu img[alt="Админ Системный Тестовый"]')
+    ).toBeVisible();
   });
 
   test('rolls back profile update and changes form value', async ({ page }) => {
