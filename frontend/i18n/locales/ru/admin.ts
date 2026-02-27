@@ -18,6 +18,10 @@ export default {
       actionLogs: 'Журнал изменений',
       metroLines: 'Ветки метро',
       metroStations: 'Станции метро',
+      geoCountries: 'Страны',
+      geoRegions: 'Регионы',
+      geoCities: 'Города',
+      geoDistricts: 'Районы',
     },
     sections: {
       system: 'Система',
@@ -632,6 +636,237 @@ export default {
       delete: 'Не удалось удалить роль.',
     },
     confirmDelete: 'Удалить роль {code}?',
+  },
+  geo: {
+    title: 'География',
+    countries: {
+      index: {
+        title: 'Страны',
+        subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
+        createLabel: 'Новая страна',
+        searchPlaceholder: 'Поиск: название, ISO код',
+        empty: 'Страны не найдены.',
+        headers: {
+          name: 'Название',
+          isoCode: 'ISO код',
+          actions: 'Действия',
+        },
+        card: {
+          isoCode: 'ISO код: {value}',
+        },
+        sort: {
+          name: 'Название',
+          isoCode: 'ISO код',
+        },
+      },
+      new: {
+        title: 'Новая страна',
+        subtitle: 'Создание страны в /api/admin/geo/countries',
+        saving: 'Сохраняем...',
+        errors: {
+          create: 'Не удалось создать страну.',
+        },
+      },
+      show: {
+        title: 'Страна',
+        subtitle: 'Детали страны',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить страну.',
+        },
+      },
+      edit: {
+        title: 'Редактирование страны',
+        subtitle: 'Обновление /api/admin/geo/countries/:id',
+        saving: 'Сохраняем...',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить страну.',
+          update: 'Не удалось обновить страну.',
+        },
+      },
+      fields: {
+        name: 'Название',
+        isoCode: 'ISO код',
+      },
+      confirmDelete: 'Удалить страну {name}?',
+      errors: {
+        loadList: 'Не удалось загрузить список стран.',
+        delete: 'Не удалось удалить страну.',
+      },
+    },
+    regions: {
+      index: {
+        title: 'Регионы',
+        subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
+        createLabel: 'Новый регион',
+        searchPlaceholder: 'Поиск: название, ID страны',
+        empty: 'Регионы не найдены.',
+        headers: {
+          name: 'Название',
+          countryId: 'ID страны',
+          actions: 'Действия',
+        },
+        card: {
+          countryId: 'ID страны: {value}',
+        },
+        sort: {
+          name: 'Название',
+          countryId: 'ID страны',
+        },
+      },
+      new: {
+        title: 'Новый регион',
+        subtitle: 'Создание региона в /api/admin/geo/regions',
+        saving: 'Сохраняем...',
+        errors: {
+          create: 'Не удалось создать регион.',
+        },
+      },
+      show: {
+        title: 'Регион',
+        subtitle: 'Детали региона',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить регион.',
+        },
+      },
+      edit: {
+        title: 'Редактирование региона',
+        subtitle: 'Обновление /api/admin/geo/regions/:id',
+        saving: 'Сохраняем...',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить регион.',
+          update: 'Не удалось обновить регион.',
+        },
+      },
+      fields: {
+        name: 'Название',
+        countryId: 'ID страны',
+      },
+      confirmDelete: 'Удалить регион {name}?',
+      errors: {
+        loadList: 'Не удалось загрузить список регионов.',
+        delete: 'Не удалось удалить регион.',
+      },
+    },
+    cities: {
+      index: {
+        title: 'Города',
+        subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
+        createLabel: 'Новый город',
+        searchPlaceholder: 'Поиск: название, ID страны, ID региона',
+        empty: 'Города не найдены.',
+        headers: {
+          name: 'Название',
+          countryId: 'ID страны',
+          regionId: 'ID региона',
+          actions: 'Действия',
+        },
+        card: {
+          countryId: 'ID страны: {value}',
+          regionId: 'ID региона: {value}',
+        },
+        sort: {
+          name: 'Название',
+          countryId: 'ID страны',
+          regionId: 'ID региона',
+        },
+      },
+      new: {
+        title: 'Новый город',
+        subtitle: 'Создание города в /api/admin/geo/cities',
+        saving: 'Сохраняем...',
+        errors: {
+          create: 'Не удалось создать город.',
+        },
+      },
+      show: {
+        title: 'Город',
+        subtitle: 'Детали города',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить город.',
+        },
+      },
+      edit: {
+        title: 'Редактирование города',
+        subtitle: 'Обновление /api/admin/geo/cities/:id',
+        saving: 'Сохраняем...',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить город.',
+          update: 'Не удалось обновить город.',
+        },
+      },
+      fields: {
+        name: 'Название',
+        countryId: 'ID страны',
+        regionId: 'ID региона',
+      },
+      confirmDelete: 'Удалить город {name}?',
+      errors: {
+        loadList: 'Не удалось загрузить список городов.',
+        delete: 'Не удалось удалить город.',
+      },
+    },
+    districts: {
+      index: {
+        title: 'Районы',
+        subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
+        createLabel: 'Новый район',
+        searchPlaceholder: 'Поиск: название, ID города',
+        empty: 'Районы не найдены.',
+        headers: {
+          name: 'Название',
+          cityId: 'ID города',
+          actions: 'Действия',
+        },
+        card: {
+          cityId: 'ID города: {value}',
+        },
+        sort: {
+          name: 'Название',
+          cityId: 'ID города',
+        },
+      },
+      new: {
+        title: 'Новый район',
+        subtitle: 'Создание района в /api/admin/geo/districts',
+        saving: 'Сохраняем...',
+        errors: {
+          create: 'Не удалось создать район.',
+        },
+      },
+      show: {
+        title: 'Район',
+        subtitle: 'Детали района',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить район.',
+        },
+      },
+      edit: {
+        title: 'Редактирование района',
+        subtitle: 'Обновление /api/admin/geo/districts/:id',
+        saving: 'Сохраняем...',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить район.',
+          update: 'Не удалось обновить район.',
+        },
+      },
+      fields: {
+        name: 'Название',
+        cityId: 'ID города',
+      },
+      confirmDelete: 'Удалить район {name}?',
+      errors: {
+        loadList: 'Не удалось загрузить список районов.',
+        delete: 'Не удалось удалить район.',
+      },
+    },
   },
   metro: {
     title: 'Метро',

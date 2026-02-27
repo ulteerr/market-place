@@ -8,7 +8,8 @@ export type AdminNavIcon =
   | 'organization'
   | 'organizations'
   | 'children'
-  | 'metro';
+  | 'metro'
+  | 'geo';
 
 export interface AdminNavigationItemDefinition {
   key: string;
@@ -66,6 +67,30 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
         to: '/admin/metro-stations',
         labelKey: 'admin.layout.menu.metroStations',
         icon: 'metro',
+      },
+      {
+        key: 'geo-countries',
+        to: '/admin/geo/countries',
+        labelKey: 'admin.layout.menu.geoCountries',
+        icon: 'geo',
+      },
+      {
+        key: 'geo-regions',
+        to: '/admin/geo/regions',
+        labelKey: 'admin.layout.menu.geoRegions',
+        icon: 'geo',
+      },
+      {
+        key: 'geo-cities',
+        to: '/admin/geo/cities',
+        labelKey: 'admin.layout.menu.geoCities',
+        icon: 'geo',
+      },
+      {
+        key: 'geo-districts',
+        to: '/admin/geo/districts',
+        labelKey: 'admin.layout.menu.geoDistricts',
+        icon: 'geo',
       },
     ],
   },

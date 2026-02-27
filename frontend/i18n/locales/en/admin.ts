@@ -18,6 +18,10 @@ export default {
       actionLogs: 'Change log',
       metroLines: 'Metro lines',
       metroStations: 'Metro stations',
+      geoCountries: 'Countries',
+      geoRegions: 'Regions',
+      geoCities: 'Cities',
+      geoDistricts: 'Districts',
     },
     sections: {
       system: 'System',
@@ -632,6 +636,237 @@ export default {
       delete: 'Failed to delete role.',
     },
     confirmDelete: 'Delete role {code}?',
+  },
+  geo: {
+    title: 'Geography',
+    countries: {
+      index: {
+        title: 'Countries',
+        subtitle: 'Search, sorting, limit and server pagination.',
+        createLabel: 'New country',
+        searchPlaceholder: 'Search: name, ISO code',
+        empty: 'No countries found.',
+        headers: {
+          name: 'Name',
+          isoCode: 'ISO code',
+          actions: 'Actions',
+        },
+        card: {
+          isoCode: 'ISO code: {value}',
+        },
+        sort: {
+          name: 'Name',
+          isoCode: 'ISO code',
+        },
+      },
+      new: {
+        title: 'New country',
+        subtitle: 'Create country in /api/admin/geo/countries',
+        saving: 'Saving...',
+        errors: {
+          create: 'Failed to create country.',
+        },
+      },
+      show: {
+        title: 'Country',
+        subtitle: 'Country details',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load country.',
+        },
+      },
+      edit: {
+        title: 'Edit country',
+        subtitle: 'Update /api/admin/geo/countries/:id',
+        saving: 'Saving...',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load country.',
+          update: 'Failed to update country.',
+        },
+      },
+      fields: {
+        name: 'Name',
+        isoCode: 'ISO code',
+      },
+      confirmDelete: 'Delete country {name}?',
+      errors: {
+        loadList: 'Failed to load countries list.',
+        delete: 'Failed to delete country.',
+      },
+    },
+    regions: {
+      index: {
+        title: 'Regions',
+        subtitle: 'Search, sorting, limit and server pagination.',
+        createLabel: 'New region',
+        searchPlaceholder: 'Search: name, country ID',
+        empty: 'No regions found.',
+        headers: {
+          name: 'Name',
+          countryId: 'Country ID',
+          actions: 'Actions',
+        },
+        card: {
+          countryId: 'Country ID: {value}',
+        },
+        sort: {
+          name: 'Name',
+          countryId: 'Country ID',
+        },
+      },
+      new: {
+        title: 'New region',
+        subtitle: 'Create region in /api/admin/geo/regions',
+        saving: 'Saving...',
+        errors: {
+          create: 'Failed to create region.',
+        },
+      },
+      show: {
+        title: 'Region',
+        subtitle: 'Region details',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load region.',
+        },
+      },
+      edit: {
+        title: 'Edit region',
+        subtitle: 'Update /api/admin/geo/regions/:id',
+        saving: 'Saving...',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load region.',
+          update: 'Failed to update region.',
+        },
+      },
+      fields: {
+        name: 'Name',
+        countryId: 'Country ID',
+      },
+      confirmDelete: 'Delete region {name}?',
+      errors: {
+        loadList: 'Failed to load regions list.',
+        delete: 'Failed to delete region.',
+      },
+    },
+    cities: {
+      index: {
+        title: 'Cities',
+        subtitle: 'Search, sorting, limit and server pagination.',
+        createLabel: 'New city',
+        searchPlaceholder: 'Search: name, country ID, region ID',
+        empty: 'No cities found.',
+        headers: {
+          name: 'Name',
+          countryId: 'Country ID',
+          regionId: 'Region ID',
+          actions: 'Actions',
+        },
+        card: {
+          countryId: 'Country ID: {value}',
+          regionId: 'Region ID: {value}',
+        },
+        sort: {
+          name: 'Name',
+          countryId: 'Country ID',
+          regionId: 'Region ID',
+        },
+      },
+      new: {
+        title: 'New city',
+        subtitle: 'Create city in /api/admin/geo/cities',
+        saving: 'Saving...',
+        errors: {
+          create: 'Failed to create city.',
+        },
+      },
+      show: {
+        title: 'City',
+        subtitle: 'City details',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load city.',
+        },
+      },
+      edit: {
+        title: 'Edit city',
+        subtitle: 'Update /api/admin/geo/cities/:id',
+        saving: 'Saving...',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load city.',
+          update: 'Failed to update city.',
+        },
+      },
+      fields: {
+        name: 'Name',
+        countryId: 'Country ID',
+        regionId: 'Region ID',
+      },
+      confirmDelete: 'Delete city {name}?',
+      errors: {
+        loadList: 'Failed to load cities list.',
+        delete: 'Failed to delete city.',
+      },
+    },
+    districts: {
+      index: {
+        title: 'Districts',
+        subtitle: 'Search, sorting, limit and server pagination.',
+        createLabel: 'New district',
+        searchPlaceholder: 'Search: name, city ID',
+        empty: 'No districts found.',
+        headers: {
+          name: 'Name',
+          cityId: 'City ID',
+          actions: 'Actions',
+        },
+        card: {
+          cityId: 'City ID: {value}',
+        },
+        sort: {
+          name: 'Name',
+          cityId: 'City ID',
+        },
+      },
+      new: {
+        title: 'New district',
+        subtitle: 'Create district in /api/admin/geo/districts',
+        saving: 'Saving...',
+        errors: {
+          create: 'Failed to create district.',
+        },
+      },
+      show: {
+        title: 'District',
+        subtitle: 'District details',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load district.',
+        },
+      },
+      edit: {
+        title: 'Edit district',
+        subtitle: 'Update /api/admin/geo/districts/:id',
+        saving: 'Saving...',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load district.',
+          update: 'Failed to update district.',
+        },
+      },
+      fields: {
+        name: 'Name',
+        cityId: 'City ID',
+      },
+      confirmDelete: 'Delete district {name}?',
+      errors: {
+        loadList: 'Failed to load districts list.',
+        delete: 'Failed to delete district.',
+      },
+    },
   },
   metro: {
     title: 'Metro',

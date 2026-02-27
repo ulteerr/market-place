@@ -338,6 +338,10 @@ const navigationPermissions: Record<string, string> = {
   'action-logs': 'admin.action-log.read',
   'metro-lines': 'admin.panel.access',
   'metro-stations': 'admin.panel.access',
+  'geo-countries': 'admin.panel.access',
+  'geo-regions': 'admin.panel.access',
+  'geo-cities': 'admin.panel.access',
+  'geo-districts': 'admin.panel.access',
 };
 const { hasPermission } = usePermissions();
 

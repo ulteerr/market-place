@@ -82,6 +82,12 @@ const iconPathMap: Record<AdminNavIcon, string[]> = {
     'M12 19.5V21',
     'M7.5 21h9',
   ],
+  geo: [
+    'M12 3a9 9 0 100 18 9 9 0 000-18z',
+    'M3.75 12h16.5',
+    'M12 3c2.25 2.25 3.75 5.4 3.75 9s-1.5 6.75-3.75 9',
+    'M12 3c-2.25 2.25-3.75 5.4-3.75 9s1.5 6.75 3.75 9',
+  ],
 };
 
 const iconPaths = computed(() => iconPathMap[props.name]);
