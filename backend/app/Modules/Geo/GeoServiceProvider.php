@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Geo;
 
 use App\Support\ModuleServiceProvider;
-use Modules\Geo\Console\Commands\ImportMetroFromDadataCommand;
 use Modules\Geo\Console\Commands\ImportRussiaGeoFromDadataCommand;
 use Modules\Geo\Repositories\CitiesRepository;
 use Modules\Geo\Repositories\CitiesRepositoryInterface;
@@ -13,10 +12,6 @@ use Modules\Geo\Repositories\CountriesRepository;
 use Modules\Geo\Repositories\CountriesRepositoryInterface;
 use Modules\Geo\Repositories\DistrictsRepository;
 use Modules\Geo\Repositories\DistrictsRepositoryInterface;
-use Modules\Geo\Repositories\MetroLinesRepository;
-use Modules\Geo\Repositories\MetroLinesRepositoryInterface;
-use Modules\Geo\Repositories\MetroStationsRepository;
-use Modules\Geo\Repositories\MetroStationsRepositoryInterface;
 use Modules\Geo\Repositories\RegionsRepository;
 use Modules\Geo\Repositories\RegionsRepositoryInterface;
 
@@ -30,14 +25,9 @@ final class GeoServiceProvider extends ModuleServiceProvider
         $this->app->bind(RegionsRepositoryInterface::class, RegionsRepository::class);
         $this->app->bind(CitiesRepositoryInterface::class, CitiesRepository::class);
         $this->app->bind(DistrictsRepositoryInterface::class, DistrictsRepository::class);
-        $this->app->bind(MetroLinesRepositoryInterface::class, MetroLinesRepository::class);
-        $this->app->bind(MetroStationsRepositoryInterface::class, MetroStationsRepository::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                ImportRussiaGeoFromDadataCommand::class,
-                ImportMetroFromDadataCommand::class,
-            ]);
+            $this->commands([ImportRussiaGeoFromDadataCommand::class]);
         }
     }
 }

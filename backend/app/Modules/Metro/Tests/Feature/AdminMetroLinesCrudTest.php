@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Tests\Feature;
+namespace Modules\Metro\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Geo\Models\City;
-use Modules\Geo\Models\MetroLine;
+use Modules\Metro\Models\MetroLine;
 use Modules\Users\Models\Role;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -18,7 +18,7 @@ final class AdminMetroLinesCrudTest extends TestCase
     #[Test]
     public function guest_cannot_access_admin_metro_lines_routes(): void
     {
-        $this->getJson("/api/admin/geo/metro-lines")->assertUnauthorized();
+        $this->getJson("/api/admin/metro-lines")->assertUnauthorized();
     }
 
     #[Test]
@@ -26,9 +26,7 @@ final class AdminMetroLinesCrudTest extends TestCase
     {
         $auth = $this->actingAsUser();
 
-        $this->withHeaders($auth["headers"])
-            ->getJson("/api/admin/geo/metro-lines")
-            ->assertForbidden();
+        $this->withHeaders($auth["headers"])->getJson("/api/admin/metro-lines")->assertForbidden();
     }
 
     #[Test]
@@ -38,21 +36,21 @@ final class AdminMetroLinesCrudTest extends TestCase
         $moscow = City::factory()->create(["name" => "Москва"]);
         $spb = City::factory()->create(["name" => "Санкт-Петербург"]);
 
-        MetroLine::query()->create([
+        MetroLine::factory()->create([
             "name" => "Сокольническая",
             "line_id" => "1",
             "color" => "#D6083B",
             "city_id" => (string) $moscow->id,
             "source" => "manual",
         ]);
-        MetroLine::query()->create([
+        MetroLine::factory()->create([
             "name" => "Арбатско-Покровская",
             "line_id" => "3",
             "color" => "#0078C9",
             "city_id" => (string) $moscow->id,
             "source" => "manual",
         ]);
-        MetroLine::query()->create([
+        MetroLine::factory()->create([
             "name" => "Невско-Василеостровская",
             "line_id" => "3",
             "color" => "#009A49",
@@ -62,7 +60,7 @@ final class AdminMetroLinesCrudTest extends TestCase
 
         $this->withHeaders($auth["headers"])
             ->getJson(
-                "/api/admin/geo/metro-lines?city_id={$moscow->id}&search=ская&sort_by=name&sort_dir=asc",
+                "/api/admin/metro-lines?city_id={$moscow->id}&search=ская&sort_by=name&sort_dir=asc",
             )
             ->assertOk()
             ->assertJsonPath("status", "ok")
@@ -78,7 +76,7 @@ final class AdminMetroLinesCrudTest extends TestCase
         $city = City::factory()->create(["name" => "Москва"]);
 
         $createResponse = $this->withHeaders($auth["headers"])
-            ->postJson("/api/admin/geo/metro-lines", [
+            ->postJson("/api/admin/metro-lines", [
                 "name" => "Кольцевая",
                 "external_id" => "line-ext-10",
                 "line_id" => "5",
@@ -93,13 +91,13 @@ final class AdminMetroLinesCrudTest extends TestCase
         $lineId = (string) $createResponse->json("data.id");
 
         $this->withHeaders($auth["headers"])
-            ->getJson("/api/admin/geo/metro-lines/{$lineId}")
+            ->getJson("/api/admin/metro-lines/{$lineId}")
             ->assertOk()
             ->assertJsonPath("data.id", $lineId)
             ->assertJsonPath("data.color", "#915133");
 
         $this->withHeaders($auth["headers"])
-            ->patchJson("/api/admin/geo/metro-lines/{$lineId}", [
+            ->patchJson("/api/admin/metro-lines/{$lineId}", [
                 "name" => "Большая кольцевая",
                 "color" => "#88AA22",
             ])
@@ -109,7 +107,7 @@ final class AdminMetroLinesCrudTest extends TestCase
             ->assertJsonPath("data.color", "#88AA22");
 
         $this->withHeaders($auth["headers"])
-            ->deleteJson("/api/admin/geo/metro-lines/{$lineId}")
+            ->deleteJson("/api/admin/metro-lines/{$lineId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 
@@ -122,7 +120,7 @@ final class AdminMetroLinesCrudTest extends TestCase
         $auth = $this->actingAsAdmin();
 
         $this->withHeaders($auth["headers"])
-            ->postJson("/api/admin/geo/metro-lines", [
+            ->postJson("/api/admin/metro-lines", [
                 "name" => "",
                 "city_id" => "not-a-uuid",
             ])

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Console\Commands;
+namespace Modules\Metro\Console\Commands;
 
 use Illuminate\Console\Command;
 use Modules\Geo\Models\City;
-use Modules\Geo\Services\DadataMetroImporter;
+use Modules\Metro\Services\DadataMetroImporter;
 
 final class ImportMetroFromDadataCommand extends Command
 {

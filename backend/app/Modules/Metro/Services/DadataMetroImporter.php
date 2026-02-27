@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Services;
+namespace Modules\Metro\Services;
 
 use Modules\Geo\Models\City;
-use Modules\Geo\Models\MetroLine;
-use Modules\Geo\Models\MetroStation;
+use Modules\Geo\Services\DadataAddressClient;
+use Modules\Metro\Models\MetroLine;
+use Modules\Metro\Models\MetroStation;
 
 final class DadataMetroImporter
 {

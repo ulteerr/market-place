@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Http\Requests;
+namespace Modules\Metro\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

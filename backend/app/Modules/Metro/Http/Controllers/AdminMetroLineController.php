@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Http\Controllers;
+namespace Modules\Metro\Http\Controllers;
 
 use App\Shared\Http\Controllers\AdminCrudController;
-use Modules\Geo\Http\Requests\CreateAdminMetroLineRequest;
-use Modules\Geo\Http\Requests\UpdateAdminMetroLineRequest;
-use Modules\Geo\Services\MetroLinesService;
+use Modules\Metro\Http\Requests\CreateAdminMetroLineRequest;
+use Modules\Metro\Http\Requests\UpdateAdminMetroLineRequest;
+use Modules\Metro\Services\MetroLinesService;
 
 final class AdminMetroLineController extends AdminCrudController
 {

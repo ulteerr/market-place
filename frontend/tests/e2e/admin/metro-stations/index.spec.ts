@@ -60,7 +60,7 @@ test.describe('Admin metro stations page', () => {
     const deleteResponsePromise = page.waitForResponse(
       (response) =>
         response.request().method() === 'DELETE' &&
-        response.url().includes('/api/admin/geo/metro-stations/')
+        response.url().includes('/api/admin/metro-stations/')
     );
     await dialog.getByRole('button', { name: 'Удалить' }).click();
     const deleteResponse = await deleteResponsePromise;

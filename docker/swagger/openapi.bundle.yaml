@@ -2776,10 +2776,10 @@ paths:
                           format: uuid
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
-  /api/geo/metro-lines:
+  /api/metro-lines:
     get:
       tags:
-        - Geo
+        - Metro
       summary: List metro lines
       security:
         - bearerAuth: []
@@ -2840,10 +2840,10 @@ paths:
                           type: string
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
-  /api/geo/metro-stations:
+  /api/metro-stations:
     get:
       tags:
-        - Geo
+        - Metro
       summary: List metro stations
       security:
         - bearerAuth: []
@@ -3379,10 +3379,10 @@ paths:
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
-  /api/admin/geo/metro-lines:
+  /api/admin/metro-lines:
     get:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: List metro lines (admin)
       security:
         - bearerAuth: []
@@ -3395,7 +3395,7 @@ paths:
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
     post:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Create metro line (admin)
       security:
         - bearerAuth: []
@@ -3435,7 +3435,7 @@ paths:
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
-  '/api/admin/geo/metro-lines/{id}':
+  '/api/admin/metro-lines/{id}':
     parameters:
       - name: id
         in: path
@@ -3445,7 +3445,7 @@ paths:
           format: uuid
     get:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Get metro line by id (admin)
       security:
         - bearerAuth: []
@@ -3460,7 +3460,7 @@ paths:
           $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
     patch:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Update metro line (admin)
       security:
         - bearerAuth: []
@@ -3500,7 +3500,7 @@ paths:
           $ref: '#/paths/~1api~1me/patch/responses/422'
     delete:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Delete metro line (admin)
       security:
         - bearerAuth: []
@@ -3511,10 +3511,10 @@ paths:
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
-  /api/admin/geo/metro-stations:
+  /api/admin/metro-stations:
     get:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: List metro stations (admin)
       security:
         - bearerAuth: []
@@ -3527,7 +3527,7 @@ paths:
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
     post:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Create metro station (admin)
       security:
         - bearerAuth: []
@@ -3579,7 +3579,7 @@ paths:
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
-  '/api/admin/geo/metro-stations/{id}':
+  '/api/admin/metro-stations/{id}':
     parameters:
       - name: id
         in: path
@@ -3589,7 +3589,7 @@ paths:
           format: uuid
     get:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Get metro station by id (admin)
       security:
         - bearerAuth: []
@@ -3604,7 +3604,7 @@ paths:
           $ref: '#/paths/~1api~1admin~1users~1%7Bid%7D/get/responses/404'
     patch:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Update metro station (admin)
       security:
         - bearerAuth: []
@@ -3655,7 +3655,7 @@ paths:
           $ref: '#/paths/~1api~1me/patch/responses/422'
     delete:
       tags:
-        - Admin Geo
+        - Admin Metro
       summary: Delete metro station (admin)
       security:
         - bearerAuth: []

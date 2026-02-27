@@ -8,8 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
-use Modules\Geo\Models\MetroLine;
-use Modules\Geo\Models\MetroStation;
+use Modules\Metro\Models\MetroLine;
+use Modules\Metro\Models\MetroStation;
 use Modules\Geo\Models\Region;
 use Modules\Users\Models\Role;
 use PHPUnit\Framework\Attributes\Test;
@@ -92,7 +92,7 @@ final class AdminGeoCrudTest extends TestCase
         $districtId = (string) $districtResponse->json("data.id");
 
         $lineResponse = $this->withHeaders($auth["headers"])
-            ->postJson("/api/admin/geo/metro-lines", [
+            ->postJson("/api/admin/metro-lines", [
                 "name" => "Сокольническая",
                 "line_id" => "1",
                 "color" => "#D6083B",
@@ -104,7 +104,7 @@ final class AdminGeoCrudTest extends TestCase
         $lineId = (string) $lineResponse->json("data.id");
 
         $stationResponse = $this->withHeaders($auth["headers"])
-            ->postJson("/api/admin/geo/metro-stations", [
+            ->postJson("/api/admin/metro-stations", [
                 "name" => "Охотный ряд",
                 "metro_line_id" => $lineId,
                 "city_id" => $cityId,
@@ -130,36 +130,36 @@ final class AdminGeoCrudTest extends TestCase
             ->assertJsonPath("status", "ok");
 
         $this->withHeaders($auth["headers"])
-            ->getJson("/api/admin/geo/metro-lines?city_id={$cityId}")
+            ->getJson("/api/admin/metro-lines?city_id={$cityId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 
         $this->withHeaders($auth["headers"])
-            ->getJson("/api/admin/geo/metro-stations?metro_line_id={$lineId}")
+            ->getJson("/api/admin/metro-stations?metro_line_id={$lineId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 
         $this->withHeaders($auth["headers"])
-            ->patchJson("/api/admin/geo/metro-lines/{$lineId}", [
+            ->patchJson("/api/admin/metro-lines/{$lineId}", [
                 "name" => "Сокольническая линия",
             ])
             ->assertOk()
             ->assertJsonPath("data.name", "Сокольническая линия");
 
         $this->withHeaders($auth["headers"])
-            ->patchJson("/api/admin/geo/metro-stations/{$stationId}", [
+            ->patchJson("/api/admin/metro-stations/{$stationId}", [
                 "name" => "Охотный Ряд",
             ])
             ->assertOk()
             ->assertJsonPath("data.name", "Охотный Ряд");
 
         $this->withHeaders($auth["headers"])
-            ->deleteJson("/api/admin/geo/metro-stations/{$stationId}")
+            ->deleteJson("/api/admin/metro-stations/{$stationId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 
         $this->withHeaders($auth["headers"])
-            ->deleteJson("/api/admin/geo/metro-lines/{$lineId}")
+            ->deleteJson("/api/admin/metro-lines/{$lineId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 

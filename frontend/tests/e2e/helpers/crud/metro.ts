@@ -89,95 +89,92 @@ export const setupMetroLinesCollectionApi = async (
 ) => {
   let dataset = [...seedLines];
 
-  await page.route(
-    /\/api\/admin\/geo\/metro-lines(?:\/[^/?#]+)?(?:\?.*)?$/,
-    async (route: Route) => {
-      const url = new URL(route.request().url());
-      const pathMatch = url.pathname.match(/\/api\/admin\/geo\/metro-lines\/([^/?#]+)/);
-      const requestedId = pathMatch?.[1];
+  await page.route(/\/api\/admin\/metro-lines(?:\/[^/?#]+)?(?:\?.*)?$/, async (route: Route) => {
+    const url = new URL(route.request().url());
+    const pathMatch = url.pathname.match(/\/api\/admin\/metro-lines\/([^/?#]+)/);
+    const requestedId = pathMatch?.[1];
 
-      if (route.request().method() === 'GET' && requestedId) {
-        const line = dataset.find((item) => item.id === requestedId);
-        if (!line) {
-          await route.fulfill({
-            status: 404,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              status: 'error',
-              message: 'Not found',
-            }),
-          });
-          return;
-        }
-
+    if (route.request().method() === 'GET' && requestedId) {
+      const line = dataset.find((item) => item.id === requestedId);
+      if (!line) {
         await route.fulfill({
-          status: 200,
+          status: 404,
           contentType: 'application/json',
           body: JSON.stringify({
-            status: 'ok',
-            data: line,
+            status: 'error',
+            message: 'Not found',
           }),
         });
         return;
       }
-
-      if (route.request().method() === 'DELETE') {
-        const id = route.request().url().split('/').pop();
-        dataset = dataset.filter((item) => item.id !== id);
-
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            status: 'ok',
-          }),
-        });
-        return;
-      }
-
-      const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
-      const sortBy = url.searchParams.get('sort_by') ?? 'name';
-      const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
-      const perPage = Number(url.searchParams.get('per_page') ?? 10);
-      const sortableFields: Array<keyof AdminMetroLine> = [
-        'id',
-        'name',
-        'line_id',
-        'color',
-        'city_id',
-        'source',
-      ];
-      const resolvedSortBy: keyof AdminMetroLine = sortableFields.includes(
-        sortBy as keyof AdminMetroLine
-      )
-        ? (sortBy as keyof AdminMetroLine)
-        : 'name';
-
-      const filtered = dataset.filter((item) => {
-        if (!search) {
-          return true;
-        }
-
-        return [item.name, item.line_id, item.color, item.city_id, item.source]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(search));
-      });
-
-      const sorted = [...filtered].sort((left, right) => {
-        const leftValue = String(left[resolvedSortBy] ?? '').toLowerCase();
-        const rightValue = String(right[resolvedSortBy] ?? '').toLowerCase();
-        const compare = leftValue.localeCompare(rightValue, 'ru');
-
-        return sortDir === 'desc' ? -compare : compare;
-      });
 
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(buildCollectionResponse(sorted, perPage)),
+        body: JSON.stringify({
+          status: 'ok',
+          data: line,
+        }),
       });
+      return;
     }
-  );
+
+    if (route.request().method() === 'DELETE') {
+      const id = route.request().url().split('/').pop();
+      dataset = dataset.filter((item) => item.id !== id);
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+        }),
+      });
+      return;
+    }
+
+    const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
+    const sortBy = url.searchParams.get('sort_by') ?? 'name';
+    const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
+    const perPage = Number(url.searchParams.get('per_page') ?? 10);
+    const sortableFields: Array<keyof AdminMetroLine> = [
+      'id',
+      'name',
+      'line_id',
+      'color',
+      'city_id',
+      'source',
+    ];
+    const resolvedSortBy: keyof AdminMetroLine = sortableFields.includes(
+      sortBy as keyof AdminMetroLine
+    )
+      ? (sortBy as keyof AdminMetroLine)
+      : 'name';
+
+    const filtered = dataset.filter((item) => {
+      if (!search) {
+        return true;
+      }
+
+      return [item.name, item.line_id, item.color, item.city_id, item.source]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(search));
+    });
+
+    const sorted = [...filtered].sort((left, right) => {
+      const leftValue = String(left[resolvedSortBy] ?? '').toLowerCase();
+      const rightValue = String(right[resolvedSortBy] ?? '').toLowerCase();
+      const compare = leftValue.localeCompare(rightValue, 'ru');
+
+      return sortDir === 'desc' ? -compare : compare;
+    });
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(buildCollectionResponse(sorted, perPage)),
+    });
+  });
 };
 
 export const setupMetroStationsCollectionApi = async (
@@ -186,71 +183,68 @@ export const setupMetroStationsCollectionApi = async (
 ) => {
   let dataset = [...seedStations];
 
-  await page.route(
-    /\/api\/admin\/geo\/metro-stations(?:\/[^/?#]+)?(?:\?.*)?$/,
-    async (route: Route) => {
-      if (route.request().method() === 'DELETE') {
-        const id = route.request().url().split('/').pop();
-        dataset = dataset.filter((item) => item.id !== id);
-
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            status: 'ok',
-          }),
-        });
-        return;
-      }
-
-      const url = new URL(route.request().url());
-      const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
-      const sortBy = url.searchParams.get('sort_by') ?? 'name';
-      const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
-      const perPage = Number(url.searchParams.get('per_page') ?? 10);
-      const sortableFields: Array<keyof AdminMetroStation> = [
-        'id',
-        'name',
-        'line_id',
-        'metro_line_id',
-        'city_id',
-        'source',
-      ];
-      const resolvedSortBy: keyof AdminMetroStation = sortableFields.includes(
-        sortBy as keyof AdminMetroStation
-      )
-        ? (sortBy as keyof AdminMetroStation)
-        : 'name';
-
-      const filtered = dataset.filter((item) => {
-        if (!search) {
-          return true;
-        }
-
-        return [item.name, item.line_id, item.metro_line_id, item.city_id, item.source]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(search));
-      });
-
-      const sorted = [...filtered].sort((left, right) => {
-        const leftValue = String(left[resolvedSortBy] ?? '').toLowerCase();
-        const rightValue = String(right[resolvedSortBy] ?? '').toLowerCase();
-        const compare = leftValue.localeCompare(rightValue, 'ru');
-
-        return sortDir === 'desc' ? -compare : compare;
-      });
+  await page.route(/\/api\/admin\/metro-stations(?:\/[^/?#]+)?(?:\?.*)?$/, async (route: Route) => {
+    if (route.request().method() === 'DELETE') {
+      const id = route.request().url().split('/').pop();
+      dataset = dataset.filter((item) => item.id !== id);
 
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(buildCollectionResponse(sorted, perPage)),
+        body: JSON.stringify({
+          status: 'ok',
+        }),
       });
+      return;
     }
-  );
+
+    const url = new URL(route.request().url());
+    const search = (url.searchParams.get('search') ?? '').trim().toLowerCase();
+    const sortBy = url.searchParams.get('sort_by') ?? 'name';
+    const sortDir = (url.searchParams.get('sort_dir') ?? 'asc').toLowerCase();
+    const perPage = Number(url.searchParams.get('per_page') ?? 10);
+    const sortableFields: Array<keyof AdminMetroStation> = [
+      'id',
+      'name',
+      'line_id',
+      'metro_line_id',
+      'city_id',
+      'source',
+    ];
+    const resolvedSortBy: keyof AdminMetroStation = sortableFields.includes(
+      sortBy as keyof AdminMetroStation
+    )
+      ? (sortBy as keyof AdminMetroStation)
+      : 'name';
+
+    const filtered = dataset.filter((item) => {
+      if (!search) {
+        return true;
+      }
+
+      return [item.name, item.line_id, item.metro_line_id, item.city_id, item.source]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(search));
+    });
+
+    const sorted = [...filtered].sort((left, right) => {
+      const leftValue = String(left[resolvedSortBy] ?? '').toLowerCase();
+      const rightValue = String(right[resolvedSortBy] ?? '').toLowerCase();
+      const compare = leftValue.localeCompare(rightValue, 'ru');
+
+      return sortDir === 'desc' ? -compare : compare;
+    });
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(buildCollectionResponse(sorted, perPage)),
+    });
+  });
 };
 
 export const setupMetroLineShowApi = async (page: Page, line: AdminMetroLine) => {
-  await page.route(`**/api/admin/geo/metro-lines/${line.id}`, async (route: Route) => {
+  await page.route(`**/api/admin/metro-lines/${line.id}`, async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -263,7 +257,7 @@ export const setupMetroLineShowApi = async (page: Page, line: AdminMetroLine) =>
 };
 
 export const setupMetroStationShowApi = async (page: Page, station: AdminMetroStation) => {
-  await page.route(`**/api/admin/geo/metro-stations/${station.id}`, async (route: Route) => {
+  await page.route(`**/api/admin/metro-stations/${station.id}`, async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -280,7 +274,7 @@ export const setupMetroLineEditApi = async (
   line: AdminMetroLine,
   onPatch?: (payload: Record<string, unknown>) => void
 ) => {
-  await page.route(`**/api/admin/geo/metro-lines/${line.id}`, async (route: Route) => {
+  await page.route(`**/api/admin/metro-lines/${line.id}`, async (route: Route) => {
     const method = route.request().method();
 
     if (method === 'GET') {
@@ -322,7 +316,7 @@ export const setupMetroStationEditApi = async (
   station: AdminMetroStation,
   onPatch?: (payload: Record<string, unknown>) => void
 ) => {
-  await page.route(`**/api/admin/geo/metro-stations/${station.id}`, async (route: Route) => {
+  await page.route(`**/api/admin/metro-stations/${station.id}`, async (route: Route) => {
     const method = route.request().method();
 
     if (method === 'GET') {

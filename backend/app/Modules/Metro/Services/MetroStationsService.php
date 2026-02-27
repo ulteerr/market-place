@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Services;
+namespace Modules\Metro\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Modules\Geo\Models\MetroStation;
-use Modules\Geo\Repositories\MetroStationsRepositoryInterface;
+use Modules\Metro\Models\MetroStation;
+use Modules\Metro\Repositories\MetroStationsRepositoryInterface;
 use RuntimeException;
 
 final class MetroStationsService

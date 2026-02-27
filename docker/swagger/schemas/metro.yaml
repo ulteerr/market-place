@@ -1,0 +1,84 @@
+components:
+  schemas:
+    MetroLine:
+      type: object
+      required: [id, name, city_id, source]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        external_id:
+          type: string
+          nullable: true
+        line_id:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        city_id:
+          type: string
+          format: uuid
+        source:
+          type: string
+
+    MetroStation:
+      type: object
+      required: [id, name, metro_line_id, city_id, source]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        external_id:
+          type: string
+          nullable: true
+        line_id:
+          type: string
+          nullable: true
+        geo_lat:
+          type: number
+          format: float
+          nullable: true
+        geo_lon:
+          type: number
+          format: float
+          nullable: true
+        is_closed:
+          type: boolean
+          nullable: true
+        metro_line_id:
+          type: string
+          format: uuid
+        city_id:
+          type: string
+          format: uuid
+        source:
+          type: string
+
+    MetroLinesResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetroLine'
+
+    MetroStationsResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetroStation'

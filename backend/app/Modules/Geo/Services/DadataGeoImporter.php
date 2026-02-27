@@ -8,8 +8,8 @@ use Illuminate\Support\Arr;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
-use Modules\Geo\Models\MetroLine;
-use Modules\Geo\Models\MetroStation;
+use Modules\Metro\Models\MetroLine;
+use Modules\Metro\Models\MetroStation;
 use Modules\Geo\Models\Region;
 
 final class DadataGeoImporter

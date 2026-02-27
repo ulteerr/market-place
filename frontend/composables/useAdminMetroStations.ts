@@ -78,7 +78,7 @@ export const useAdminMetroStations = () => {
       search: rawSearch,
     };
 
-    const response = await api<IndexResponse<AdminMetroStation>>('/api/admin/geo/metro-stations', {
+    const response = await api<IndexResponse<AdminMetroStation>>('/api/admin/metro-stations', {
       query: queryBase,
     });
 
@@ -95,7 +95,7 @@ export const useAdminMetroStations = () => {
 
     for (const fallbackSearch of fallbackCandidates) {
       const fallbackResponse = await api<IndexResponse<AdminMetroStation>>(
-        '/api/admin/geo/metro-stations',
+        '/api/admin/metro-stations',
         {
           query: {
             ...params,
@@ -113,27 +113,27 @@ export const useAdminMetroStations = () => {
   };
 
   const show = async (id: string): Promise<AdminMetroStation> => {
-    const response = await api<MetroStationShowResponse>(`/api/admin/geo/metro-stations/${id}`);
+    const response = await api<MetroStationShowResponse>(`/api/admin/metro-stations/${id}`);
 
     return response.data;
   };
 
   const create = async (payload: CreateMetroStationPayload): Promise<void> => {
-    await api<MetroStationMutationResponse>('/api/admin/geo/metro-stations', {
+    await api<MetroStationMutationResponse>('/api/admin/metro-stations', {
       method: 'POST',
       body: payload,
     });
   };
 
   const update = async (id: string, payload: UpdateMetroStationPayload): Promise<void> => {
-    await api<MetroStationMutationResponse>(`/api/admin/geo/metro-stations/${id}`, {
+    await api<MetroStationMutationResponse>(`/api/admin/metro-stations/${id}`, {
       method: 'PATCH',
       body: payload,
     });
   };
 
   const remove = async (id: string): Promise<void> => {
-    await api(`/api/admin/geo/metro-stations/${id}`, {
+    await api(`/api/admin/metro-stations/${id}`, {
       method: 'DELETE',
     });
   };

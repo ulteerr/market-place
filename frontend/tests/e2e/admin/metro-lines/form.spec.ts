@@ -33,7 +33,7 @@ test.describe('Admin metro lines form pages', () => {
 
     let capturedCreatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/geo/metro-lines', async (route) => {
+    await page.route('**/api/admin/metro-lines', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
         return;

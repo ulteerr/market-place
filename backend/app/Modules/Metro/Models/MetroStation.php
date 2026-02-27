@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Models;
+namespace Modules\Metro\Models;
 
 use App\Shared\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Geo\Models\City;
+use Modules\Metro\Database\Factories\MetroStationFactory;
 
 final class MetroStation extends Model
 {
+    use HasFactory;
     use HasUuid;
 
     protected $table = "metro_stations";
@@ -38,5 +42,10 @@ final class MetroStation extends Model
     public function line(): BelongsTo
     {
         return $this->belongsTo(MetroLine::class, "metro_line_id");
+    }
+
+    protected static function newFactory(): MetroStationFactory
+    {
+        return MetroStationFactory::new();
     }
 }

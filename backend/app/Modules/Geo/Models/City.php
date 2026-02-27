@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Geo\Database\Factories\CityFactory;
+use Modules\Metro\Models\MetroLine;
+use Modules\Metro\Models\MetroStation;
 use Modules\Organizations\Models\OrganizationLocation;
 
 final class City extends Model

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Repositories;
+namespace Modules\Metro\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Modules\Geo\Models\MetroLine;
+use Modules\Metro\Models\MetroLine;
 
 interface MetroLinesRepositoryInterface
 {

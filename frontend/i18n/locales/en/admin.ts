@@ -661,7 +661,7 @@ export default {
       },
       new: {
         title: 'New metro line',
-        subtitle: 'Create line in /api/admin/geo/metro-lines',
+        subtitle: 'Create line in /api/admin/metro-lines',
         saving: 'Saving...',
         errors: {
           create: 'Failed to create metro line.',
@@ -677,7 +677,7 @@ export default {
       },
       edit: {
         title: 'Edit metro line',
-        subtitle: 'Update /api/admin/geo/metro-lines/:id',
+        subtitle: 'Update /api/admin/metro-lines/:id',
         saving: 'Saving...',
         errors: {
           invalidId: 'Invalid ID.',
@@ -725,7 +725,7 @@ export default {
       },
       new: {
         title: 'New metro station',
-        subtitle: 'Create station in /api/admin/geo/metro-stations',
+        subtitle: 'Create station in /api/admin/metro-stations',
         saving: 'Saving...',
         metroLinePlaceholder: 'Select metro line',
         cityPlaceholder: 'Select city',
@@ -743,7 +743,7 @@ export default {
       },
       edit: {
         title: 'Edit metro station',
-        subtitle: 'Update /api/admin/geo/metro-stations/:id',
+        subtitle: 'Update /api/admin/metro-stations/:id',
         saving: 'Saving...',
         metroLinePlaceholder: 'Select metro line',
         cityPlaceholder: 'Select city',

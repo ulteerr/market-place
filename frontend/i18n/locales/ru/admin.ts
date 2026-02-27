@@ -661,7 +661,7 @@ export default {
       },
       new: {
         title: 'Новая линия метро',
-        subtitle: 'Создание линии в /api/admin/geo/metro-lines',
+        subtitle: 'Создание линии в /api/admin/metro-lines',
         saving: 'Сохраняем...',
         errors: {
           create: 'Не удалось создать линию метро.',
@@ -677,7 +677,7 @@ export default {
       },
       edit: {
         title: 'Редактирование линии метро',
-        subtitle: 'Обновление /api/admin/geo/metro-lines/:id',
+        subtitle: 'Обновление /api/admin/metro-lines/:id',
         saving: 'Сохраняем...',
         errors: {
           invalidId: 'Некорректный ID.',
@@ -725,7 +725,7 @@ export default {
       },
       new: {
         title: 'Новая станция метро',
-        subtitle: 'Создание станции в /api/admin/geo/metro-stations',
+        subtitle: 'Создание станции в /api/admin/metro-stations',
         saving: 'Сохраняем...',
         metroLinePlaceholder: 'Выберите линию метро',
         cityPlaceholder: 'Выберите город',
@@ -743,7 +743,7 @@ export default {
       },
       edit: {
         title: 'Редактирование станции метро',
-        subtitle: 'Обновление /api/admin/geo/metro-stations/:id',
+        subtitle: 'Обновление /api/admin/metro-stations/:id',
         saving: 'Сохраняем...',
         metroLinePlaceholder: 'Выберите линию метро',
         cityPlaceholder: 'Выберите город',

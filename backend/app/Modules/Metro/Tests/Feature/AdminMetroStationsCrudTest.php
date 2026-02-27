@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Tests\Feature;
+namespace Modules\Metro\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Geo\Models\City;
-use Modules\Geo\Models\MetroLine;
-use Modules\Geo\Models\MetroStation;
+use Modules\Metro\Models\MetroLine;
+use Modules\Metro\Models\MetroStation;
 use Modules\Users\Models\Role;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -19,7 +19,7 @@ final class AdminMetroStationsCrudTest extends TestCase
     #[Test]
     public function guest_cannot_access_admin_metro_stations_routes(): void
     {
-        $this->getJson("/api/admin/geo/metro-stations")->assertUnauthorized();
+        $this->getJson("/api/admin/metro-stations")->assertUnauthorized();
     }
 
     #[Test]
@@ -28,7 +28,7 @@ final class AdminMetroStationsCrudTest extends TestCase
         $auth = $this->actingAsUser();
 
         $this->withHeaders($auth["headers"])
-            ->getJson("/api/admin/geo/metro-stations")
+            ->getJson("/api/admin/metro-stations")
             ->assertForbidden();
     }
 
@@ -39,21 +39,21 @@ final class AdminMetroStationsCrudTest extends TestCase
         $moscow = City::factory()->create(["name" => "Москва"]);
         $spb = City::factory()->create(["name" => "Санкт-Петербург"]);
 
-        $redLineMoscow = MetroLine::query()->create([
+        $redLineMoscow = MetroLine::factory()->create([
             "name" => "Сокольническая",
             "line_id" => "1",
             "color" => "#D6083B",
             "city_id" => (string) $moscow->id,
             "source" => "manual",
         ]);
-        $blueLineMoscow = MetroLine::query()->create([
+        $blueLineMoscow = MetroLine::factory()->create([
             "name" => "Арбатско-Покровская",
             "line_id" => "3",
             "color" => "#0078C9",
             "city_id" => (string) $moscow->id,
             "source" => "manual",
         ]);
-        $greenLineSpb = MetroLine::query()->create([
+        $greenLineSpb = MetroLine::factory()->create([
             "name" => "Невско-Василеостровская",
             "line_id" => "3",
             "color" => "#009A49",
@@ -61,21 +61,21 @@ final class AdminMetroStationsCrudTest extends TestCase
             "source" => "manual",
         ]);
 
-        MetroStation::query()->create([
+        MetroStation::factory()->create([
             "name" => "Охотный ряд",
             "line_id" => "1",
             "metro_line_id" => (string) $redLineMoscow->id,
             "city_id" => (string) $moscow->id,
             "source" => "manual",
         ]);
-        MetroStation::query()->create([
+        MetroStation::factory()->create([
             "name" => "Арбатская",
             "line_id" => "3",
             "metro_line_id" => (string) $blueLineMoscow->id,
             "city_id" => (string) $moscow->id,
             "source" => "manual",
         ]);
-        MetroStation::query()->create([
+        MetroStation::factory()->create([
             "name" => "Гостиный двор",
             "line_id" => "3",
             "metro_line_id" => (string) $greenLineSpb->id,
@@ -85,7 +85,7 @@ final class AdminMetroStationsCrudTest extends TestCase
 
         $this->withHeaders($auth["headers"])
             ->getJson(
-                "/api/admin/geo/metro-stations?city_id={$moscow->id}&metro_line_id={$blueLineMoscow->id}&search=бат&sort_by=name&sort_dir=asc",
+                "/api/admin/metro-stations?city_id={$moscow->id}&metro_line_id={$blueLineMoscow->id}&search=бат&sort_by=name&sort_dir=asc",
             )
             ->assertOk()
             ->assertJsonPath("status", "ok")
@@ -99,7 +99,7 @@ final class AdminMetroStationsCrudTest extends TestCase
     {
         $auth = $this->actingAsAdmin();
         $city = City::factory()->create(["name" => "Москва"]);
-        $line = MetroLine::query()->create([
+        $line = MetroLine::factory()->create([
             "name" => "Сокольническая",
             "line_id" => "1",
             "color" => "#D6083B",
@@ -108,7 +108,7 @@ final class AdminMetroStationsCrudTest extends TestCase
         ]);
 
         $createResponse = $this->withHeaders($auth["headers"])
-            ->postJson("/api/admin/geo/metro-stations", [
+            ->postJson("/api/admin/metro-stations", [
                 "name" => "Охотный ряд",
                 "external_id" => "station-ext-10",
                 "line_id" => "1",
@@ -126,13 +126,13 @@ final class AdminMetroStationsCrudTest extends TestCase
         $stationId = (string) $createResponse->json("data.id");
 
         $this->withHeaders($auth["headers"])
-            ->getJson("/api/admin/geo/metro-stations/{$stationId}")
+            ->getJson("/api/admin/metro-stations/{$stationId}")
             ->assertOk()
             ->assertJsonPath("data.id", $stationId)
             ->assertJsonPath("data.metro_line_id", (string) $line->id);
 
         $this->withHeaders($auth["headers"])
-            ->patchJson("/api/admin/geo/metro-stations/{$stationId}", [
+            ->patchJson("/api/admin/metro-stations/{$stationId}", [
                 "name" => "Охотный Ряд",
                 "is_closed" => true,
                 "geo_lat" => 55.758,
@@ -144,7 +144,7 @@ final class AdminMetroStationsCrudTest extends TestCase
             ->assertJsonPath("data.geo_lat", 55.758);
 
         $this->withHeaders($auth["headers"])
-            ->deleteJson("/api/admin/geo/metro-stations/{$stationId}")
+            ->deleteJson("/api/admin/metro-stations/{$stationId}")
             ->assertOk()
             ->assertJsonPath("status", "ok");
 
@@ -157,7 +157,7 @@ final class AdminMetroStationsCrudTest extends TestCase
         $auth = $this->actingAsAdmin();
 
         $this->withHeaders($auth["headers"])
-            ->postJson("/api/admin/geo/metro-stations", [
+            ->postJson("/api/admin/metro-stations", [
                 "name" => "",
                 "metro_line_id" => "bad-id",
                 "city_id" => "bad-id",

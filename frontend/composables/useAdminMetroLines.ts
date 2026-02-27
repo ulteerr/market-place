@@ -68,7 +68,7 @@ export const useAdminMetroLines = () => {
       search: rawSearch,
     };
 
-    const response = await api<IndexResponse<AdminMetroLine>>('/api/admin/geo/metro-lines', {
+    const response = await api<IndexResponse<AdminMetroLine>>('/api/admin/metro-lines', {
       query: queryBase,
     });
 
@@ -84,15 +84,12 @@ export const useAdminMetroLines = () => {
     );
 
     for (const fallbackSearch of fallbackCandidates) {
-      const fallbackResponse = await api<IndexResponse<AdminMetroLine>>(
-        '/api/admin/geo/metro-lines',
-        {
-          query: {
-            ...params,
-            search: fallbackSearch,
-          },
-        }
-      );
+      const fallbackResponse = await api<IndexResponse<AdminMetroLine>>('/api/admin/metro-lines', {
+        query: {
+          ...params,
+          search: fallbackSearch,
+        },
+      });
 
       if (fallbackResponse.data.total > 0) {
         return fallbackResponse.data;
@@ -103,27 +100,27 @@ export const useAdminMetroLines = () => {
   };
 
   const show = async (id: string): Promise<AdminMetroLine> => {
-    const response = await api<MetroLineShowResponse>(`/api/admin/geo/metro-lines/${id}`);
+    const response = await api<MetroLineShowResponse>(`/api/admin/metro-lines/${id}`);
 
     return response.data;
   };
 
   const create = async (payload: CreateMetroLinePayload): Promise<void> => {
-    await api<MetroLineMutationResponse>('/api/admin/geo/metro-lines', {
+    await api<MetroLineMutationResponse>('/api/admin/metro-lines', {
       method: 'POST',
       body: payload,
     });
   };
 
   const update = async (id: string, payload: UpdateMetroLinePayload): Promise<void> => {
-    await api<MetroLineMutationResponse>(`/api/admin/geo/metro-lines/${id}`, {
+    await api<MetroLineMutationResponse>(`/api/admin/metro-lines/${id}`, {
       method: 'PATCH',
       body: payload,
     });
   };
 
   const remove = async (id: string): Promise<void> => {
-    await api(`/api/admin/geo/metro-lines/${id}`, {
+    await api(`/api/admin/metro-lines/${id}`, {
       method: 'DELETE',
     });
   };

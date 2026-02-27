@@ -2,25 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Modules\Geo\Repositories;
+namespace Modules\Metro\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Modules\Geo\Models\MetroStation;
+use Modules\Metro\Models\MetroLine;
 
-final class MetroStationsRepository implements MetroStationsRepositoryInterface
+final class MetroLinesRepository implements MetroLinesRepositoryInterface
 {
     public function list(array $filters = []): Collection
     {
-        $query = MetroStation::query()->select([
+        $query = MetroLine::query()->select([
             "id",
             "name",
             "external_id",
             "line_id",
-            "geo_lat",
-            "geo_lon",
-            "is_closed",
-            "metro_line_id",
+            "color",
             "city_id",
             "source",
         ]);
@@ -28,11 +25,6 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
         $cityId = trim((string) ($filters["city_id"] ?? ""));
         if ($cityId !== "") {
             $query->where("city_id", $cityId);
-        }
-
-        $lineId = trim((string) ($filters["metro_line_id"] ?? ""));
-        if ($lineId !== "") {
-            $query->where("metro_line_id", $lineId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
@@ -45,15 +37,12 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
 
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        $query = MetroStation::query()->select([
+        $query = MetroLine::query()->select([
             "id",
             "name",
             "external_id",
             "line_id",
-            "geo_lat",
-            "geo_lon",
-            "is_closed",
-            "metro_line_id",
+            "color",
             "city_id",
             "source",
             "created_at",
@@ -63,11 +52,6 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
         $cityId = trim((string) ($filters["city_id"] ?? ""));
         if ($cityId !== "") {
             $query->where("city_id", $cityId);
-        }
-
-        $lineId = trim((string) ($filters["metro_line_id"] ?? ""));
-        if ($lineId !== "") {
-            $query->where("metro_line_id", $lineId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
@@ -87,25 +71,25 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
         return $query->orderBy($sortBy, $sortDir)->paginate($perPage);
     }
 
-    public function create(array $data): MetroStation
+    public function create(array $data): MetroLine
     {
-        return MetroStation::query()->create($data);
+        return MetroLine::query()->create($data);
     }
 
-    public function findById(string $id): ?MetroStation
+    public function findById(string $id): ?MetroLine
     {
-        return MetroStation::query()->find($id);
+        return MetroLine::query()->find($id);
     }
 
-    public function update(MetroStation $station, array $data): MetroStation
+    public function update(MetroLine $line, array $data): MetroLine
     {
-        $station->update($data);
+        $line->update($data);
 
-        return $station;
+        return $line;
     }
 
-    public function delete(MetroStation $station): void
+    public function delete(MetroLine $line): void
     {
-        $station->delete();
+        $line->delete();
     }
 }
