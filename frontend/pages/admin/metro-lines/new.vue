@@ -1,47 +1,47 @@
 <template>
   <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
-      <h2 class="text-2xl font-semibold">Новая ветка метро</h2>
-      <p class="admin-muted mt-2 text-sm">Создание ветки в /api/admin/geo/metro-lines</p>
+      <h2 class="text-2xl font-semibold">{{ t('admin.metro.lines.new.title') }}</h2>
+      <p class="admin-muted mt-2 text-sm">{{ t('admin.metro.lines.new.subtitle') }}</p>
     </div>
 
     <article class="admin-card rounded-2xl p-5 lg:p-6">
       <form class="space-y-3" @submit.prevent="submitForm">
         <UiInput
           v-model="form.name"
-          label="Название"
+          :label="t('admin.metro.lines.fields.name')"
           required
           :disabled="saving"
           :error="fieldErrors.name"
         />
         <UiInput
           v-model="form.external_id"
-          label="External ID"
+          :label="t('admin.metro.lines.fields.externalId')"
           :disabled="saving"
           :error="fieldErrors.external_id"
         />
         <UiInput
           v-model="form.line_id"
-          label="Line ID"
+          :label="t('admin.metro.lines.fields.lineId')"
           :disabled="saving"
           :error="fieldErrors.line_id"
         />
-        <UiInput
+        <UiColorPicker
           v-model="form.color"
-          label="Color (#RRGGBB)"
+          :label="t('admin.metro.lines.fields.color')"
           :disabled="saving"
           :error="fieldErrors.color"
         />
         <UiInput
           v-model="form.city_id"
-          label="City ID"
+          :label="t('admin.metro.lines.fields.cityId')"
           required
           :disabled="saving"
           :error="fieldErrors.city_id"
         />
         <UiInput
           v-model="form.source"
-          label="Source"
+          :label="t('admin.metro.lines.fields.source')"
           required
           :disabled="saving"
           :error="fieldErrors.source"
@@ -55,12 +55,12 @@
             class="admin-button rounded-lg px-4 py-2 text-sm"
             :disabled="saving"
           >
-            {{ saving ? 'Сохраняем...' : 'Создать' }}
+            {{ saving ? t('admin.metro.lines.new.saving') : t('common.create') }}
           </button>
           <NuxtLink
             to="/admin/metro-lines"
             class="admin-button-secondary rounded-lg px-4 py-2 text-sm"
-            >Отмена</NuxtLink
+            >{{ t('common.cancel') }}</NuxtLink
           >
         </div>
       </form>
@@ -70,12 +70,14 @@
 
 <script setup lang="ts">
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiColorPicker from '~/components/ui/FormControls/UiColorPicker/UiColorPicker.vue';
 import type { CreateMetroLinePayload } from '~/composables/useAdminMetroLines';
 import {
   getApiErrorPayload,
   getApiErrorMessage,
   getFieldError,
 } from '~/composables/useAdminCrudCommon';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
@@ -130,7 +132,7 @@ const submitForm = async () => {
     await navigateTo('/admin/metro-lines');
   } catch (error) {
     const payload = getApiErrorPayload(error);
-    formError.value = getApiErrorMessage(error, 'Не удалось создать ветку метро.');
+    formError.value = getApiErrorMessage(error, t('admin.metro.lines.new.errors.create'));
     fieldErrors.name = getFieldError(payload.errors, 'name');
     fieldErrors.external_id = getFieldError(payload.errors, 'external_id');
     fieldErrors.line_id = getFieldError(payload.errors, 'line_id');

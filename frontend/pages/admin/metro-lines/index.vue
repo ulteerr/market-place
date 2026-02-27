@@ -2,13 +2,13 @@
   <AdminEntityIndex
     page-class="metro-lines-page"
     max-width-class="max-w-7xl"
-    title="Линии метро"
-    subtitle="CRUD для веток метро"
+    :title="t('admin.metro.lines.index.title')"
+    :subtitle="t('admin.metro.lines.index.subtitle')"
     create-to="/admin/metro-lines/new"
     :show-create="true"
-    create-label="Новая ветка"
+    :create-label="t('admin.metro.lines.index.createLabel')"
     :search-value="listState.searchInput.value"
-    search-placeholder="Поиск по названию"
+    :search-placeholder="t('admin.metro.lines.index.searchPlaceholder')"
     :show-apply="false"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
@@ -26,11 +26,11 @@
     :last-page="pagination.last_page"
     :pagination-per-page="pagination.per_page"
     :pagination-items="paginationItems"
-    :table-skeleton-columns="6"
+    :table-skeleton-columns="5"
     @update:search-value="(value) => (listState.searchInput.value = value)"
     @update:per-page="onUpdatePerPage"
-    @update:mode="(mode) => (contentMode = mode)"
-    @toggle-desktop="tableOnDesktop = !tableOnDesktop"
+    @update:mode="onModeChange"
+    @toggle-desktop="onToggleDesktopMode"
     @reset="onResetFilters"
     @sort="onToggleSort"
     @page="fetchItems"
@@ -42,31 +42,37 @@
             <tr>
               <th>
                 <button type="button" class="sort-btn" @click="onToggleSort('name')">
-                  Название {{ listState.sortMark('name') }}
+                  {{ t('admin.metro.lines.index.headers.name') }}
+                  {{ listState.sortMark('name') }}
                 </button>
               </th>
-              <th>Line ID</th>
-              <th>Color</th>
-              <th>City ID</th>
-              <th>Source</th>
-              <th class="text-right">Действия</th>
+              <th>{{ t('admin.metro.lines.index.headers.lineId') }}</th>
+              <th>{{ t('admin.metro.lines.index.headers.color') }}</th>
+              <th>{{ t('admin.metro.lines.index.headers.cityId') }}</th>
+              <th class="text-right">{{ t('admin.metro.lines.index.headers.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="6" class="admin-muted py-5 text-center text-sm">Загрузка...</td>
+              <td colspan="5" class="admin-muted py-5 text-center text-sm">
+                {{ t('common.loading') }}
+              </td>
             </tr>
             <tr v-else-if="!items.length">
-              <td colspan="6" class="admin-muted py-5 text-center text-sm">Нет данных</td>
+              <td colspan="5" class="admin-muted py-5 text-center text-sm">
+                {{ t('admin.metro.lines.index.empty') }}
+              </td>
             </tr>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.name }}</td>
-              <td>{{ item.line_id || '—' }}</td>
+              <td>{{ item.line_id || t('common.dash') }}</td>
               <td>
-                <span class="font-mono text-xs">{{ item.color || '—' }}</span>
+                <span v-if="item.color" class="inline-flex items-center gap-2">
+                  <AdminColorDot :color="item.color" />
+                </span>
+                <span v-else class="font-mono text-xs">{{ t('common.dash') }}</span>
               </td>
               <td class="font-mono text-xs">{{ item.city_id }}</td>
-              <td>{{ item.source }}</td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/metro-lines/${item.id}`"
@@ -84,16 +90,51 @@
         </table>
       </div>
     </template>
+
+    <template #cards>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <article v-for="item in items" :key="item.id" class="role-card rounded-xl p-4">
+          <h4 class="text-sm font-semibold">{{ item.name }}</h4>
+          <p class="admin-muted mt-1 text-xs">
+            {{
+              t('admin.metro.lines.index.card.lineId', { value: item.line_id || t('common.dash') })
+            }}
+          </p>
+          <p class="admin-muted text-xs">
+            {{ t('admin.metro.lines.index.card.color') }}
+            <span v-if="item.color" class="ml-1 inline-flex align-middle">
+              <AdminColorDot :color="item.color" />
+            </span>
+            <span v-else class="ml-1">{{ t('common.dash') }}</span>
+          </p>
+          <p class="admin-muted text-xs">
+            {{ t('admin.metro.lines.index.card.cityId', { value: item.city_id }) }}
+          </p>
+
+          <div class="mt-3">
+            <AdminCrudActions
+              :show-to="`/admin/metro-lines/${item.id}`"
+              :edit-to="`/admin/metro-lines/${item.id}/edit`"
+              :can-show="true"
+              :can-edit="true"
+              :can-delete="true"
+              :deleting="deletingId === item.id"
+              @delete="onRemove(item)"
+            />
+          </div>
+        </article>
+      </div>
+    </template>
   </AdminEntityIndex>
 
   <UiModal
     v-model="removeConfirmOpen"
     mode="confirm"
-    title="Удаление"
+    :title="t('admin.actions.delete')"
     :message="removeConfirmMessage"
-    confirm-label="Удалить"
-    cancel-label="Отмена"
-    loading-label="Загрузка"
+    :confirm-label="t('admin.actions.delete')"
+    :cancel-label="t('common.cancel')"
+    :loading-label="t('common.loading')"
     :confirm-loading="Boolean(deletingId)"
     destructive
     @confirm="confirmRemoveItem"
@@ -102,10 +143,13 @@
 </template>
 
 <script setup lang="ts">
+import AdminColorDot from '~/components/admin/Metro/AdminColorDot.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
+
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
@@ -138,24 +182,32 @@ const {
   settingsKey: 'metro-lines',
   defaultSortBy: 'name',
   defaultPerPage: 20,
-  listErrorMessage: 'Не удалось загрузить ветки метро',
-  deleteErrorMessage: 'Не удалось удалить ветку метро',
+  listErrorMessage: t('admin.metro.lines.errors.loadList'),
+  deleteErrorMessage: t('admin.metro.lines.errors.delete'),
   list: api.list,
   remove: api.remove,
   getItemId: (item) => item.id,
 });
 
 const cardSortFields = computed(() => [
-  { value: 'name', label: 'Название' },
-  { value: 'line_id', label: 'Line ID' },
+  { value: 'name', label: t('admin.metro.lines.index.sort.name') },
+  { value: 'line_id', label: t('admin.metro.lines.index.sort.lineId') },
 ]);
+
+const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
+  contentMode.value = mode;
+};
+
+const onToggleDesktopMode = () => {
+  tableOnDesktop.value = !tableOnDesktop.value;
+};
 
 const onRemove = (item: AdminMetroLine) => {
   removeItem(item, {
-    confirmTitle: 'Удаление',
-    confirmMessage: `Удалить ветку «${item.name}»?`,
-    confirmLabel: 'Удалить',
-    cancelLabel: 'Отмена',
+    confirmTitle: t('admin.actions.delete'),
+    confirmMessage: t('admin.metro.lines.confirmDelete', { name: item.name }),
+    confirmLabel: t('admin.actions.delete'),
+    cancelLabel: t('common.cancel'),
   });
 };
 
@@ -182,3 +234,5 @@ onBeforeUnmount(() => {
   if (searchAutoTimer) clearTimeout(searchAutoTimer);
 });
 </script>
+
+<style lang="scss" scoped src="../roles/index.scss"></style>

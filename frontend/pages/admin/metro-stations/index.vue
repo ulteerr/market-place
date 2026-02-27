@@ -2,13 +2,13 @@
   <AdminEntityIndex
     page-class="metro-stations-page"
     max-width-class="max-w-7xl"
-    title="Станции метро"
-    subtitle="CRUD для станций метро"
+    :title="t('admin.metro.stations.index.title')"
+    :subtitle="t('admin.metro.stations.index.subtitle')"
     create-to="/admin/metro-stations/new"
     :show-create="true"
-    create-label="Новая станция"
+    :create-label="t('admin.metro.stations.index.createLabel')"
     :search-value="listState.searchInput.value"
-    search-placeholder="Поиск по названию"
+    :search-placeholder="t('admin.metro.stations.index.searchPlaceholder')"
     :show-apply="false"
     :per-page="listState.perPage.value"
     :per-page-options="listState.perPageOptions"
@@ -26,11 +26,11 @@
     :last-page="pagination.last_page"
     :pagination-per-page="pagination.per_page"
     :pagination-items="paginationItems"
-    :table-skeleton-columns="7"
+    :table-skeleton-columns="5"
     @update:search-value="(value) => (listState.searchInput.value = value)"
     @update:per-page="onUpdatePerPage"
-    @update:mode="(mode) => (contentMode = mode)"
-    @toggle-desktop="tableOnDesktop = !tableOnDesktop"
+    @update:mode="onModeChange"
+    @toggle-desktop="onToggleDesktopMode"
     @reset="onResetFilters"
     @sort="onToggleSort"
     @page="fetchItems"
@@ -42,31 +42,43 @@
             <tr>
               <th>
                 <button type="button" class="sort-btn" @click="onToggleSort('name')">
-                  Название {{ listState.sortMark('name') }}
+                  {{ t('admin.metro.stations.index.headers.name') }}
+                  {{ listState.sortMark('name') }}
                 </button>
               </th>
-              <th>Line ID</th>
-              <th>Metro Line ID</th>
-              <th>City ID</th>
-              <th>Geo</th>
-              <th>Source</th>
-              <th class="text-right">Действия</th>
+              <th>{{ t('admin.metro.stations.index.headers.lineId') }}</th>
+              <th>{{ t('admin.metro.stations.index.headers.metroLine') }}</th>
+              <th>{{ t('admin.metro.stations.index.headers.cityId') }}</th>
+              <th class="text-right">{{ t('admin.metro.stations.index.headers.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="7" class="admin-muted py-5 text-center text-sm">Загрузка...</td>
+              <td colspan="5" class="admin-muted py-5 text-center text-sm">
+                {{ t('common.loading') }}
+              </td>
             </tr>
             <tr v-else-if="!items.length">
-              <td colspan="7" class="admin-muted py-5 text-center text-sm">Нет данных</td>
+              <td colspan="5" class="admin-muted py-5 text-center text-sm">
+                {{ t('admin.metro.stations.index.empty') }}
+              </td>
             </tr>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.name }}</td>
-              <td>{{ item.line_id || '—' }}</td>
-              <td class="font-mono text-xs">{{ item.metro_line_id }}</td>
-              <td class="font-mono text-xs">{{ item.city_id }}</td>
-              <td class="text-xs">{{ item.geo_lat ?? '—' }}, {{ item.geo_lon ?? '—' }}</td>
-              <td>{{ item.source }}</td>
+              <td>{{ item.line_id || t('common.dash') }}</td>
+              <td class="font-mono text-xs">
+                <AdminMetroLineBadge
+                  :to="resolveMetroLineLink(item)"
+                  :name="resolveMetroLineName(item)"
+                  :color="resolveMetroLineColor(item)"
+                  label-class="font-sans text-sm"
+                />
+              </td>
+              <td class="font-mono text-xs">
+                <AdminLink :to="resolveCitySearchLink(item)">
+                  {{ item.city_id }}
+                </AdminLink>
+              </td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/metro-stations/${item.id}`"
@@ -84,16 +96,51 @@
         </table>
       </div>
     </template>
+
+    <template #cards>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <article v-for="item in items" :key="item.id" class="role-card rounded-xl p-4">
+          <h4 class="text-sm font-semibold">{{ item.name }}</h4>
+          <p class="admin-muted mt-1 text-xs">
+            {{
+              t('admin.metro.stations.index.card.lineId', {
+                value: item.line_id || t('common.dash'),
+              })
+            }}
+          </p>
+          <p class="admin-muted text-xs">
+            {{
+              t('admin.metro.stations.index.card.metroLine', { value: resolveMetroLineName(item) })
+            }}
+          </p>
+          <p class="admin-muted text-xs">
+            {{ t('admin.metro.stations.index.card.cityId', { value: item.city_id }) }}
+          </p>
+
+          <div class="mt-3">
+            <AdminCrudActions
+              :show-to="`/admin/metro-stations/${item.id}`"
+              :edit-to="`/admin/metro-stations/${item.id}/edit`"
+              :can-show="true"
+              :can-edit="true"
+              :can-delete="true"
+              :deleting="deletingId === item.id"
+              @delete="onRemove(item)"
+            />
+          </div>
+        </article>
+      </div>
+    </template>
   </AdminEntityIndex>
 
   <UiModal
     v-model="removeConfirmOpen"
     mode="confirm"
-    title="Удаление"
+    :title="t('admin.actions.delete')"
     :message="removeConfirmMessage"
-    confirm-label="Удалить"
-    cancel-label="Отмена"
-    loading-label="Загрузка"
+    :confirm-label="t('admin.actions.delete')"
+    :cancel-label="t('common.cancel')"
+    :loading-label="t('common.loading')"
     :confirm-loading="Boolean(deletingId)"
     destructive
     @confirm="confirmRemoveItem"
@@ -102,10 +149,15 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminMetroLineBadge from '~/components/admin/Metro/AdminMetroLineBadge.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
+import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 import type { AdminMetroStation } from '~/composables/useAdminMetroStations';
+
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
@@ -114,6 +166,7 @@ definePageMeta({
 });
 
 const api = useAdminMetroStations();
+const metroLinesApi = useAdminMetroLines();
 const {
   listState,
   items,
@@ -138,24 +191,103 @@ const {
   settingsKey: 'metro-stations',
   defaultSortBy: 'name',
   defaultPerPage: 20,
-  listErrorMessage: 'Не удалось загрузить станции метро',
-  deleteErrorMessage: 'Не удалось удалить станцию метро',
+  listErrorMessage: t('admin.metro.stations.errors.loadList'),
+  deleteErrorMessage: t('admin.metro.stations.errors.delete'),
   list: api.list,
   remove: api.remove,
   getItemId: (item) => item.id,
 });
 
 const cardSortFields = computed(() => [
-  { value: 'name', label: 'Название' },
-  { value: 'line_id', label: 'Line ID' },
+  { value: 'name', label: t('admin.metro.stations.index.sort.name') },
+  { value: 'line_id', label: t('admin.metro.stations.index.sort.lineId') },
 ]);
+
+const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
+  contentMode.value = mode;
+};
+
+const onToggleDesktopMode = () => {
+  tableOnDesktop.value = !tableOnDesktop.value;
+};
+
+const metroLineLookup = ref<Record<string, Pick<AdminMetroLine, 'name' | 'color'>>>({});
+
+const getEmbeddedMetroLine = (
+  item: AdminMetroStation
+): { name?: string | null; color?: string | null } | null => {
+  const payload = item as unknown as {
+    metro_line?: { name?: string | null; color?: string | null };
+  };
+  return payload.metro_line ?? null;
+};
+
+const resolveMetroLineName = (item: AdminMetroStation): string => {
+  const embedded = getEmbeddedMetroLine(item);
+  if (embedded?.name) {
+    return embedded.name;
+  }
+
+  return metroLineLookup.value[item.metro_line_id]?.name || item.metro_line_id || t('common.dash');
+};
+
+const resolveMetroLineColor = (item: AdminMetroStation): string | null => {
+  const embedded = getEmbeddedMetroLine(item);
+  if (embedded?.color) {
+    return embedded.color;
+  }
+
+  return metroLineLookup.value[item.metro_line_id]?.color || null;
+};
+
+const hydrateMetroLineLookup = async () => {
+  const hasItems = items.value.length > 0;
+  if (!hasItems) {
+    return;
+  }
+
+  const unresolvedLineIds = [...new Set(items.value.map((item) => item.metro_line_id))]
+    .filter(Boolean)
+    .filter((id) => !metroLineLookup.value[id]);
+
+  if (!unresolvedLineIds.length) {
+    return;
+  }
+
+  const resolvedEntries = await Promise.allSettled(
+    unresolvedLineIds.map(async (id) => {
+      const line = await metroLinesApi.show(id);
+      return [id, { name: line.name, color: line.color ?? null }] as const;
+    })
+  );
+
+  const nextLookup = { ...metroLineLookup.value };
+  for (const entry of resolvedEntries) {
+    if (entry.status !== 'fulfilled') {
+      continue;
+    }
+    const [id, value] = entry.value;
+    nextLookup[id] = value;
+  }
+
+  metroLineLookup.value = nextLookup;
+};
+
+const resolveMetroLineLink = (item: AdminMetroStation): string => {
+  return `/admin/metro-lines/${item.metro_line_id}`;
+};
+
+const resolveCitySearchLink = (item: AdminMetroStation): string => {
+  const search = encodeURIComponent(item.city_id);
+  return `/admin/metro-stations?search=${search}`;
+};
 
 const onRemove = (item: AdminMetroStation) => {
   removeItem(item, {
-    confirmTitle: 'Удаление',
-    confirmMessage: `Удалить станцию «${item.name}»?`,
-    confirmLabel: 'Удалить',
-    cancelLabel: 'Отмена',
+    confirmTitle: t('admin.actions.delete'),
+    confirmMessage: t('admin.metro.stations.confirmDelete', { name: item.name }),
+    confirmLabel: t('admin.actions.delete'),
+    cancelLabel: t('common.cancel'),
   });
 };
 
@@ -174,6 +306,14 @@ watch(
   }
 );
 
+watch(
+  () => items.value.map((item) => item.metro_line_id).join(','),
+  () => {
+    void hydrateMetroLineLookup();
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
   searchAutoReady.value = true;
 });
@@ -182,3 +322,5 @@ onBeforeUnmount(() => {
   if (searchAutoTimer) clearTimeout(searchAutoTimer);
 });
 </script>
+
+<style lang="scss" scoped src="../roles/index.scss"></style>

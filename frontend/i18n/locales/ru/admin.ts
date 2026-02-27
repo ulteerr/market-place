@@ -633,6 +633,150 @@ export default {
     },
     confirmDelete: 'Удалить роль {code}?',
   },
+  metro: {
+    title: 'Метро',
+    lines: {
+      index: {
+        title: 'Линии метро',
+        subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
+        createLabel: 'Новая линия',
+        searchPlaceholder: 'Поиск: название, ID линии, ID города',
+        empty: 'Линии метро не найдены.',
+        headers: {
+          name: 'Название',
+          lineId: 'ID линии',
+          color: 'Цвет',
+          cityId: 'ID города',
+          actions: 'Действия',
+        },
+        card: {
+          lineId: 'ID линии: {value}',
+          color: 'Цвет:',
+          cityId: 'ID города: {value}',
+        },
+        sort: {
+          name: 'Название',
+          lineId: 'ID линии',
+        },
+      },
+      new: {
+        title: 'Новая линия метро',
+        subtitle: 'Создание линии в /api/admin/geo/metro-lines',
+        saving: 'Сохраняем...',
+        errors: {
+          create: 'Не удалось создать линию метро.',
+        },
+      },
+      show: {
+        title: 'Линия метро',
+        subtitle: 'Детали линии метро',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить линию метро.',
+        },
+      },
+      edit: {
+        title: 'Редактирование линии метро',
+        subtitle: 'Обновление /api/admin/geo/metro-lines/:id',
+        saving: 'Сохраняем...',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить линию метро.',
+          update: 'Не удалось обновить линию метро.',
+        },
+      },
+      fields: {
+        name: 'Название',
+        externalId: 'Внешний ID',
+        lineId: 'ID линии',
+        color: 'Цвет',
+        cityId: 'ID города',
+        source: 'Источник',
+      },
+      confirmDelete: 'Удалить линию метро {name}?',
+      errors: {
+        loadList: 'Не удалось загрузить список линий метро.',
+        delete: 'Не удалось удалить линию метро.',
+      },
+    },
+    stations: {
+      index: {
+        title: 'Станции метро',
+        subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
+        createLabel: 'Новая станция',
+        searchPlaceholder: 'Поиск: название, line ID, линия метро, city ID',
+        empty: 'Станции метро не найдены.',
+        headers: {
+          name: 'Название',
+          lineId: 'ID линии',
+          metroLine: 'Линия метро',
+          cityId: 'ID города',
+          actions: 'Действия',
+        },
+        card: {
+          lineId: 'ID линии: {value}',
+          metroLine: 'Линия метро: {value}',
+          cityId: 'ID города: {value}',
+        },
+        sort: {
+          name: 'Название',
+          lineId: 'ID линии',
+        },
+      },
+      new: {
+        title: 'Новая станция метро',
+        subtitle: 'Создание станции в /api/admin/geo/metro-stations',
+        saving: 'Сохраняем...',
+        metroLinePlaceholder: 'Выберите линию метро',
+        cityPlaceholder: 'Выберите город',
+        errors: {
+          create: 'Не удалось создать станцию метро.',
+        },
+      },
+      show: {
+        title: 'Станция метро',
+        subtitle: 'Детали станции метро',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить станцию метро.',
+        },
+      },
+      edit: {
+        title: 'Редактирование станции метро',
+        subtitle: 'Обновление /api/admin/geo/metro-stations/:id',
+        saving: 'Сохраняем...',
+        metroLinePlaceholder: 'Выберите линию метро',
+        cityPlaceholder: 'Выберите город',
+        errors: {
+          invalidId: 'Некорректный ID.',
+          load: 'Не удалось загрузить станцию метро.',
+          update: 'Не удалось обновить станцию метро.',
+        },
+      },
+      fields: {
+        name: 'Название',
+        externalId: 'Внешний ID',
+        lineId: 'ID линии',
+        geo: 'Координаты',
+        geoLat: 'Широта',
+        geoLon: 'Долгота',
+        isClosed: 'Станция закрыта',
+        metroLine: 'Линия метро',
+        metroLineId: 'ID линии метро',
+        cityId: 'ID города',
+        source: 'Источник',
+      },
+      status: {
+        closedYes: 'Да',
+        closedNo: 'Нет',
+      },
+      confirmDelete: 'Удалить станцию метро {name}?',
+      errors: {
+        loadList: 'Не удалось загрузить список станций метро.',
+        delete: 'Не удалось удалить станцию метро.',
+      },
+    },
+  },
   actionLogs: {
     title: 'Журнал изменений',
     subtitle: 'История изменений моделей (создание, обновление, удаление).',

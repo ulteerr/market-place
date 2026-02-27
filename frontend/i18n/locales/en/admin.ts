@@ -633,6 +633,150 @@ export default {
     },
     confirmDelete: 'Delete role {code}?',
   },
+  metro: {
+    title: 'Metro',
+    lines: {
+      index: {
+        title: 'Metro lines',
+        subtitle: 'Search, sorting, limit and server pagination.',
+        createLabel: 'New line',
+        searchPlaceholder: 'Search: name, line ID, city ID',
+        empty: 'No metro lines found.',
+        headers: {
+          name: 'Name',
+          lineId: 'Line ID',
+          color: 'Color',
+          cityId: 'City ID',
+          actions: 'Actions',
+        },
+        card: {
+          lineId: 'Line ID: {value}',
+          color: 'Color:',
+          cityId: 'City ID: {value}',
+        },
+        sort: {
+          name: 'Name',
+          lineId: 'Line ID',
+        },
+      },
+      new: {
+        title: 'New metro line',
+        subtitle: 'Create line in /api/admin/geo/metro-lines',
+        saving: 'Saving...',
+        errors: {
+          create: 'Failed to create metro line.',
+        },
+      },
+      show: {
+        title: 'Metro line',
+        subtitle: 'Metro line details',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load metro line.',
+        },
+      },
+      edit: {
+        title: 'Edit metro line',
+        subtitle: 'Update /api/admin/geo/metro-lines/:id',
+        saving: 'Saving...',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load metro line.',
+          update: 'Failed to update metro line.',
+        },
+      },
+      fields: {
+        name: 'Name',
+        externalId: 'External ID',
+        lineId: 'Line ID',
+        color: 'Color',
+        cityId: 'City ID',
+        source: 'Source',
+      },
+      confirmDelete: 'Delete metro line {name}?',
+      errors: {
+        loadList: 'Failed to load metro lines list.',
+        delete: 'Failed to delete metro line.',
+      },
+    },
+    stations: {
+      index: {
+        title: 'Metro stations',
+        subtitle: 'Search, sorting, limit and server pagination.',
+        createLabel: 'New station',
+        searchPlaceholder: 'Search: name, line ID, metro line, city ID',
+        empty: 'No metro stations found.',
+        headers: {
+          name: 'Name',
+          lineId: 'Line ID',
+          metroLine: 'Metro line',
+          cityId: 'City ID',
+          actions: 'Actions',
+        },
+        card: {
+          lineId: 'Line ID: {value}',
+          metroLine: 'Metro line: {value}',
+          cityId: 'City ID: {value}',
+        },
+        sort: {
+          name: 'Name',
+          lineId: 'Line ID',
+        },
+      },
+      new: {
+        title: 'New metro station',
+        subtitle: 'Create station in /api/admin/geo/metro-stations',
+        saving: 'Saving...',
+        metroLinePlaceholder: 'Select metro line',
+        cityPlaceholder: 'Select city',
+        errors: {
+          create: 'Failed to create metro station.',
+        },
+      },
+      show: {
+        title: 'Metro station',
+        subtitle: 'Metro station details',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load metro station.',
+        },
+      },
+      edit: {
+        title: 'Edit metro station',
+        subtitle: 'Update /api/admin/geo/metro-stations/:id',
+        saving: 'Saving...',
+        metroLinePlaceholder: 'Select metro line',
+        cityPlaceholder: 'Select city',
+        errors: {
+          invalidId: 'Invalid ID.',
+          load: 'Failed to load metro station.',
+          update: 'Failed to update metro station.',
+        },
+      },
+      fields: {
+        name: 'Name',
+        externalId: 'External ID',
+        lineId: 'Line ID',
+        geo: 'Geo',
+        geoLat: 'Geo lat',
+        geoLon: 'Geo lon',
+        isClosed: 'Station closed',
+        metroLine: 'Metro line',
+        metroLineId: 'Metro Line ID',
+        cityId: 'City ID',
+        source: 'Source',
+      },
+      status: {
+        closedYes: 'Yes',
+        closedNo: 'No',
+      },
+      confirmDelete: 'Delete metro station {name}?',
+      errors: {
+        loadList: 'Failed to load metro stations list.',
+        delete: 'Failed to delete metro station.',
+      },
+    },
+  },
   actionLogs: {
     title: 'Change log',
     subtitle: 'Model change history (create, update, delete).',

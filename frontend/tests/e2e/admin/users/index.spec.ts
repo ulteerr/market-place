@@ -2,6 +2,8 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { setupAdminAuth } from '../../helpers/admin-auth';
 
+type AdminCrudContentMode = 'table' | 'table-cards' | 'cards';
+
 const users = [
   {
     id: 'u-1',
@@ -27,8 +29,21 @@ const users = [
   },
 ];
 
-const setupUsersPage = async (page: Page) => {
-  await setupAdminAuth(page);
+const setupUsersPage = async (page: Page, contentMode: AdminCrudContentMode = 'table') => {
+  await setupAdminAuth(page, {
+    settings: {
+      locale: 'ru',
+      theme: 'dark',
+      collapse_menu: false,
+      admin_crud_preferences: {
+        users: {
+          contentMode,
+          tableOnDesktop: true,
+        },
+      },
+      admin_navigation_sections: {},
+    },
+  });
   let dataset = [...users];
 
   await page.route('**/api/admin/users**', async (route) => {
@@ -97,11 +112,6 @@ const setupUsersPage = async (page: Page) => {
   });
 };
 
-const setUsersMode = async (page: Page, label: 'Таблица' | 'Таблица + карточки' | 'Карточки') => {
-  await page.locator('.mode-select-wrap input').first().click();
-  await page.getByRole('button', { name: label, exact: true }).click();
-};
-
 test.describe('Admin users page', () => {
   test('redirects unauthenticated user from /admin/users to /login', async ({ page }) => {
     await page.goto('/admin/users');
@@ -150,21 +160,28 @@ test.describe('Admin users page', () => {
     await expect(dialog).toHaveCount(0);
   });
 
-  test('renders image preview controls in table/cards/table-cards modes', async ({ page }) => {
-    await setupUsersPage(page);
+  test('renders image preview controls in table mode', async ({ page }) => {
+    await setupUsersPage(page, 'table');
     await page.goto('/admin/users');
 
-    await setUsersMode(page, 'Таблица');
     await expect(page.locator('table.admin-table')).toBeVisible();
     await expect(page.locator('.user-card')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Открыть изображение' })).toHaveCount(1);
+  });
 
-    await setUsersMode(page, 'Карточки');
+  test('renders image preview controls in cards mode', async ({ page }) => {
+    await setupUsersPage(page, 'cards');
+    await page.goto('/admin/users');
+
     await expect(page.locator('table.admin-table:visible')).toHaveCount(0);
     await expect(page.locator('.user-card')).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'Открыть изображение' })).toHaveCount(1);
+  });
 
-    await setUsersMode(page, 'Таблица + карточки');
+  test('renders image preview controls in table-cards mode', async ({ page }) => {
+    await setupUsersPage(page, 'table-cards');
+    await page.goto('/admin/users');
+
     await expect(page.locator('table.admin-table')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Desktop: таблица' })).toBeVisible();
     await page.getByRole('button', { name: 'Desktop: таблица' }).click();
@@ -268,18 +285,21 @@ test.describe('Admin users page', () => {
       });
     });
 
-    await page.goto('/admin/users');
+    await page.goto('/admin/users?per_page=10');
 
-    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Вперед' })).toHaveCount(1);
+    const backButton = page.getByRole('button', { name: /^(Назад|Back)$/ });
+    const forwardButton = page.getByRole('button', { name: /^(Вперед|Вперёд|Next)$/ });
+
+    await expect(backButton).toHaveCount(0);
+    await expect(forwardButton).toHaveCount(1);
 
     await page.getByRole('button', { name: '2', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1);
-    await expect(page.getByRole('button', { name: 'Вперед' })).toHaveCount(1);
+    await expect(backButton).toHaveCount(1);
+    await expect(forwardButton).toHaveCount(1);
 
     await page.getByRole('button', { name: '6', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1);
-    await expect(page.getByRole('button', { name: 'Вперед' })).toHaveCount(0);
+    await expect(backButton).toHaveCount(1);
+    await expect(forwardButton).toHaveCount(0);
   });
 
   test('changes list when pagination buttons are clicked', async ({ page }) => {
@@ -321,18 +341,18 @@ test.describe('Admin users page', () => {
       });
     });
 
-    await page.goto('/admin/users');
+    await page.goto('/admin/users?per_page=10');
     await expect(page.locator('tbody tr').first()).toContainText('Фамилия1');
 
     await page.getByRole('button', { name: '2', exact: true }).click();
     await expect(page).toHaveURL(/page=2/);
     await expect(page.locator('tbody tr').first()).toContainText('Фамилия11');
 
-    await page.getByRole('button', { name: 'Вперед' }).click();
+    await page.getByRole('button', { name: /^(Вперед|Вперёд|Next)$/ }).click();
     await expect(page).toHaveURL(/page=3/);
     await expect(page.locator('tbody tr').first()).toContainText('Фамилия21');
 
-    await page.getByRole('button', { name: 'Назад' }).click();
+    await page.getByRole('button', { name: /^(Назад|Back)$/ }).click();
     await expect(page).toHaveURL(/page=2/);
     await expect(page.locator('tbody tr').first()).toContainText('Фамилия11');
   });

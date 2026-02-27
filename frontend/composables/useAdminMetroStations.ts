@@ -68,9 +68,46 @@ export const useAdminMetroStations = () => {
   const list = async (
     params: AdminMetroStationsListParams = {}
   ): Promise<PaginationPayload<AdminMetroStation>> => {
+    const rawSearch =
+      typeof params.search === 'string' && params.search.trim().length > 0
+        ? params.search.trim()
+        : undefined;
+
+    const queryBase = {
+      ...params,
+      search: rawSearch,
+    };
+
     const response = await api<IndexResponse<AdminMetroStation>>('/api/admin/geo/metro-stations', {
-      query: params,
+      query: queryBase,
     });
+
+    if (!rawSearch || response.data.total > 0) {
+      return response.data;
+    }
+
+    // Backend search may be case-sensitive in some environments.
+    const titleCaseSearch = rawSearch.charAt(0).toLocaleUpperCase() + rawSearch.slice(1);
+    const lowerCaseSearch = rawSearch.toLocaleLowerCase();
+    const fallbackCandidates = [titleCaseSearch, lowerCaseSearch].filter(
+      (candidate, index, list) => candidate !== rawSearch && list.indexOf(candidate) === index
+    );
+
+    for (const fallbackSearch of fallbackCandidates) {
+      const fallbackResponse = await api<IndexResponse<AdminMetroStation>>(
+        '/api/admin/geo/metro-stations',
+        {
+          query: {
+            ...params,
+            search: fallbackSearch,
+          },
+        }
+      );
+
+      if (fallbackResponse.data.total > 0) {
+        return fallbackResponse.data;
+      }
+    }
 
     return response.data;
   };

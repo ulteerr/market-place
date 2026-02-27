@@ -1,47 +1,57 @@
 <template>
   <section class="roles-show-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
-      <h2 class="text-2xl font-semibold">Станция метро</h2>
-      <p class="admin-muted mt-2 text-sm">Детали станции метро</p>
+      <h2 class="text-2xl font-semibold">{{ t('admin.metro.stations.show.title') }}</h2>
+      <p class="admin-muted mt-2 text-sm">{{ t('admin.metro.stations.show.subtitle') }}</p>
     </div>
 
     <article class="admin-card rounded-2xl p-5 lg:p-6">
-      <p v-if="loading" class="admin-muted text-sm">Загрузка...</p>
+      <p v-if="loading" class="admin-muted text-sm">{{ t('common.loading') }}</p>
       <p v-else-if="loadError" class="admin-error text-sm">{{ loadError }}</p>
 
       <template v-else-if="item">
         <dl class="grid gap-3 sm:grid-cols-2">
           <div>
-            <dt class="admin-muted text-xs">Название</dt>
+            <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.name') }}</dt>
             <dd>{{ item.name }}</dd>
           </div>
           <div>
-            <dt class="admin-muted text-xs">External ID</dt>
-            <dd>{{ item.external_id || '—' }}</dd>
+            <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.externalId') }}</dt>
+            <dd>{{ item.external_id || t('common.dash') }}</dd>
           </div>
           <div>
-            <dt class="admin-muted text-xs">Line ID</dt>
-            <dd>{{ item.line_id || '—' }}</dd>
+            <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.lineId') }}</dt>
+            <dd>{{ item.line_id || t('common.dash') }}</dd>
           </div>
           <div>
-            <dt class="admin-muted text-xs">Geo</dt>
-            <dd>{{ item.geo_lat ?? '—' }}, {{ item.geo_lon ?? '—' }}</dd>
+            <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.isClosed') }}</dt>
+            <dd>
+              {{
+                item.is_closed === null
+                  ? t('common.dash')
+                  : item.is_closed
+                    ? t('admin.metro.stations.status.closedYes')
+                    : t('admin.metro.stations.status.closedNo')
+              }}
+            </dd>
           </div>
           <div>
-            <dt class="admin-muted text-xs">Closed</dt>
-            <dd>{{ item.is_closed === null ? '—' : item.is_closed ? 'Да' : 'Нет' }}</dd>
+            <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.metroLine') }}</dt>
+            <dd>
+              <AdminMetroLineBadge
+                :to="`/admin/metro-lines/${item.metro_line_id}`"
+                :name="metroLineName"
+                :color="metroLineColor"
+              />
+            </dd>
           </div>
           <div>
-            <dt class="admin-muted text-xs">Metro Line ID</dt>
-            <dd class="font-mono text-xs">{{ item.metro_line_id }}</dd>
-          </div>
-          <div>
-            <dt class="admin-muted text-xs">City ID</dt>
-            <dd class="font-mono text-xs">{{ item.city_id }}</dd>
-          </div>
-          <div>
-            <dt class="admin-muted text-xs">Source</dt>
-            <dd>{{ item.source }}</dd>
+            <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.cityId') }}</dt>
+            <dd class="font-mono text-xs">
+              <AdminLink :to="`/admin/metro-stations?search=${encodeURIComponent(item.city_id)}`">
+                {{ item.city_id }}
+              </AdminLink>
+            </dd>
           </div>
         </dl>
 
@@ -49,12 +59,12 @@
           <NuxtLink
             :to="`/admin/metro-stations/${item.id}/edit`"
             class="admin-button rounded-lg px-4 py-2 text-sm"
-            >Редактировать</NuxtLink
+            >{{ t('common.edit') }}</NuxtLink
           >
           <NuxtLink
             to="/admin/metro-stations"
             class="admin-button-secondary rounded-lg px-4 py-2 text-sm"
-            >К списку</NuxtLink
+            >{{ t('common.backToList') }}</NuxtLink
           >
         </div>
       </template>
@@ -63,8 +73,12 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminMetroLineBadge from '~/components/admin/Metro/AdminMetroLineBadge.vue';
+import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 import type { AdminMetroStation } from '~/composables/useAdminMetroStations';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
@@ -74,14 +88,24 @@ definePageMeta({
 
 const route = useRoute();
 const api = useAdminMetroStations();
+const metroLinesApi = useAdminMetroLines();
 const item = ref<AdminMetroStation | null>(null);
 const loading = ref(false);
 const loadError = ref('');
+const metroLine = ref<Pick<AdminMetroLine, 'name' | 'color'> | null>(null);
+
+const metroLineName = computed(() => {
+  return metroLine.value?.name || item.value?.metro_line_id || t('common.dash');
+});
+
+const metroLineColor = computed(() => {
+  return metroLine.value?.color || null;
+});
 
 const fetchItem = async () => {
   const id = String(route.params.id || '');
   if (!id) {
-    loadError.value = 'Некорректный ID';
+    loadError.value = t('admin.metro.stations.show.errors.invalidId');
     return;
   }
 
@@ -89,8 +113,12 @@ const fetchItem = async () => {
   loadError.value = '';
   try {
     item.value = await api.show(id);
+    if (item.value.metro_line_id) {
+      const line = await metroLinesApi.show(item.value.metro_line_id);
+      metroLine.value = { name: line.name, color: line.color ?? null };
+    }
   } catch (error) {
-    loadError.value = getApiErrorMessage(error, 'Не удалось загрузить станцию метро.');
+    loadError.value = getApiErrorMessage(error, t('admin.metro.stations.show.errors.load'));
   } finally {
     loading.value = false;
   }

@@ -97,8 +97,8 @@ final class GeoDadataImportCommandTest extends TestCase
 
         $district = District::query()
             ->where("city_id", (string) $city->id)
-            ->where("name", "Центральный")
-            ->first();
+            ->get()
+            ->first(fn(District $item) => mb_strtolower($item->name) === "центральный");
         $this->assertNotNull($district);
     }
 }

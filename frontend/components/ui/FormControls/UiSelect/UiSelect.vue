@@ -26,7 +26,7 @@
       <input
         :id="resolvedId"
         :value="inputValue"
-        :class="styles.input"
+        :class="[styles.input, showSelectedColor ? styles.inputWithColor : '']"
         :placeholder="inputPlaceholder"
         :disabled="disabled"
         :readonly="!searchable"
@@ -39,6 +39,12 @@
         @keydown.down.prevent="open"
         @keydown.esc="close"
         @keydown.enter.prevent="onEnter"
+      />
+      <span
+        v-if="showSelectedColor"
+        :class="styles.selectedColor"
+        :style="{ backgroundColor: singleSelectedOption?.color || 'transparent' }"
+        aria-hidden="true"
       />
 
       <button type="button" :class="styles.toggle" :disabled="disabled" @click="toggle">
@@ -55,7 +61,13 @@
         :disabled="option.disabled"
         @click="selectOption(option.value)"
       >
-        {{ option.label }}
+        <span
+          v-if="option.color"
+          :class="styles.optionColor"
+          :style="{ backgroundColor: option.color }"
+          aria-hidden="true"
+        />
+        <span>{{ option.label }}</span>
       </button>
 
       <button
@@ -84,6 +96,7 @@ interface SelectOption {
   label: string;
   value: SelectValue;
   disabled?: boolean;
+  color?: string | null;
 }
 
 const props = withDefaults(
@@ -150,8 +163,19 @@ const selectedValues = computed<SelectValue[]>(() => {
 const selectedOptions = computed(() => {
   return allOptions.value.filter((option) => selectedValues.value.includes(option.value));
 });
+const singleSelectedOption = computed(() => {
+  if (props.multiple) {
+    return null;
+  }
+  return selectedOptions.value[0] ?? null;
+});
 
 const normalizedQuery = computed(() => query.value.trim());
+const showSelectedColor = computed(() => {
+  return Boolean(
+    !props.multiple && !isOpen.value && !normalizedQuery.value && singleSelectedOption.value?.color
+  );
+});
 
 const inputPlaceholder = computed(() => {
   if (props.multiple) {

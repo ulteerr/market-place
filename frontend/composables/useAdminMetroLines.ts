@@ -58,9 +58,46 @@ export const useAdminMetroLines = () => {
   const list = async (
     params: AdminMetroLinesListParams = {}
   ): Promise<PaginationPayload<AdminMetroLine>> => {
+    const rawSearch =
+      typeof params.search === 'string' && params.search.trim().length > 0
+        ? params.search.trim()
+        : undefined;
+
+    const queryBase = {
+      ...params,
+      search: rawSearch,
+    };
+
     const response = await api<IndexResponse<AdminMetroLine>>('/api/admin/geo/metro-lines', {
-      query: params,
+      query: queryBase,
     });
+
+    if (!rawSearch || response.data.total > 0) {
+      return response.data;
+    }
+
+    // Backend search may be case-sensitive in some environments.
+    const titleCaseSearch = rawSearch.charAt(0).toLocaleUpperCase() + rawSearch.slice(1);
+    const lowerCaseSearch = rawSearch.toLocaleLowerCase();
+    const fallbackCandidates = [titleCaseSearch, lowerCaseSearch].filter(
+      (candidate, index, list) => candidate !== rawSearch && list.indexOf(candidate) === index
+    );
+
+    for (const fallbackSearch of fallbackCandidates) {
+      const fallbackResponse = await api<IndexResponse<AdminMetroLine>>(
+        '/api/admin/geo/metro-lines',
+        {
+          query: {
+            ...params,
+            search: fallbackSearch,
+          },
+        }
+      );
+
+      if (fallbackResponse.data.total > 0) {
+        return fallbackResponse.data;
+      }
+    }
 
     return response.data;
   };

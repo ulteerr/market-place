@@ -1,61 +1,73 @@
 <template>
   <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
-      <h2 class="text-2xl font-semibold">Новая станция метро</h2>
-      <p class="admin-muted mt-2 text-sm">Создание станции в /api/admin/geo/metro-stations</p>
+      <h2 class="text-2xl font-semibold">{{ t('admin.metro.stations.new.title') }}</h2>
+      <p class="admin-muted mt-2 text-sm">{{ t('admin.metro.stations.new.subtitle') }}</p>
     </div>
 
     <article class="admin-card rounded-2xl p-5 lg:p-6">
       <form class="space-y-3" @submit.prevent="submitForm">
         <UiInput
           v-model="form.name"
-          label="Название"
+          :label="t('admin.metro.stations.fields.name')"
           required
           :disabled="saving"
           :error="fieldErrors.name"
         />
         <UiInput
           v-model="form.external_id"
-          label="External ID"
+          :label="t('admin.metro.stations.fields.externalId')"
           :disabled="saving"
           :error="fieldErrors.external_id"
         />
         <UiInput
           v-model="form.line_id"
-          label="Line ID"
+          :label="t('admin.metro.stations.fields.lineId')"
           :disabled="saving"
           :error="fieldErrors.line_id"
         />
         <UiInput
           v-model="form.geo_lat"
-          label="Geo lat"
+          :label="t('admin.metro.stations.fields.geoLat')"
           :disabled="saving"
           :error="fieldErrors.geo_lat"
         />
         <UiInput
           v-model="form.geo_lon"
-          label="Geo lon"
+          :label="t('admin.metro.stations.fields.geoLon')"
           :disabled="saving"
           :error="fieldErrors.geo_lon"
         />
-        <UiCheckbox v-model="form.is_closed" label="Станция закрыта" :disabled="saving" />
-        <UiInput
+        <UiSwitch
+          v-model="form.is_closed"
+          :label="t('admin.metro.stations.fields.isClosed')"
+          :disabled="saving"
+        />
+        <UiSelect
           v-model="form.metro_line_id"
-          label="Metro Line ID"
+          :label="t('admin.metro.stations.fields.metroLine')"
+          :options="metroLineOptions"
+          :placeholder="t('admin.metro.stations.new.metroLinePlaceholder')"
+          searchable
           required
           :disabled="saving"
           :error="fieldErrors.metro_line_id"
+          @search="onMetroLineSearch"
         />
-        <UiInput
+        <UiSelect
           v-model="form.city_id"
-          label="City ID"
+          :label="t('admin.metro.stations.fields.cityId')"
+          :options="cityOptions"
+          :placeholder="t('admin.metro.stations.new.cityPlaceholder')"
+          searchable
           required
           :disabled="saving"
           :error="fieldErrors.city_id"
+          @search="onCitySearch"
         />
         <UiInput
           v-model="form.source"
-          label="Source"
+          :label="t('admin.metro.stations.fields.source')"
           required
           :disabled="saving"
           :error="fieldErrors.source"
@@ -69,12 +81,12 @@
             class="admin-button rounded-lg px-4 py-2 text-sm"
             :disabled="saving"
           >
-            {{ saving ? 'Сохраняем...' : 'Создать' }}
+            {{ saving ? t('admin.metro.stations.new.saving') : t('common.create') }}
           </button>
           <NuxtLink
             to="/admin/metro-stations"
             class="admin-button-secondary rounded-lg px-4 py-2 text-sm"
-            >Отмена</NuxtLink
+            >{{ t('common.cancel') }}</NuxtLink
           >
         </div>
       </form>
@@ -83,14 +95,17 @@
 </template>
 
 <script setup lang="ts">
-import UiCheckbox from '~/components/ui/FormControls/UiCheckbox/UiCheckbox.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
+import UiSwitch from '~/components/ui/FormControls/UiSwitch/UiSwitch.vue';
+import { useAdminMetroStationSelectOptions } from '~/composables/useAdminMetroStationSelectOptions';
 import type { CreateMetroStationPayload } from '~/composables/useAdminMetroStations';
 import {
   getApiErrorPayload,
   getApiErrorMessage,
   getFieldError,
 } from '~/composables/useAdminCrudCommon';
+const { t } = useI18n();
 
 definePageMeta({
   layout: 'admin',
@@ -99,6 +114,8 @@ definePageMeta({
 });
 
 const api = useAdminMetroStations();
+const { metroLineOptions, cityOptions, loadOptions, onMetroLineSearch, onCitySearch } =
+  useAdminMetroStationSelectOptions();
 const saving = ref(false);
 const formError = ref('');
 
@@ -153,7 +170,7 @@ const submitForm = async () => {
     await navigateTo('/admin/metro-stations');
   } catch (error) {
     const payload = getApiErrorPayload(error);
-    formError.value = getApiErrorMessage(error, 'Не удалось создать станцию метро.');
+    formError.value = getApiErrorMessage(error, t('admin.metro.stations.new.errors.create'));
     fieldErrors.name = getFieldError(payload.errors, 'name');
     fieldErrors.external_id = getFieldError(payload.errors, 'external_id');
     fieldErrors.line_id = getFieldError(payload.errors, 'line_id');
@@ -166,6 +183,10 @@ const submitForm = async () => {
     saving.value = false;
   }
 };
+
+onMounted(async () => {
+  await loadOptions('');
+});
 </script>
 
 <style lang="scss" scoped src="../roles/new.scss"></style>
