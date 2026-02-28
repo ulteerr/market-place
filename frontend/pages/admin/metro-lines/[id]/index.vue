@@ -42,7 +42,7 @@
           </div>
         </dl>
 
-        <div class="mt-5 flex gap-2">
+        <div class="mt-5 flex flex-wrap gap-2">
           <NuxtLink
             :to="`/admin/metro-lines/${item.id}/edit`"
             class="admin-button rounded-lg px-4 py-2 text-sm"

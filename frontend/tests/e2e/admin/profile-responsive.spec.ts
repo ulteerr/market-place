@@ -4,10 +4,10 @@ import { defaultAdminUser, setupAdminAuth } from '../helpers/admin-auth';
 import { E2E_RESPONSIVE_VIEWPORTS } from '../helpers/viewports';
 
 const assertNoHorizontalOverflow = async (page: Page) => {
-  const overflowPixels = await page.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth
+  const hasOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth
   );
-  expect(overflowPixels).toBeLessThanOrEqual(2);
+  expect(hasOverflow).toBeFalsy();
 };
 
 test.describe('Admin profile responsive', () => {

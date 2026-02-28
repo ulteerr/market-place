@@ -65,7 +65,7 @@
 
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <button
             type="submit"
             class="admin-button rounded-lg px-4 py-2 text-sm"

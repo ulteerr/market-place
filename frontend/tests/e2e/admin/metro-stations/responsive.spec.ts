@@ -36,9 +36,8 @@ test.describe('Admin metro stations responsive pages', () => {
       if (viewport.width >= 1024) {
         await expect(page.locator('.admin-table:visible')).toHaveCount(1);
         await expect(page.locator('.role-card:visible')).toHaveCount(0);
-      } else {
-        await assertNoHorizontalOverflow(page);
       }
+      await assertNoHorizontalOverflow(page);
     });
 
     test(`new page @ ${viewport.name}`, async ({ page }) => {
@@ -63,9 +62,7 @@ test.describe('Admin metro stations responsive pages', () => {
       await expect(form.getByRole('textbox', { name: 'Источник' })).toBeVisible();
       await expect(form.getByRole('button', { name: 'Создать' })).toBeVisible();
 
-      if (viewport.width < 1024) {
-        await assertNoHorizontalOverflow(page);
-      }
+      await assertNoHorizontalOverflow(page);
     });
 
     test(`show page @ ${viewport.name}`, async ({ page }) => {
