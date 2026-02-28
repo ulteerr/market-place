@@ -33,7 +33,7 @@ test.describe('Admin metro stations page', () => {
     await expect(page.getByRole('cell', { name: 'Арбатская', exact: true })).toBeVisible();
     await expect(page.getByText('Сокольническая', { exact: true })).toBeVisible();
     await expect(page.locator('a[href="/admin/metro-lines/ml-1"]')).toBeVisible();
-    await expect(page.locator('a[href="/admin/metro-stations?search=msk"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/admin/geo/cities/msk"]').first()).toBeVisible();
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
   });
 

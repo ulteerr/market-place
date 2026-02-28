@@ -51,6 +51,8 @@
       :entity-id="role?.id || String(route.params.id || '')"
       @rolled-back="onRoleRolledBack"
     />
+
+    <AdminActionLogPanel model="role" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

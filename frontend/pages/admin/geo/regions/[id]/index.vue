@@ -35,6 +35,10 @@
         </div>
       </template>
     </article>
+
+    <AdminChangeLogPanel model="geo_region" :entity-id="String(route.params.id || '')" />
+
+    <AdminActionLogPanel model="geo_region" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

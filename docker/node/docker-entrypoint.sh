@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+if [ ! -f .env ] && [ -f .env.example ]; then
+  echo "[frontend] Creating .env from .env.example..."
+  cp .env.example .env
+fi
+
 LOCK_HASH_FILE="node_modules/.deps-lock-hash"
 LOCK_READY_FILE="node_modules/.deps-ready"
 CURRENT_LOCK_HASH=""

@@ -91,6 +91,10 @@
         </div>
       </form>
     </article>
+
+    <AdminChangeLogPanel model="metro_station" :entity-id="String(route.params.id || '')" />
+
+    <AdminActionLogPanel model="metro_station" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

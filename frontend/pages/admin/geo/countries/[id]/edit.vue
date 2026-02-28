@@ -43,6 +43,10 @@
         </div>
       </form>
     </article>
+
+    <AdminChangeLogPanel model="geo_country" :entity-id="String(route.params.id || '')" />
+
+    <AdminActionLogPanel model="geo_country" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

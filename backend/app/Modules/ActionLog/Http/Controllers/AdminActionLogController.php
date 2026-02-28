@@ -24,6 +24,7 @@ final class AdminActionLogController extends Controller
             [
                 "event" => $request->query("event"),
                 "model" => $request->query("model"),
+                "model_id" => $request->query("model_id"),
                 "user" => $request->query("user"),
                 "search" => $request->query("search"),
                 "date_from" => $request->query("date_from"),

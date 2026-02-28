@@ -55,6 +55,8 @@
       :entity-id="child?.id || String(route.params.id || '')"
       @rolled-back="onChildRolledBack"
     />
+
+    <AdminActionLogPanel model="child" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

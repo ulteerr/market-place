@@ -46,9 +46,24 @@
                   {{ listState.sortMark('name') }}
                 </button>
               </th>
-              <th>{{ t('admin.metro.stations.index.headers.lineId') }}</th>
-              <th>{{ t('admin.metro.stations.index.headers.metroLine') }}</th>
-              <th>{{ t('admin.metro.stations.index.headers.cityId') }}</th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('line_id')">
+                  {{ t('admin.metro.stations.index.headers.lineId') }}
+                  {{ listState.sortMark('line_id') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('metro_line_id')">
+                  {{ t('admin.metro.stations.index.headers.metroLine') }}
+                  {{ listState.sortMark('metro_line_id') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-btn" @click="onToggleSort('city_id')">
+                  {{ t('admin.metro.stations.index.headers.city') }}
+                  {{ listState.sortMark('city_id') }}
+                </button>
+              </th>
               <th class="text-right">{{ t('admin.metro.stations.index.headers.actions') }}</th>
             </tr>
           </thead>
@@ -74,9 +89,9 @@
                   label-class="font-sans text-sm"
                 />
               </td>
-              <td class="font-mono text-xs">
-                <AdminLink :to="resolveCitySearchLink(item)">
-                  {{ item.city_id }}
+              <td class="text-xs">
+                <AdminLink :to="resolveCityLink(item)">
+                  {{ resolveCityName(item) }}
                 </AdminLink>
               </td>
               <td>
@@ -114,7 +129,7 @@
             }}
           </p>
           <p class="admin-muted text-xs">
-            {{ t('admin.metro.stations.index.card.cityId', { value: item.city_id }) }}
+            {{ t('admin.metro.stations.index.card.city', { value: resolveCityName(item) }) }}
           </p>
 
           <div class="mt-3">
@@ -154,6 +169,7 @@ import AdminMetroLineBadge from '~/components/admin/Metro/AdminMetroLineBadge.vu
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
+import type { AdminGeoCity } from '~/composables/useAdminGeoCities';
 import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 import type { AdminMetroStation } from '~/composables/useAdminMetroStations';
 
@@ -167,6 +183,7 @@ definePageMeta({
 
 const api = useAdminMetroStations();
 const metroLinesApi = useAdminMetroLines();
+const geoCitiesApi = useAdminGeoCities();
 const {
   listState,
   items,
@@ -201,6 +218,8 @@ const {
 const cardSortFields = computed(() => [
   { value: 'name', label: t('admin.metro.stations.index.sort.name') },
   { value: 'line_id', label: t('admin.metro.stations.index.sort.lineId') },
+  { value: 'metro_line_id', label: t('admin.metro.stations.index.sort.metroLine') },
+  { value: 'city_id', label: t('admin.metro.stations.index.sort.city') },
 ]);
 
 const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
@@ -212,6 +231,7 @@ const onToggleDesktopMode = () => {
 };
 
 const metroLineLookup = ref<Record<string, Pick<AdminMetroLine, 'name' | 'color'>>>({});
+const cityLookup = ref<Record<string, Pick<AdminGeoCity, 'name'>>>({});
 
 const getEmbeddedMetroLine = (
   item: AdminMetroStation
@@ -238,6 +258,22 @@ const resolveMetroLineColor = (item: AdminMetroStation): string | null => {
   }
 
   return metroLineLookup.value[item.metro_line_id]?.color || null;
+};
+
+const getEmbeddedCity = (item: AdminMetroStation): { name?: string | null } | null => {
+  const payload = item as unknown as {
+    city?: { name?: string | null };
+  };
+  return payload.city ?? null;
+};
+
+const resolveCityName = (item: AdminMetroStation): string => {
+  const embedded = getEmbeddedCity(item);
+  if (embedded?.name) {
+    return embedded.name;
+  }
+
+  return cityLookup.value[item.city_id]?.name || item.city_id || t('common.dash');
 };
 
 const hydrateMetroLineLookup = async () => {
@@ -277,9 +313,41 @@ const resolveMetroLineLink = (item: AdminMetroStation): string => {
   return `/admin/metro-lines/${item.metro_line_id}`;
 };
 
-const resolveCitySearchLink = (item: AdminMetroStation): string => {
-  const search = encodeURIComponent(item.city_id);
-  return `/admin/metro-stations?search=${search}`;
+const resolveCityLink = (item: AdminMetroStation): string => {
+  return `/admin/geo/cities/${item.city_id}`;
+};
+
+const hydrateCityLookup = async () => {
+  const hasItems = items.value.length > 0;
+  if (!hasItems) {
+    return;
+  }
+
+  const unresolvedCityIds = [...new Set(items.value.map((item) => item.city_id))]
+    .filter(Boolean)
+    .filter((id) => !cityLookup.value[id]);
+
+  if (!unresolvedCityIds.length) {
+    return;
+  }
+
+  const resolvedEntries = await Promise.allSettled(
+    unresolvedCityIds.map(async (id) => {
+      const city = await geoCitiesApi.show(id);
+      return [id, { name: city.name }] as const;
+    })
+  );
+
+  const nextLookup = { ...cityLookup.value };
+  for (const entry of resolvedEntries) {
+    if (entry.status !== 'fulfilled') {
+      continue;
+    }
+    const [id, value] = entry.value;
+    nextLookup[id] = value;
+  }
+
+  cityLookup.value = nextLookup;
 };
 
 const onRemove = (item: AdminMetroStation) => {
@@ -310,6 +378,14 @@ watch(
   () => items.value.map((item) => item.metro_line_id).join(','),
   () => {
     void hydrateMetroLineLookup();
+  },
+  { immediate: true }
+);
+
+watch(
+  () => items.value.map((item) => item.city_id).join(','),
+  () => {
+    void hydrateCityLookup();
   },
   { immediate: true }
 );

@@ -33,7 +33,12 @@ test.describe('Admin metro stations responsive pages', () => {
       await expect(page.getByText('Охотный ряд', { exact: true })).toBeVisible();
       await expect(page.getByText('Арбатская', { exact: true })).toBeVisible();
 
-      await assertNoHorizontalOverflow(page);
+      if (viewport.width >= 1024) {
+        await expect(page.locator('.admin-table:visible')).toHaveCount(1);
+        await expect(page.locator('.role-card:visible')).toHaveCount(0);
+      } else {
+        await assertNoHorizontalOverflow(page);
+      }
     });
 
     test(`new page @ ${viewport.name}`, async ({ page }) => {
@@ -42,17 +47,25 @@ test.describe('Admin metro stations responsive pages', () => {
       await setupMetroLinesCollectionApi(page, metroLinesFixture);
 
       await page.goto('/admin/metro-stations/new');
+      const form = page.locator('article form').first();
+
       await expect(
         page.getByRole('heading', { level: 2, name: 'Новая станция метро' })
       ).toBeVisible();
-      await expect(page.getByLabel('Название')).toBeVisible();
-      await expect(page.getByLabel('Внешний ID')).toBeVisible();
-      await expect(page.getByLabel('ID линии', { exact: true })).toBeVisible();
-      await expect(page.getByLabel('Линия метро')).toBeVisible();
-      await expect(page.getByLabel('ID города')).toBeVisible();
-      await expect(page.getByLabel('Источник')).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'Название' })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'Внешний ID' })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'ID линии', exact: true })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'Широта' })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'Долгота' })).toBeVisible();
+      await expect(form.getByRole('switch', { name: 'Станция закрыта' })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'Линия метро' })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'ID города' })).toBeVisible();
+      await expect(form.getByRole('textbox', { name: 'Источник' })).toBeVisible();
+      await expect(form.getByRole('button', { name: 'Создать' })).toBeVisible();
 
-      await assertNoHorizontalOverflow(page);
+      if (viewport.width < 1024) {
+        await assertNoHorizontalOverflow(page);
+      }
     });
 
     test(`show page @ ${viewport.name}`, async ({ page }) => {

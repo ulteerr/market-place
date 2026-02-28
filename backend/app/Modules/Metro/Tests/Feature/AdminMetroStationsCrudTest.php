@@ -95,6 +95,86 @@ final class AdminMetroStationsCrudTest extends TestCase
     }
 
     #[Test]
+    public function admin_can_search_by_city_and_line_names_and_sort_city_and_line_by_name(): void
+    {
+        $auth = $this->actingAsAdmin();
+        $moscow = City::factory()->create(["name" => "Москва"]);
+        $spb = City::factory()->create(["name" => "Санкт-Петербург"]);
+
+        $lineAlpha = MetroLine::factory()->create([
+            "name" => "Альфа",
+            "line_id" => "10",
+            "color" => "#111111",
+            "city_id" => (string) $moscow->id,
+            "source" => "manual",
+        ]);
+        $lineZulu = MetroLine::factory()->create([
+            "name" => "Зулу",
+            "line_id" => "20",
+            "color" => "#222222",
+            "city_id" => (string) $spb->id,
+            "source" => "manual",
+        ]);
+
+        MetroStation::factory()->create([
+            "name" => "Станция Альфа",
+            "line_id" => "10",
+            "metro_line_id" => (string) $lineAlpha->id,
+            "city_id" => (string) $moscow->id,
+            "source" => "manual",
+        ]);
+        MetroStation::factory()->create([
+            "name" => "Станция Зулу",
+            "line_id" => "20",
+            "metro_line_id" => (string) $lineZulu->id,
+            "city_id" => (string) $spb->id,
+            "source" => "manual",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/metro-stations?search=Москва")
+            ->assertOk()
+            ->assertJsonPath("data.total", 1)
+            ->assertJsonPath("data.data.0.name", "Станция Альфа");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/metro-stations?search=Зулу")
+            ->assertOk()
+            ->assertJsonPath("data.total", 1)
+            ->assertJsonPath("data.data.0.name", "Станция Зулу");
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/metro-stations?search=20")
+            ->assertOk()
+            ->assertJsonPath("data.total", 1)
+            ->assertJsonPath("data.data.0.name", "Станция Зулу");
+
+        $citySortResponse = $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/metro-stations?sort_by=city_id&sort_dir=asc")
+            ->assertOk();
+        $citySortedNames = array_values(
+            array_map(
+                static fn(array $row): string => (string) ($row["name"] ?? ""),
+                (array) $citySortResponse->json("data.data"),
+            ),
+        );
+        $citySortedNames = array_intersect($citySortedNames, ["Станция Альфа", "Станция Зулу"]);
+        $this->assertSame(["Станция Альфа", "Станция Зулу"], array_values($citySortedNames));
+
+        $lineSortResponse = $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/metro-stations?sort_by=metro_line_id&sort_dir=asc")
+            ->assertOk();
+        $lineSortedNames = array_values(
+            array_map(
+                static fn(array $row): string => (string) ($row["name"] ?? ""),
+                (array) $lineSortResponse->json("data.data"),
+            ),
+        );
+        $lineSortedNames = array_intersect($lineSortedNames, ["Станция Альфа", "Станция Зулу"]);
+        $this->assertSame(["Станция Альфа", "Станция Зулу"], array_values($lineSortedNames));
+    }
+
+    #[Test]
     public function admin_can_crud_metro_station(): void
     {
         $auth = $this->actingAsAdmin();

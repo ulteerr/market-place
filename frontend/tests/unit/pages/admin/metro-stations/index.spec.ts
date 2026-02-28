@@ -72,6 +72,9 @@ describe('admin metro stations index page', () => {
     vi.stubGlobal('watch', watch);
     vi.stubGlobal('onMounted', onMounted);
     vi.stubGlobal('onBeforeUnmount', onBeforeUnmount);
+    vi.stubGlobal('useAdminGeoCities', () => ({
+      show: vi.fn(async () => ({ name: 'City' })),
+    }));
   });
 
   it('passes translated section labels to entity index component', () => {

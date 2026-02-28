@@ -74,6 +74,8 @@
       :entity-id="user?.id || String(route.params.id || '')"
       @rolled-back="onUserRolledBack"
     />
+
+    <AdminActionLogPanel model="user" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

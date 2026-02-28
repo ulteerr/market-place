@@ -14,10 +14,12 @@ test.describe('Admin geo countries form pages', () => {
     await setupAdminAuth(page);
 
     await page.goto('/admin/geo/countries/new');
+    const form = page.locator('article form').first();
+
     await expect(page.getByRole('heading', { level: 2, name: 'Новая страна' })).toBeVisible();
-    await expect(page.getByLabel('Название')).toBeVisible();
-    await expect(page.getByLabel('ISO код')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Создать' })).toBeVisible();
+    await expect(form.getByRole('textbox', { name: 'Название' })).toBeVisible();
+    await expect(form.getByRole('textbox', { name: 'ISO код' })).toBeVisible();
+    await expect(form.getByRole('button', { name: 'Создать' })).toBeVisible();
   });
 
   test('creates country on /admin/geo/countries/new', async ({ page }) => {

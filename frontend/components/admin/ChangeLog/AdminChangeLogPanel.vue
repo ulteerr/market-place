@@ -1,5 +1,5 @@
 <template>
-  <article class="admin-card rounded-2xl p-5 lg:p-6">
+  <article v-if="canReadChangeLog" class="admin-card rounded-2xl p-5 lg:p-6">
     <div class="mb-4">
       <h3 class="text-lg font-semibold">{{ title || t('admin.changelog.title') }}</h3>
       <p class="admin-muted mt-1 text-sm">{{ t('admin.changelog.subtitle') }}</p>
@@ -246,6 +246,7 @@ const listMode = ref<ChangeLogListMode>('latest');
 const rollbackModalOpen = ref(false);
 const rollbackLoading = ref(false);
 const rollbackEntry = ref<AdminChangeLogEntry | null>(null);
+const canReadChangeLog = computed(() => hasPermission('admin.changelog.read'));
 
 const resolveEntryEvent = (entry: AdminChangeLogEntry): ChangeLogEvent => {
   if (rollbackSourceVersion(entry) !== null) {
@@ -772,6 +773,13 @@ const rollbackMessage = computed(() => {
 });
 
 const fetchChangeLog = async () => {
+  if (!canReadChangeLog.value) {
+    entries.value = [];
+    loadError.value = '';
+    lastPage.value = 1;
+    return;
+  }
+
   if (!props.entityId) {
     entries.value = [];
     loadError.value = '';

@@ -39,6 +39,10 @@
         </div>
       </template>
     </article>
+
+    <AdminChangeLogPanel model="geo_city" :entity-id="String(route.params.id || '')" />
+
+    <AdminActionLogPanel model="geo_city" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

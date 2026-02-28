@@ -126,14 +126,26 @@ test.describe('Admin action logs page', () => {
 
     await page.goto('/admin/action-logs');
 
-    await expect(page.locator('.event-chip', { hasText: 'Удаление' })).toBeVisible();
+    await expect(page.locator('.event-chip:visible', { hasText: 'Удаление' })).toHaveCount(1);
+
+    const filteredResponsePromise = page.waitForResponse((response) => {
+      if (
+        response.request().method() !== 'GET' ||
+        !response.url().includes('/api/admin/action-logs')
+      ) {
+        return false;
+      }
+      const url = new URL(response.url());
+      return response.status() === 200 && url.searchParams.get('event') === 'update';
+    });
 
     await page.getByLabel('Событие').click();
-    await page.getByRole('button', { name: 'Обновление' }).click();
+    await page.getByRole('listbox').getByRole('button', { name: 'Обновление' }).click();
 
+    await filteredResponsePromise;
     await expect(page).toHaveURL(/event=update/);
-    await expect(page.locator('.event-chip', { hasText: 'Удаление' })).toHaveCount(0);
-    await expect(page.locator('.event-chip', { hasText: 'Обновление' })).toHaveCount(1);
+    await expect(page.locator('.event-chip:visible', { hasText: 'Удаление' })).toHaveCount(0);
+    await expect(page.locator('.event-chip:visible', { hasText: 'Обновление' })).toHaveCount(1);
   });
 
   test('normalizes invalid date range from query', async ({ page }) => {

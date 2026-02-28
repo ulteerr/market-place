@@ -66,16 +66,34 @@ test.describe('Admin geo cities form pages', () => {
       capturedUpdatePayload = payload;
     });
 
+    const cityLoadResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        response.url().includes('/api/admin/geo/cities/ct-2') &&
+        response.status() === 200
+    );
+
     await page.goto('/admin/geo/cities/ct-2/edit');
+    await cityLoadResponsePromise;
+
+    const form = page.locator('article form').first();
     await expect(
       page.getByRole('heading', { level: 2, name: 'Редактирование города' })
     ).toBeVisible();
-    await expect(page.getByLabel('Название')).toHaveValue('Гомель');
+    await expect(form.getByRole('textbox', { name: 'Название' })).toHaveValue('Гомель');
 
-    await page.getByLabel('Название').fill('  Брест ');
-    await page.getByLabel('ID страны').fill(' ');
-    await page.getByLabel('ID региона').fill(' ');
-    await page.getByRole('button', { name: 'Сохранить' }).click();
+    const updateResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'PATCH' &&
+        response.url().includes('/api/admin/geo/cities/ct-2') &&
+        response.status() === 200
+    );
+
+    await form.getByRole('textbox', { name: 'Название' }).fill('  Брест ');
+    await form.getByRole('textbox', { name: 'ID страны' }).fill(' ');
+    await form.getByRole('textbox', { name: 'ID региона' }).fill(' ');
+    await form.getByRole('button', { name: 'Сохранить' }).click();
+    await updateResponsePromise;
 
     await expect(page).toHaveURL(/\/admin\/geo\/cities\/ct-2$/);
     expect(capturedUpdatePayload).toEqual({

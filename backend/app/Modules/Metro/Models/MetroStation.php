@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Metro\Models;
 
+use App\Shared\Traits\HasActionLog;
+use App\Shared\Traits\HasChangeLog;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +17,8 @@ final class MetroStation extends Model
 {
     use HasFactory;
     use HasUuid;
+    use HasActionLog;
+    use HasChangeLog;
 
     protected $table = "metro_stations";
 

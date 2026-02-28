@@ -1,0 +1,40 @@
+.admin-breadcrumbs {
+  margin-bottom: 1rem;
+}
+
+.admin-breadcrumbs-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+}
+
+.admin-breadcrumbs-item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.admin-breadcrumbs-separator {
+  margin-right: 0.35rem;
+  color: var(--muted);
+}
+
+.admin-breadcrumbs-link {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.admin-breadcrumbs-link:hover {
+  color: var(--text);
+}
+
+.admin-breadcrumbs-current {
+  color: var(--text);
+  font-weight: 600;
+}

@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\ActionLog\Models\ActionLog;
 use Modules\Children\Models\Child;
+use Modules\Geo\Models\City;
+use Modules\Geo\Models\Country;
+use Modules\Geo\Models\District;
+use Modules\Geo\Models\Region;
+use Modules\Metro\Models\MetroLine;
+use Modules\Metro\Models\MetroStation;
+use Modules\Organizations\Models\Organization;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 
@@ -55,6 +62,20 @@ final class ActionLogService
                 "roles" => Role::class,
                 "child" => Child::class,
                 "children" => Child::class,
+                "organization" => Organization::class,
+                "organizations" => Organization::class,
+                "metro_line" => MetroLine::class,
+                "metro_lines" => MetroLine::class,
+                "metro_station" => MetroStation::class,
+                "metro_stations" => MetroStation::class,
+                "geo_country" => Country::class,
+                "geo_countries" => Country::class,
+                "geo_region" => Region::class,
+                "geo_regions" => Region::class,
+                "geo_city" => City::class,
+                "geo_cities" => City::class,
+                "geo_district" => District::class,
+                "geo_districts" => District::class,
             ];
 
             if (isset($modelAliases[$normalizedModel])) {
@@ -62,6 +83,11 @@ final class ActionLogService
             } else {
                 $query->whereRaw("LOWER(model_type) LIKE ?", ["%" . $normalizedModel . "%"]);
             }
+        }
+
+        $modelId = trim((string) ($filters["model_id"] ?? ""));
+        if ($modelId !== "") {
+            $query->where("model_id", $modelId);
         }
 
         $userFilter = trim((string) ($filters["user"] ?? ""));

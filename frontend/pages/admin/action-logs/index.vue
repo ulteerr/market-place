@@ -295,6 +295,12 @@ const modelOptions = computed(() => [
   { value: 'role', label: t('admin.actionLogs.filters.modelRole') },
   { value: 'child', label: t('admin.actionLogs.filters.modelChild') },
   { value: 'organization', label: t('admin.actionLogs.filters.modelOrganization') },
+  { value: 'metro_line', label: t('admin.actionLogs.filters.modelMetroLine') },
+  { value: 'metro_station', label: t('admin.actionLogs.filters.modelMetroStation') },
+  { value: 'geo_country', label: t('admin.actionLogs.filters.modelGeoCountry') },
+  { value: 'geo_region', label: t('admin.actionLogs.filters.modelGeoRegion') },
+  { value: 'geo_city', label: t('admin.actionLogs.filters.modelGeoCity') },
+  { value: 'geo_district', label: t('admin.actionLogs.filters.modelGeoDistrict') },
 ]);
 
 const showPagination = computed(() => pagination.last_page > 1);
@@ -335,6 +341,27 @@ const resolveModelLabel = (modelType: string): string => {
   }
   if (modelType.endsWith('\\Child') || modelType === 'child') {
     return t('admin.actionLogs.models.child');
+  }
+  if (modelType.endsWith('\\Organization') || modelType === 'organization') {
+    return t('admin.actionLogs.models.organization');
+  }
+  if (modelType.endsWith('\\MetroLine') || modelType === 'metro_line') {
+    return t('admin.actionLogs.models.metroLine');
+  }
+  if (modelType.endsWith('\\MetroStation') || modelType === 'metro_station') {
+    return t('admin.actionLogs.models.metroStation');
+  }
+  if (modelType.endsWith('\\Country') || modelType === 'geo_country') {
+    return t('admin.actionLogs.models.geoCountry');
+  }
+  if (modelType.endsWith('\\Region') || modelType === 'geo_region') {
+    return t('admin.actionLogs.models.geoRegion');
+  }
+  if (modelType.endsWith('\\City') || modelType === 'geo_city') {
+    return t('admin.actionLogs.models.geoCity');
+  }
+  if (modelType.endsWith('\\District') || modelType === 'geo_district') {
+    return t('admin.actionLogs.models.geoDistrict');
   }
 
   const tail = modelType.split('\\').pop();

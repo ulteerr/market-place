@@ -95,6 +95,8 @@
       :entity-id="organization?.id || String(route.params.id || '')"
       @rolled-back="onRolledBack"
     />
+
+    <AdminActionLogPanel model="organization" :entity-id="String(route.params.id || '')" />
   </section>
 </template>
 

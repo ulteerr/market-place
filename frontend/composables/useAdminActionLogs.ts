@@ -29,6 +29,7 @@ export interface AdminActionLogsListParams {
   search?: string;
   event?: string;
   model?: string;
+  model_id?: string;
   user?: string;
   date_from?: string;
   date_to?: string;
