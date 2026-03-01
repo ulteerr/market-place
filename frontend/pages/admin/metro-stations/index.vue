@@ -169,8 +169,6 @@ import AdminMetroLineBadge from '~/components/admin/Metro/AdminMetroLineBadge.vu
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
-import type { AdminGeoCity } from '~/composables/useAdminGeoCities';
-import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 import type { AdminMetroStation } from '~/composables/useAdminMetroStations';
 
 const { t } = useI18n();
@@ -182,8 +180,6 @@ definePageMeta({
 });
 
 const api = useAdminMetroStations();
-const metroLinesApi = useAdminMetroLines();
-const geoCitiesApi = useAdminGeoCities();
 const {
   listState,
   items,
@@ -230,16 +226,10 @@ const onToggleDesktopMode = () => {
   tableOnDesktop.value = !tableOnDesktop.value;
 };
 
-const metroLineLookup = ref<Record<string, Pick<AdminMetroLine, 'name' | 'color'>>>({});
-const cityLookup = ref<Record<string, Pick<AdminGeoCity, 'name'>>>({});
-
 const getEmbeddedMetroLine = (
   item: AdminMetroStation
 ): { name?: string | null; color?: string | null } | null => {
-  const payload = item as unknown as {
-    metro_line?: { name?: string | null; color?: string | null };
-  };
-  return payload.metro_line ?? null;
+  return item.metro_line ?? null;
 };
 
 const resolveMetroLineName = (item: AdminMetroStation): string => {
@@ -248,7 +238,7 @@ const resolveMetroLineName = (item: AdminMetroStation): string => {
     return embedded.name;
   }
 
-  return metroLineLookup.value[item.metro_line_id]?.name || item.metro_line_id || t('common.dash');
+  return item.metro_line_id || t('common.dash');
 };
 
 const resolveMetroLineColor = (item: AdminMetroStation): string | null => {
@@ -257,14 +247,11 @@ const resolveMetroLineColor = (item: AdminMetroStation): string | null => {
     return embedded.color;
   }
 
-  return metroLineLookup.value[item.metro_line_id]?.color || null;
+  return null;
 };
 
 const getEmbeddedCity = (item: AdminMetroStation): { name?: string | null } | null => {
-  const payload = item as unknown as {
-    city?: { name?: string | null };
-  };
-  return payload.city ?? null;
+  return item.city ?? null;
 };
 
 const resolveCityName = (item: AdminMetroStation): string => {
@@ -273,40 +260,7 @@ const resolveCityName = (item: AdminMetroStation): string => {
     return embedded.name;
   }
 
-  return cityLookup.value[item.city_id]?.name || item.city_id || t('common.dash');
-};
-
-const hydrateMetroLineLookup = async () => {
-  const hasItems = items.value.length > 0;
-  if (!hasItems) {
-    return;
-  }
-
-  const unresolvedLineIds = [...new Set(items.value.map((item) => item.metro_line_id))]
-    .filter(Boolean)
-    .filter((id) => !metroLineLookup.value[id]);
-
-  if (!unresolvedLineIds.length) {
-    return;
-  }
-
-  const resolvedEntries = await Promise.allSettled(
-    unresolvedLineIds.map(async (id) => {
-      const line = await metroLinesApi.show(id);
-      return [id, { name: line.name, color: line.color ?? null }] as const;
-    })
-  );
-
-  const nextLookup = { ...metroLineLookup.value };
-  for (const entry of resolvedEntries) {
-    if (entry.status !== 'fulfilled') {
-      continue;
-    }
-    const [id, value] = entry.value;
-    nextLookup[id] = value;
-  }
-
-  metroLineLookup.value = nextLookup;
+  return item.city_id || t('common.dash');
 };
 
 const resolveMetroLineLink = (item: AdminMetroStation): string => {
@@ -315,39 +269,6 @@ const resolveMetroLineLink = (item: AdminMetroStation): string => {
 
 const resolveCityLink = (item: AdminMetroStation): string => {
   return `/admin/geo/cities/${item.city_id}`;
-};
-
-const hydrateCityLookup = async () => {
-  const hasItems = items.value.length > 0;
-  if (!hasItems) {
-    return;
-  }
-
-  const unresolvedCityIds = [...new Set(items.value.map((item) => item.city_id))]
-    .filter(Boolean)
-    .filter((id) => !cityLookup.value[id]);
-
-  if (!unresolvedCityIds.length) {
-    return;
-  }
-
-  const resolvedEntries = await Promise.allSettled(
-    unresolvedCityIds.map(async (id) => {
-      const city = await geoCitiesApi.show(id);
-      return [id, { name: city.name }] as const;
-    })
-  );
-
-  const nextLookup = { ...cityLookup.value };
-  for (const entry of resolvedEntries) {
-    if (entry.status !== 'fulfilled') {
-      continue;
-    }
-    const [id, value] = entry.value;
-    nextLookup[id] = value;
-  }
-
-  cityLookup.value = nextLookup;
 };
 
 const onRemove = (item: AdminMetroStation) => {
@@ -372,22 +293,6 @@ watch(
       fetchItems(listState.applySearch());
     }, 300);
   }
-);
-
-watch(
-  () => items.value.map((item) => item.metro_line_id).join(','),
-  () => {
-    void hydrateMetroLineLookup();
-  },
-  { immediate: true }
-);
-
-watch(
-  () => items.value.map((item) => item.city_id).join(','),
-  () => {
-    void hydrateCityLookup();
-  },
-  { immediate: true }
 );
 
 onMounted(() => {

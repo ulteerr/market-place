@@ -22,6 +22,7 @@ final class UserResource extends JsonResource
             "last_name" => $this->last_name,
             "middle_name" => $this->middle_name,
             "gender" => $this->gender,
+            "phone" => $this->phone,
             "settings" => $this->settings ?? (object) [],
             "avatar" => $this->relationLoaded("avatar")
                 ? ($this->avatar

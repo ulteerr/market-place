@@ -91,7 +91,10 @@ final class AdminMetroStationsCrudTest extends TestCase
             ->assertJsonPath("status", "ok")
             ->assertJsonPath("data.total", 1)
             ->assertJsonPath("data.data.0.name", "Арбатская")
-            ->assertJsonPath("data.data.0.metro_line_id", (string) $blueLineMoscow->id);
+            ->assertJsonPath("data.data.0.metro_line_id", (string) $blueLineMoscow->id)
+            ->assertJsonPath("data.data.0.metro_line.name", "Арбатско-Покровская")
+            ->assertJsonPath("data.data.0.metro_line.color", "#0078C9")
+            ->assertJsonPath("data.data.0.city.name", "Москва");
     }
 
     #[Test]
@@ -209,7 +212,9 @@ final class AdminMetroStationsCrudTest extends TestCase
             ->getJson("/api/admin/metro-stations/{$stationId}")
             ->assertOk()
             ->assertJsonPath("data.id", $stationId)
-            ->assertJsonPath("data.metro_line_id", (string) $line->id);
+            ->assertJsonPath("data.metro_line_id", (string) $line->id)
+            ->assertJsonPath("data.metro_line.name", "Сокольническая")
+            ->assertJsonPath("data.city.name", "Москва");
 
         $this->withHeaders($auth["headers"])
             ->patchJson("/api/admin/metro-stations/{$stationId}", [

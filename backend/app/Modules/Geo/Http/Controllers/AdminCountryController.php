@@ -7,6 +7,7 @@ namespace Modules\Geo\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminCountryRequest;
 use Modules\Geo\Http\Requests\UpdateAdminCountryRequest;
+use Modules\Geo\Http\Responses\CountryResponseFactory;
 use Modules\Geo\Services\CountriesService;
 
 final class AdminCountryController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminCountryController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return CountryResponseFactory::class;
     }
 
     protected function deleteMethod(): string

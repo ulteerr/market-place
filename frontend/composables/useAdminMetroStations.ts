@@ -15,6 +15,13 @@ export interface AdminMetroStation {
   metro_line_id: string;
   city_id: string;
   source: string;
+  metro_line?: {
+    name?: string | null;
+    color?: string | null;
+  } | null;
+  city?: {
+    name?: string | null;
+  } | null;
 }
 
 interface MetroStationShowResponse {

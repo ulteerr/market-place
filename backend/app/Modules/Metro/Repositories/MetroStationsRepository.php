@@ -13,6 +13,7 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
     public function list(array $filters = []): Collection
     {
         $query = MetroStation::query()
+            ->with(["metroLine:id,name,color", "city:id,name"])
             ->leftJoin("metro_lines", "metro_lines.id", "=", "metro_stations.metro_line_id")
             ->leftJoin("cities", "cities.id", "=", "metro_stations.city_id")
             ->select([
@@ -57,6 +58,7 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
         $query = MetroStation::query()
+            ->with(["metroLine:id,name,color", "city:id,name"])
             ->leftJoin("metro_lines", "metro_lines.id", "=", "metro_stations.metro_line_id")
             ->leftJoin("cities", "cities.id", "=", "metro_stations.city_id")
             ->select([
@@ -126,7 +128,9 @@ final class MetroStationsRepository implements MetroStationsRepositoryInterface
 
     public function findById(string $id): ?MetroStation
     {
-        return MetroStation::query()->find($id);
+        return MetroStation::query()
+            ->with(["metroLine:id,name,color", "city:id,name"])
+            ->find($id);
     }
 
     public function update(MetroStation $station, array $data): MetroStation

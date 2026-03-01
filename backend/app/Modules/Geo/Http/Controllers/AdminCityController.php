@@ -7,6 +7,7 @@ namespace Modules\Geo\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminCityRequest;
 use Modules\Geo\Http\Requests\UpdateAdminCityRequest;
+use Modules\Geo\Http\Responses\CityResponseFactory;
 use Modules\Geo\Services\CitiesService;
 
 final class AdminCityController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminCityController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return CityResponseFactory::class;
     }
 
     protected function deleteMethod(): string

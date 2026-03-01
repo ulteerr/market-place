@@ -22,6 +22,13 @@ export interface AdminMetroStation {
   metro_line_id: string;
   city_id: string;
   source: string;
+  metro_line?: {
+    name?: string | null;
+    color?: string | null;
+  } | null;
+  city?: {
+    name?: string | null;
+  } | null;
 }
 
 export const metroLinesFixture: AdminMetroLine[] = [
@@ -57,6 +64,13 @@ export const metroStationsFixture: AdminMetroStation[] = [
     metro_line_id: 'ml-1',
     city_id: 'msk',
     source: 'manual',
+    metro_line: {
+      name: 'Сокольническая',
+      color: '#D12D2D',
+    },
+    city: {
+      name: 'Москва',
+    },
   },
   {
     id: 'ms-2',
@@ -69,8 +83,45 @@ export const metroStationsFixture: AdminMetroStation[] = [
     metro_line_id: 'ml-2',
     city_id: 'msk',
     source: 'import',
+    metro_line: {
+      name: 'Арбатско-Покровская',
+      color: '#2B4EA2',
+    },
+    city: {
+      name: 'Москва',
+    },
   },
 ];
+
+const cityNameById: Record<string, string> = {
+  msk: 'Москва',
+};
+
+const hydrateStation = (
+  station: AdminMetroStation,
+  lines: AdminMetroLine[] = metroLinesFixture
+): AdminMetroStation => {
+  const line = lines.find((item) => item.id === station.metro_line_id);
+
+  return {
+    ...station,
+    metro_line:
+      station.metro_line ??
+      (line
+        ? {
+            name: line.name,
+            color: line.color ?? null,
+          }
+        : null),
+    city:
+      station.city ??
+      (station.city_id
+        ? {
+            name: cityNameById[station.city_id] ?? station.city_id,
+          }
+        : null),
+  };
+};
 
 const buildCollectionResponse = <T>(items: T[], perPage: number) => ({
   status: 'ok',
@@ -181,7 +232,7 @@ export const setupMetroStationsCollectionApi = async (
   page: Page,
   seedStations: AdminMetroStation[] = metroStationsFixture
 ) => {
-  let dataset = [...seedStations];
+  let dataset = seedStations.map((item) => hydrateStation(item));
 
   await page.route(/\/api\/admin\/metro-stations(?:\/[^/?#]+)?(?:\?.*)?$/, async (route: Route) => {
     if (route.request().method() === 'DELETE') {
@@ -263,7 +314,7 @@ export const setupMetroStationShowApi = async (page: Page, station: AdminMetroSt
       contentType: 'application/json',
       body: JSON.stringify({
         status: 'ok',
-        data: station,
+        data: hydrateStation(station),
       }),
     });
   });
@@ -325,7 +376,7 @@ export const setupMetroStationEditApi = async (
         contentType: 'application/json',
         body: JSON.stringify({
           status: 'ok',
-          data: station,
+          data: hydrateStation(station),
         }),
       });
       return;
@@ -340,10 +391,10 @@ export const setupMetroStationEditApi = async (
         contentType: 'application/json',
         body: JSON.stringify({
           status: 'ok',
-          data: {
+          data: hydrateStation({
             ...station,
             ...payload,
-          },
+          }),
         }),
       });
       return;

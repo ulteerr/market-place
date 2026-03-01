@@ -80,7 +80,6 @@
 <script setup lang="ts">
 import AdminLink from '~/components/admin/AdminLink.vue';
 import AdminMetroLineBadge from '~/components/admin/Metro/AdminMetroLineBadge.vue';
-import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 import type { AdminMetroStation } from '~/composables/useAdminMetroStations';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
@@ -93,18 +92,16 @@ definePageMeta({
 
 const route = useRoute();
 const api = useAdminMetroStations();
-const metroLinesApi = useAdminMetroLines();
 const item = ref<AdminMetroStation | null>(null);
 const loading = ref(false);
 const loadError = ref('');
-const metroLine = ref<Pick<AdminMetroLine, 'name' | 'color'> | null>(null);
 
 const metroLineName = computed(() => {
-  return metroLine.value?.name || item.value?.metro_line_id || t('common.dash');
+  return item.value?.metro_line?.name || item.value?.metro_line_id || t('common.dash');
 });
 
 const metroLineColor = computed(() => {
-  return metroLine.value?.color || null;
+  return item.value?.metro_line?.color || null;
 });
 
 const fetchItem = async () => {
@@ -118,10 +115,6 @@ const fetchItem = async () => {
   loadError.value = '';
   try {
     item.value = await api.show(id);
-    if (item.value.metro_line_id) {
-      const line = await metroLinesApi.show(item.value.metro_line_id);
-      metroLine.value = { name: line.name, color: line.color ?? null };
-    }
   } catch (error) {
     loadError.value = getApiErrorMessage(error, t('admin.metro.stations.show.errors.load'));
   } finally {

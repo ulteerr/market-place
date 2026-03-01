@@ -7,6 +7,7 @@ namespace Modules\Metro\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Metro\Http\Requests\CreateAdminMetroStationRequest;
 use Modules\Metro\Http\Requests\UpdateAdminMetroStationRequest;
+use Modules\Metro\Http\Responses\MetroStationResponseFactory;
 use Modules\Metro\Services\MetroStationsService;
 
 final class AdminMetroStationController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminMetroStationController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return MetroStationResponseFactory::class;
     }
 
     protected function deleteMethod(): string

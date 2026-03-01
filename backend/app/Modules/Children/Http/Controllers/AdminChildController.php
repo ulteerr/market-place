@@ -7,6 +7,7 @@ namespace Modules\Children\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Children\Http\Requests\CreateAdminChildRequest;
 use Modules\Children\Http\Requests\UpdateAdminChildRequest;
+use Modules\Children\Http\Responses\ChildResponseFactory;
 use Modules\Children\Services\ChildService;
 
 final class AdminChildController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminChildController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return ChildResponseFactory::class;
     }
 
     protected function createMethod(): string

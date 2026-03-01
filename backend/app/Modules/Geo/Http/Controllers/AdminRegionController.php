@@ -7,6 +7,7 @@ namespace Modules\Geo\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminRegionRequest;
 use Modules\Geo\Http\Requests\UpdateAdminRegionRequest;
+use Modules\Geo\Http\Responses\RegionResponseFactory;
 use Modules\Geo\Services\RegionsService;
 
 final class AdminRegionController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminRegionController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return RegionResponseFactory::class;
     }
 
     protected function deleteMethod(): string

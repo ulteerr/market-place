@@ -7,6 +7,7 @@ namespace Modules\Organizations\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Organizations\Http\Requests\CreateAdminOrganizationRequest;
 use Modules\Organizations\Http\Requests\UpdateAdminOrganizationRequest;
+use Modules\Organizations\Http\Responses\OrganizationResponseFactory;
 use Modules\Organizations\Services\OrganizationsService;
 
 final class AdminOrganizationController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminOrganizationController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return OrganizationResponseFactory::class;
     }
 
     protected function createMethod(): string

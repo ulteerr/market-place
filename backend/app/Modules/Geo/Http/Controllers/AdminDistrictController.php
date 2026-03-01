@@ -7,6 +7,7 @@ namespace Modules\Geo\Http\Controllers;
 use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminDistrictRequest;
 use Modules\Geo\Http\Requests\UpdateAdminDistrictRequest;
+use Modules\Geo\Http\Responses\DistrictResponseFactory;
 use Modules\Geo\Services\DistrictsService;
 
 final class AdminDistrictController extends AdminCrudController
@@ -30,7 +31,7 @@ final class AdminDistrictController extends AdminCrudController
 
     protected function responseFactory(): ?string
     {
-        return null;
+        return DistrictResponseFactory::class;
     }
 
     protected function deleteMethod(): string

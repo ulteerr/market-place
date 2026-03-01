@@ -48,6 +48,11 @@ final class MetroStation extends Model
         return $this->belongsTo(MetroLine::class, "metro_line_id");
     }
 
+    public function metroLine(): BelongsTo
+    {
+        return $this->belongsTo(MetroLine::class, "metro_line_id");
+    }
+
     protected static function newFactory(): MetroStationFactory
     {
         return MetroStationFactory::new();

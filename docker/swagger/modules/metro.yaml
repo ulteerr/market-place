@@ -195,6 +195,10 @@ admin_geo_metro_stations:
     responses:
       '200':
         description: Paginated metro stations list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/metro.yaml#/components/schemas/AdminMetroStationsPaginatedResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -265,6 +269,10 @@ admin_geo_metro_stations_by_id:
     responses:
       '200':
         description: Metro station details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/metro.yaml#/components/schemas/AdminMetroStationResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':

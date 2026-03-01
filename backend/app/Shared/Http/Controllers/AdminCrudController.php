@@ -108,6 +108,10 @@ abstract class AdminCrudController extends Controller
             ),
         );
 
+        if (($factory = $this->responseFactory()) && method_exists($factory, "paginated")) {
+            return $factory::paginated($items);
+        }
+
         return StatusResponseFactory::success($items);
     }
 
@@ -117,6 +121,13 @@ abstract class AdminCrudController extends Controller
         $request = app($requestClass);
 
         $item = $this->createItem($request->validated());
+
+        if (
+            ($factory = $this->responseFactory()) &&
+            method_exists($factory, "successWithMessage")
+        ) {
+            return $factory::successWithMessage("Created successfully", $item, 201);
+        }
 
         return StatusResponseFactory::successWithMessage("Created successfully", $item, 201);
     }
@@ -142,6 +153,13 @@ abstract class AdminCrudController extends Controller
         $request = app($requestClass);
 
         $item = $this->updateItem($id, $request->validated());
+
+        if (
+            ($factory = $this->responseFactory()) &&
+            method_exists($factory, "successWithMessage")
+        ) {
+            return $factory::successWithMessage("Updated successfully", $item);
+        }
 
         return StatusResponseFactory::successWithMessage("Updated successfully", $item);
     }
