@@ -20,6 +20,9 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL,
+    deviceScaleFactor: 1,
+    locale: 'ru-RU',
+    timezoneId: 'Europe/Moscow',
     trace: 'on-first-retry',
   },
   webServer: {
@@ -32,7 +35,6 @@ export default defineConfig({
       name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
       },
     },
     {
