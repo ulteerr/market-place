@@ -110,4 +110,20 @@ export const setupAdminAuth = async (page: Page, user: AdminAuthUser = defaultAd
       }),
     });
   });
+  await page.route('**/api/admin/action-logs**', async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: 'ok',
+        data: {
+          current_page: 1,
+          last_page: 1,
+          per_page: 20,
+          total: 0,
+          data: [],
+        },
+      }),
+    });
+  });
 };

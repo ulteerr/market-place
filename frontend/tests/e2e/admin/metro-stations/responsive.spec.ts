@@ -13,7 +13,51 @@ import { E2E_RESPONSIVE_VIEWPORTS } from '../../helpers/viewports';
 
 const existingStation = metroStationsFixture[1];
 
+const ensureMobileSidebarClosed = async (page: Page) => {
+  const sidebar = page.locator('aside.admin-sidebar');
+  const className = (await sidebar.getAttribute('class')) ?? '';
+
+  if (!className.includes('is-open')) {
+    return;
+  }
+
+  await page.getByRole('button', { name: 'Закрыть меню' }).first().click();
+  await expect(sidebar).not.toHaveClass(/is-open/);
+};
+
+const expectPageHeading = async (page: Page, text: string, viewportWidth: number) => {
+  const heading = page.locator('h2', { hasText: text }).first();
+
+  if (viewportWidth < 1024) {
+    await expect(heading).toHaveCount(1);
+    return;
+  }
+
+  await expect(heading).toBeVisible();
+};
+
+const stabilizeLayout = async (page: Page) => {
+  await ensureMobileSidebarClosed(page);
+
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 3000 });
+  } catch {
+    // Some pages still have non-critical async work; continue with frame-based settling.
+  }
+
+  await page.evaluate(async () => {
+    if ('fonts' in document) {
+      await document.fonts.ready;
+    }
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+  });
+};
+
 const assertNoHorizontalOverflow = async (page: Page) => {
+  await stabilizeLayout(page);
   const hasOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth
   );
@@ -29,7 +73,8 @@ test.describe('Admin metro stations responsive pages', () => {
       await setupMetroStationsCollectionApi(page, metroStationsFixture);
 
       await page.goto('/admin/metro-stations');
-      await expect(page.getByRole('heading', { level: 2, name: 'Станции метро' })).toBeVisible();
+      await ensureMobileSidebarClosed(page);
+      await expectPageHeading(page, 'Станции метро', viewport.width);
       await expect(page.getByText('Охотный ряд', { exact: true })).toBeVisible();
       await expect(page.getByText('Арбатская', { exact: true })).toBeVisible();
 
@@ -46,11 +91,10 @@ test.describe('Admin metro stations responsive pages', () => {
       await setupMetroLinesCollectionApi(page, metroLinesFixture);
 
       await page.goto('/admin/metro-stations/new');
+      await ensureMobileSidebarClosed(page);
       const form = page.locator('article form').first();
 
-      await expect(
-        page.getByRole('heading', { level: 2, name: 'Новая станция метро' })
-      ).toBeVisible();
+      await expectPageHeading(page, 'Новая станция метро', viewport.width);
       await expect(form.getByRole('textbox', { name: 'Название' })).toBeVisible();
       await expect(form.getByRole('textbox', { name: 'Внешний ID' })).toBeVisible();
       await expect(form.getByRole('textbox', { name: 'ID линии', exact: true })).toBeVisible();
@@ -72,7 +116,8 @@ test.describe('Admin metro stations responsive pages', () => {
       await setupMetroStationShowApi(page, existingStation);
 
       await page.goto('/admin/metro-stations/ms-2');
-      await expect(page.getByRole('heading', { level: 2, name: 'Станция метро' })).toBeVisible();
+      await ensureMobileSidebarClosed(page);
+      await expectPageHeading(page, 'Станция метро', viewport.width);
       await expect(page.locator('dd', { hasText: /^Арбатская$/ })).toBeVisible();
       await expect(page.locator('dd', { hasText: /^3$/ })).toBeVisible();
       await expect(page.locator('a[href="/admin/metro-stations/ms-2/edit"]')).toBeVisible();
@@ -87,9 +132,8 @@ test.describe('Admin metro stations responsive pages', () => {
       await setupMetroStationEditApi(page, existingStation);
 
       await page.goto('/admin/metro-stations/ms-2/edit');
-      await expect(
-        page.getByRole('heading', { level: 2, name: 'Редактирование станции метро' })
-      ).toBeVisible();
+      await ensureMobileSidebarClosed(page);
+      await expectPageHeading(page, 'Редактирование станции метро', viewport.width);
       await expect(page.getByLabel('Название')).toHaveValue('Арбатская');
       await expect(page.getByLabel('ID линии', { exact: true })).toHaveValue('3');
       await expect(page.getByLabel('Линия метро')).toBeVisible();

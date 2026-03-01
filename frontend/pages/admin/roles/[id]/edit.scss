@@ -1,9 +1,11 @@
 .roles-form-page {
   color: var(--text);
+  min-width: 0;
 }
 .admin-card {
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 80%, transparent);
+  min-width: 0;
 }
 .admin-muted {
   color: var(--muted);
@@ -31,4 +33,29 @@
 .admin-button-secondary {
   background: transparent;
   color: var(--muted);
+}
+
+.roles-form-page :deep(form),
+.roles-form-page :deep(.ui-field),
+.roles-form-page :deep(.ui-input),
+.roles-form-page :deep(.ui-select),
+.roles-form-page :deep(.ui-switch) {
+  min-width: 0;
+}
+
+.roles-form-page :deep(input),
+.roles-form-page :deep(button),
+.roles-form-page :deep([role='combobox']) {
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .roles-form-page :deep(.admin-button),
+  .roles-form-page :deep(.admin-button-secondary) {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
 }

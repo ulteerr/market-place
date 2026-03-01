@@ -1,9 +1,11 @@
 .roles-show-page {
   color: var(--text);
+  min-width: 0;
 }
 .admin-card {
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 80%, transparent);
+  min-width: 0;
 }
 .admin-muted {
   color: var(--muted);
@@ -31,4 +33,27 @@
 .admin-button-secondary {
   background: transparent;
   color: var(--muted);
+}
+
+.roles-show-page :deep(dl),
+.roles-show-page :deep(dd),
+.roles-show-page :deep(dt),
+.roles-show-page :deep(.admin-link) {
+  min-width: 0;
+}
+
+.roles-show-page :deep(dd),
+.roles-show-page :deep(.admin-link) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .roles-show-page :deep(.admin-button),
+  .roles-show-page :deep(.admin-button-secondary) {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
 }

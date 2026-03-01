@@ -11,21 +11,21 @@
 
       <template v-else-if="item">
         <dl class="grid gap-3 sm:grid-cols-2">
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.name') }}</dt>
-            <dd>{{ item.name }}</dd>
+            <dd class="break-words">{{ item.name }}</dd>
           </div>
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.externalId') }}</dt>
-            <dd>{{ item.external_id || t('common.dash') }}</dd>
+            <dd class="break-words">{{ item.external_id || t('common.dash') }}</dd>
           </div>
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.lineId') }}</dt>
-            <dd>{{ item.line_id || t('common.dash') }}</dd>
+            <dd class="break-words">{{ item.line_id || t('common.dash') }}</dd>
           </div>
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.isClosed') }}</dt>
-            <dd>
+            <dd class="break-words">
               {{
                 item.is_closed === null
                   ? t('common.dash')
@@ -35,19 +35,20 @@
               }}
             </dd>
           </div>
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.metroLine') }}</dt>
-            <dd>
+            <dd class="min-w-0">
               <AdminMetroLineBadge
                 :to="`/admin/metro-lines/${item.metro_line_id}`"
                 :name="metroLineName"
                 :color="metroLineColor"
+                label-class="min-w-0 break-words"
               />
             </dd>
           </div>
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.metro.stations.fields.cityId') }}</dt>
-            <dd class="font-mono text-xs">
+            <dd class="font-mono text-xs break-all">
               <AdminLink :to="`/admin/metro-stations?search=${encodeURIComponent(item.city_id)}`">
                 {{ item.city_id }}
               </AdminLink>
@@ -55,7 +56,7 @@
           </div>
         </dl>
 
-        <div class="mt-5 flex gap-2">
+        <div class="mt-5 flex flex-wrap gap-2">
           <NuxtLink
             :to="`/admin/metro-stations/${item.id}/edit`"
             class="admin-button rounded-lg px-4 py-2 text-sm"
