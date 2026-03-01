@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'App Sans';
+  src: url('/fonts/LiberationSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'App Sans';
+  src: url('/fonts/LiberationSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --surface: #ffffff;
   --surface-soft: #f8fafc;
@@ -39,6 +55,7 @@
   --user-avatar-size-table: 2.5rem;
   --user-avatar-size-show: 2.5rem;
   --user-avatar-size-profile: 4rem;
+  --font-sans: 'App Sans', 'Liberation Sans', 'DejaVu Sans', sans-serif;
 }
 
 :root[data-theme='dark'] {
@@ -71,7 +88,15 @@ body,
 body {
   background: var(--page-background);
   color: var(--text);
+  font-family: var(--font-sans);
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
