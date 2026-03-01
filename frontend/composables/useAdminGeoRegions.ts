@@ -8,6 +8,9 @@ export interface AdminGeoRegion {
   id: string;
   name: string;
   country_id: string;
+  country?: {
+    name?: string | null;
+  } | null;
 }
 
 interface GeoRegionShowResponse {

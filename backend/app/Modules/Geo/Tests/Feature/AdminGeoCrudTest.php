@@ -69,7 +69,8 @@ final class AdminGeoCrudTest extends TestCase
                 "country_id" => $countryId,
             ])
             ->assertStatus(201)
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.country.name", "Российская Федерация");
         $regionId = (string) $regionResponse->json("data.id");
 
         $cityResponse = $this->withHeaders($auth["headers"])
@@ -79,7 +80,9 @@ final class AdminGeoCrudTest extends TestCase
                 "region_id" => $regionId,
             ])
             ->assertStatus(201)
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.country.name", "Российская Федерация")
+            ->assertJsonPath("data.region.name", "Москва");
         $cityId = (string) $cityResponse->json("data.id");
 
         $districtResponse = $this->withHeaders($auth["headers"])
@@ -88,7 +91,8 @@ final class AdminGeoCrudTest extends TestCase
                 "city_id" => $cityId,
             ])
             ->assertStatus(201)
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.city.name", "Москва");
         $districtId = (string) $districtResponse->json("data.id");
 
         $lineResponse = $this->withHeaders($auth["headers"])
@@ -100,7 +104,8 @@ final class AdminGeoCrudTest extends TestCase
                 "source" => "manual",
             ])
             ->assertStatus(201)
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.city.name", "Москва");
         $lineId = (string) $lineResponse->json("data.id");
 
         $stationResponse = $this->withHeaders($auth["headers"])
@@ -117,22 +122,27 @@ final class AdminGeoCrudTest extends TestCase
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/geo/regions?country_id={$countryId}")
             ->assertOk()
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.data.0.country.name", "Российская Федерация");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/geo/cities?region_id={$regionId}")
             ->assertOk()
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.data.0.country.name", "Российская Федерация")
+            ->assertJsonPath("data.data.0.region.name", "Москва");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/geo/districts?city_id={$cityId}")
             ->assertOk()
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.data.0.city.name", "Москва");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/metro-lines?city_id={$cityId}")
             ->assertOk()
-            ->assertJsonPath("status", "ok");
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.data.0.city.name", "Москва");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/admin/metro-stations?metro_line_id={$lineId}")

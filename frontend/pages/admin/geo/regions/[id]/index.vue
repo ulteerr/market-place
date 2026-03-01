@@ -11,13 +11,17 @@
 
       <template v-else-if="item">
         <dl class="grid gap-3 sm:grid-cols-2">
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.geo.regions.fields.name') }}</dt>
-            <dd>{{ item.name }}</dd>
+            <dd class="break-words">{{ item.name }}</dd>
           </div>
-          <div>
-            <dt class="admin-muted text-xs">{{ t('admin.geo.regions.fields.countryId') }}</dt>
-            <dd class="font-mono text-xs">{{ item.country_id }}</dd>
+          <div class="min-w-0">
+            <dt class="admin-muted text-xs">{{ t('admin.geo.regions.fields.country') }}</dt>
+            <dd class="text-xs break-words">
+              <AdminLink :to="`/admin/geo/countries/${item.country_id}`">
+                {{ countryName }}
+              </AdminLink>
+            </dd>
           </div>
         </dl>
 
@@ -43,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
 import type { AdminGeoRegion } from '~/composables/useAdminGeoRegions';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 
@@ -59,6 +64,10 @@ const api = useAdminGeoRegions();
 const item = ref<AdminGeoRegion | null>(null);
 const loading = ref(false);
 const loadError = ref('');
+
+const countryName = computed(() => {
+  return item.value?.country?.name || item.value?.country_id || t('common.dash');
+});
 
 const fetchItem = async () => {
   const id = String(route.params.id || '');

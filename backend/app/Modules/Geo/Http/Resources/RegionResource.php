@@ -20,6 +20,15 @@ final class RegionResource extends JsonResource
             "country_id" => (string) $this->country_id,
             "created_at" => $this->created_at,
             "updated_at" => $this->updated_at,
+            "country" => $this->whenLoaded("country", function () {
+                if (!$this->country) {
+                    return null;
+                }
+
+                return [
+                    "name" => $this->country->name,
+                ];
+            }),
         ];
     }
 }

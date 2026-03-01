@@ -8,6 +8,9 @@ export interface AdminGeoDistrict {
   id: string;
   name: string;
   city_id: string;
+  city?: {
+    name?: string | null;
+  } | null;
 }
 
 interface GeoDistrictShowResponse {

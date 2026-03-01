@@ -10,6 +10,9 @@ const shownLine = {
   color: '#2B4EA2',
   city_id: 'msk',
   source: 'import',
+  city: {
+    name: 'Москва',
+  },
 };
 
 test.describe('Admin metro lines show page', () => {
@@ -40,7 +43,7 @@ test.describe('Admin metro lines show page', () => {
       .locator('span[aria-hidden="true"]')
       .first();
     await expect(colorField).toBeVisible();
-    await expect(page.locator('dd', { hasText: /^msk$/ })).toBeVisible();
+    await expect(page.locator('dd', { hasText: /^Москва$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^import$/ })).toBeVisible();
     await expect(page.locator('a[href="/admin/metro-lines/ml-2/edit"]')).toBeVisible();
   });

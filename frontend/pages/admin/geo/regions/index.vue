@@ -63,7 +63,11 @@
             </tr>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.name }}</td>
-              <td class="font-mono text-xs">{{ item.country_id }}</td>
+              <td class="text-xs">
+                <AdminLink :to="resolveCountryLink(item)">
+                  {{ resolveCountryName(item) }}
+                </AdminLink>
+              </td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/geo/regions/${item.id}`"
@@ -87,7 +91,7 @@
         <article v-for="item in items" :key="item.id" class="role-card rounded-xl p-4">
           <h4 class="text-sm font-semibold">{{ item.name }}</h4>
           <p class="admin-muted mt-1 text-xs">
-            {{ t('admin.geo.regions.index.card.countryId', { value: item.country_id }) }}
+            {{ t('admin.geo.regions.index.card.countryId', { value: resolveCountryName(item) }) }}
           </p>
 
           <div class="mt-3">
@@ -122,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
@@ -178,6 +183,18 @@ const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
 
 const onToggleDesktopMode = () => {
   tableOnDesktop.value = !tableOnDesktop.value;
+};
+
+const resolveCountryName = (item: AdminGeoRegion): string => {
+  if (item.country?.name) {
+    return item.country.name;
+  }
+
+  return item.country_id || t('common.dash');
+};
+
+const resolveCountryLink = (item: AdminGeoRegion): string => {
+  return `/admin/geo/countries/${item.country_id}`;
 };
 
 const onRemove = (item: AdminGeoRegion) => {

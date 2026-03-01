@@ -12,6 +12,9 @@ export interface AdminMetroLine {
   color?: string | null;
   city_id: string;
   source: string;
+  city?: {
+    name?: string | null;
+  } | null;
 }
 
 interface MetroLineShowResponse {

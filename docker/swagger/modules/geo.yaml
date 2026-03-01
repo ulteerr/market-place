@@ -234,6 +234,10 @@ admin_geo_regions:
     responses:
       '200':
         description: Paginated regions list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/AdminGeoRegionsPaginatedResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -282,6 +286,10 @@ admin_geo_regions_by_id:
     responses:
       '200':
         description: Region details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/AdminGeoRegionResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -338,6 +346,10 @@ admin_geo_cities:
     responses:
       '200':
         description: Paginated cities list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/AdminGeoCitiesPaginatedResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -391,6 +403,10 @@ admin_geo_cities_by_id:
     responses:
       '200':
         description: City details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/AdminGeoCityResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -452,6 +468,10 @@ admin_geo_districts:
     responses:
       '200':
         description: Paginated districts list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/AdminGeoDistrictsPaginatedResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -500,6 +520,10 @@ admin_geo_districts_by_id:
     responses:
       '200':
         description: District details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/geo.yaml#/components/schemas/AdminGeoDistrictResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':

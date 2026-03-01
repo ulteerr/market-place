@@ -27,6 +27,7 @@ test.describe('Admin metro lines page', () => {
     await expect(
       page.getByRole('cell', { name: 'Арбатско-Покровская', exact: true })
     ).toBeVisible();
+    await expect(page.locator('a[href="/admin/geo/cities/msk"]').first()).toHaveText('Москва');
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
   });
 

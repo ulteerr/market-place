@@ -20,6 +20,15 @@ final class DistrictResource extends JsonResource
             "city_id" => (string) $this->city_id,
             "created_at" => $this->created_at,
             "updated_at" => $this->updated_at,
+            "city" => $this->whenLoaded("city", function () {
+                if (!$this->city) {
+                    return null;
+                }
+
+                return [
+                    "name" => $this->city->name,
+                ];
+            }),
         ];
     }
 }

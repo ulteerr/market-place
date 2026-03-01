@@ -72,7 +72,11 @@
                 </span>
                 <span v-else class="font-mono text-xs">{{ t('common.dash') }}</span>
               </td>
-              <td class="font-mono text-xs">{{ item.city_id }}</td>
+              <td class="text-xs">
+                <AdminLink :to="resolveCityLink(item)">
+                  {{ resolveCityName(item) }}
+                </AdminLink>
+              </td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/metro-lines/${item.id}`"
@@ -108,7 +112,7 @@
             <span v-else class="ml-1">{{ t('common.dash') }}</span>
           </p>
           <p class="admin-muted text-xs">
-            {{ t('admin.metro.lines.index.card.cityId', { value: item.city_id }) }}
+            {{ t('admin.metro.lines.index.card.cityId', { value: resolveCityName(item) }) }}
           </p>
 
           <div class="mt-3">
@@ -143,6 +147,7 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
 import AdminColorDot from '~/components/admin/Metro/AdminColorDot.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
@@ -192,6 +197,7 @@ const {
 const cardSortFields = computed(() => [
   { value: 'name', label: t('admin.metro.lines.index.sort.name') },
   { value: 'line_id', label: t('admin.metro.lines.index.sort.lineId') },
+  { value: 'city_id', label: t('admin.metro.lines.index.sort.cityId') },
 ]);
 
 const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
@@ -200,6 +206,18 @@ const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
 
 const onToggleDesktopMode = () => {
   tableOnDesktop.value = !tableOnDesktop.value;
+};
+
+const resolveCityName = (item: AdminMetroLine): string => {
+  if (item.city?.name) {
+    return item.city.name;
+  }
+
+  return item.city_id || t('common.dash');
+};
+
+const resolveCityLink = (item: AdminMetroLine): string => {
+  return `/admin/geo/cities/${item.city_id}`;
 };
 
 const onRemove = (item: AdminMetroLine) => {

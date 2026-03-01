@@ -25,6 +25,8 @@ test.describe('Admin geo districts page', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Районы' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Арбат', exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Центральный', exact: true })).toBeVisible();
+    await expect(page.locator('a[href="/admin/geo/cities/ct-1"]')).toHaveText('Москва');
+    await expect(page.locator('a[href="/admin/geo/cities/ct-2"]')).toHaveText('Гомель');
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
   });
 

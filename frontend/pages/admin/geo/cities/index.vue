@@ -64,8 +64,18 @@
             </tr>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.name }}</td>
-              <td class="font-mono text-xs">{{ item.country_id || t('common.dash') }}</td>
-              <td class="font-mono text-xs">{{ item.region_id || t('common.dash') }}</td>
+              <td class="text-xs">
+                <AdminLink v-if="item.country_id" :to="resolveCountryLink(item)">
+                  {{ resolveCountryName(item) }}
+                </AdminLink>
+                <span v-else>{{ t('common.dash') }}</span>
+              </td>
+              <td class="text-xs">
+                <AdminLink v-if="item.region_id" :to="resolveRegionLink(item)">
+                  {{ resolveRegionName(item) }}
+                </AdminLink>
+                <span v-else>{{ t('common.dash') }}</span>
+              </td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/geo/cities/${item.id}`"
@@ -91,14 +101,14 @@
           <p class="admin-muted mt-1 text-xs">
             {{
               t('admin.geo.cities.index.card.countryId', {
-                value: item.country_id || t('common.dash'),
+                value: resolveCountryName(item),
               })
             }}
           </p>
           <p class="admin-muted text-xs">
             {{
               t('admin.geo.cities.index.card.regionId', {
-                value: item.region_id || t('common.dash'),
+                value: resolveRegionName(item),
               })
             }}
           </p>
@@ -135,6 +145,7 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
@@ -192,6 +203,30 @@ const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
 
 const onToggleDesktopMode = () => {
   tableOnDesktop.value = !tableOnDesktop.value;
+};
+
+const resolveCountryName = (item: AdminGeoCity): string => {
+  if (item.country?.name) {
+    return item.country.name;
+  }
+
+  return item.country_id || t('common.dash');
+};
+
+const resolveRegionName = (item: AdminGeoCity): string => {
+  if (item.region?.name) {
+    return item.region.name;
+  }
+
+  return item.region_id || t('common.dash');
+};
+
+const resolveCountryLink = (item: AdminGeoCity): string => {
+  return `/admin/geo/countries/${item.country_id}`;
+};
+
+const resolveRegionLink = (item: AdminGeoCity): string => {
+  return `/admin/geo/regions/${item.region_id}`;
 };
 
 const onRemove = (item: AdminGeoCity) => {

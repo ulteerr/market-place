@@ -9,6 +9,12 @@ export interface AdminGeoCity {
   name: string;
   country_id?: string | null;
   region_id?: string | null;
+  country?: {
+    name?: string | null;
+  } | null;
+  region?: {
+    name?: string | null;
+  } | null;
 }
 
 interface GeoCityShowResponse {

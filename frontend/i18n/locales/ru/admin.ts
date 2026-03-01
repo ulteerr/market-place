@@ -703,19 +703,19 @@ export default {
         title: 'Регионы',
         subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
         createLabel: 'Новый регион',
-        searchPlaceholder: 'Поиск: название, ID страны',
+        searchPlaceholder: 'Поиск: название, страна',
         empty: 'Регионы не найдены.',
         headers: {
           name: 'Название',
-          countryId: 'ID страны',
+          countryId: 'Страна',
           actions: 'Действия',
         },
         card: {
-          countryId: 'ID страны: {value}',
+          countryId: 'Страна: {value}',
         },
         sort: {
           name: 'Название',
-          countryId: 'ID страны',
+          countryId: 'Страна',
         },
       },
       new: {
@@ -747,6 +747,7 @@ export default {
       fields: {
         name: 'Название',
         countryId: 'ID страны',
+        country: 'Страна',
       },
       confirmDelete: 'Удалить регион {name}?',
       errors: {
@@ -759,22 +760,22 @@ export default {
         title: 'Города',
         subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
         createLabel: 'Новый город',
-        searchPlaceholder: 'Поиск: название, ID страны, ID региона',
+        searchPlaceholder: 'Поиск: название, страна, регион',
         empty: 'Города не найдены.',
         headers: {
           name: 'Название',
-          countryId: 'ID страны',
-          regionId: 'ID региона',
+          countryId: 'Страна',
+          regionId: 'Регион',
           actions: 'Действия',
         },
         card: {
-          countryId: 'ID страны: {value}',
-          regionId: 'ID региона: {value}',
+          countryId: 'Страна: {value}',
+          regionId: 'Регион: {value}',
         },
         sort: {
           name: 'Название',
-          countryId: 'ID страны',
-          regionId: 'ID региона',
+          countryId: 'Страна',
+          regionId: 'Регион',
         },
       },
       new: {
@@ -807,6 +808,8 @@ export default {
         name: 'Название',
         countryId: 'ID страны',
         regionId: 'ID региона',
+        country: 'Страна',
+        region: 'Регион',
       },
       confirmDelete: 'Удалить город {name}?',
       errors: {
@@ -819,19 +822,19 @@ export default {
         title: 'Районы',
         subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
         createLabel: 'Новый район',
-        searchPlaceholder: 'Поиск: название, ID города',
+        searchPlaceholder: 'Поиск: название, город',
         empty: 'Районы не найдены.',
         headers: {
           name: 'Название',
-          cityId: 'ID города',
+          cityId: 'Город',
           actions: 'Действия',
         },
         card: {
-          cityId: 'ID города: {value}',
+          city: 'Город: {value}',
         },
         sort: {
           name: 'Название',
-          cityId: 'ID города',
+          cityId: 'Город',
         },
       },
       new: {
@@ -863,6 +866,7 @@ export default {
       fields: {
         name: 'Название',
         cityId: 'ID города',
+        city: 'Город',
       },
       confirmDelete: 'Удалить район {name}?',
       errors: {
@@ -878,23 +882,24 @@ export default {
         title: 'Линии метро',
         subtitle: 'Поиск, сортировка, limit и серверная пагинация.',
         createLabel: 'Новая линия',
-        searchPlaceholder: 'Поиск: название, ID линии, ID города',
+        searchPlaceholder: 'Поиск: название, ID линии, город',
         empty: 'Линии метро не найдены.',
         headers: {
           name: 'Название',
           lineId: 'ID линии',
           color: 'Цвет',
-          cityId: 'ID города',
+          cityId: 'Город',
           actions: 'Действия',
         },
         card: {
           lineId: 'ID линии: {value}',
           color: 'Цвет:',
-          cityId: 'ID города: {value}',
+          cityId: 'Город: {value}',
         },
         sort: {
           name: 'Название',
           lineId: 'ID линии',
+          cityId: 'Город',
         },
       },
       new: {
@@ -929,6 +934,7 @@ export default {
         lineId: 'ID линии',
         color: 'Цвет',
         cityId: 'ID города',
+        city: 'Город',
         source: 'Источник',
       },
       confirmDelete: 'Удалить линию метро {name}?',

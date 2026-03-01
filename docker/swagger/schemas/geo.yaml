@@ -25,6 +25,13 @@ components:
         country_id:
           type: string
           format: uuid
+        country:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
 
     GeoCity:
       type: object
@@ -43,6 +50,20 @@ components:
           type: string
           format: uuid
           nullable: true
+        country:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
+        region:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
 
     GeoDistrict:
       type: object
@@ -56,6 +77,13 @@ components:
         city_id:
           type: string
           format: uuid
+        city:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
 
     GeoCountriesResponse:
       type: object
@@ -104,3 +132,117 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GeoDistrict'
+
+    AdminGeoDistrictResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: '#/components/schemas/GeoDistrict'
+
+    AdminGeoDistrictsPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/GeoDistrict'
+
+    AdminGeoRegionResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: '#/components/schemas/GeoRegion'
+
+    AdminGeoRegionsPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/GeoRegion'
+
+    AdminGeoCityResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: '#/components/schemas/GeoCity'
+
+    AdminGeoCitiesPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/GeoCity'

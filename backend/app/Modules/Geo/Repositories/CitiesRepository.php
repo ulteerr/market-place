@@ -12,50 +12,70 @@ final class CitiesRepository implements CitiesRepositoryInterface
 {
     public function list(array $filters = []): Collection
     {
-        $query = City::query()->select(["id", "name", "country_id", "region_id"]);
+        $query = City::query()
+            ->with(["country:id,name", "region:id,name"])
+            ->leftJoin("countries", "countries.id", "=", "cities.country_id")
+            ->leftJoin("regions", "regions.id", "=", "cities.region_id")
+            ->select(["cities.id", "cities.name", "cities.country_id", "cities.region_id"]);
 
         $countryId = trim((string) ($filters["country_id"] ?? ""));
         if ($countryId !== "") {
-            $query->where("country_id", $countryId);
+            $query->where("cities.country_id", $countryId);
         }
 
         $regionId = trim((string) ($filters["region_id"] ?? ""));
         if ($regionId !== "") {
-            $query->where("region_id", $regionId);
+            $query->where("cities.region_id", $regionId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
+            $query->where(function ($searchQuery) use ($search): void {
+                $term = "%" . $search . "%";
+                $searchQuery
+                    ->where("cities.name", "like", $term)
+                    ->orWhere("countries.name", "like", $term)
+                    ->orWhere("regions.name", "like", $term);
+            });
         }
 
-        return $query->orderBy("name")->get();
+        return $query->orderBy("cities.name")->orderBy("cities.id")->get();
     }
 
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        $query = City::query()->select([
-            "id",
-            "name",
-            "country_id",
-            "region_id",
-            "created_at",
-            "updated_at",
-        ]);
+        $query = City::query()
+            ->with(["country:id,name", "region:id,name"])
+            ->leftJoin("countries", "countries.id", "=", "cities.country_id")
+            ->leftJoin("regions", "regions.id", "=", "cities.region_id")
+            ->select([
+                "cities.id",
+                "cities.name",
+                "cities.country_id",
+                "cities.region_id",
+                "cities.created_at",
+                "cities.updated_at",
+            ]);
 
         $countryId = trim((string) ($filters["country_id"] ?? ""));
         if ($countryId !== "") {
-            $query->where("country_id", $countryId);
+            $query->where("cities.country_id", $countryId);
         }
 
         $regionId = trim((string) ($filters["region_id"] ?? ""));
         if ($regionId !== "") {
-            $query->where("region_id", $regionId);
+            $query->where("cities.region_id", $regionId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
+            $query->where(function ($searchQuery) use ($search): void {
+                $term = "%" . $search . "%";
+                $searchQuery
+                    ->where("cities.name", "like", $term)
+                    ->orWhere("countries.name", "like", $term)
+                    ->orWhere("regions.name", "like", $term);
+            });
         }
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
@@ -63,28 +83,37 @@ final class CitiesRepository implements CitiesRepositoryInterface
         if (!in_array($sortDir, ["asc", "desc"], true)) {
             $sortDir = "desc";
         }
-        if (!in_array($sortBy, ["id", "name", "created_at"], true)) {
-            $sortBy = "created_at";
-        }
+        $sortColumns = [
+            "id" => "cities.id",
+            "name" => "cities.name",
+            "country_id" => "countries.name",
+            "region_id" => "regions.name",
+            "created_at" => "cities.created_at",
+        ];
+        $sortColumn = $sortColumns[$sortBy] ?? "cities.created_at";
 
-        return $query->orderBy($sortBy, $sortDir)->paginate($perPage);
+        return $query->orderBy($sortColumn, $sortDir)->orderBy("cities.id")->paginate($perPage);
     }
 
     public function create(array $data): City
     {
-        return City::query()->create($data);
+        return City::query()
+            ->create($data)
+            ->load(["country:id,name", "region:id,name"]);
     }
 
     public function findById(string $id): ?City
     {
-        return City::query()->find($id);
+        return City::query()
+            ->with(["country:id,name", "region:id,name"])
+            ->find($id);
     }
 
     public function update(City $city, array $data): City
     {
         $city->update($data);
 
-        return $city;
+        return $city->refresh()->load(["country:id,name", "region:id,name"]);
     }
 
     public function delete(City $city): void

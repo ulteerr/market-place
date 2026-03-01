@@ -9,6 +9,9 @@ export interface AdminMetroLine {
   color?: string | null;
   city_id: string;
   source: string;
+  city?: {
+    name?: string | null;
+  } | null;
 }
 
 export interface AdminMetroStation {
@@ -40,6 +43,9 @@ export const metroLinesFixture: AdminMetroLine[] = [
     color: '#D12D2D',
     city_id: 'msk',
     source: 'manual',
+    city: {
+      name: 'Москва',
+    },
   },
   {
     id: 'ml-2',
@@ -49,6 +55,9 @@ export const metroLinesFixture: AdminMetroLine[] = [
     color: '#2B4EA2',
     city_id: 'msk',
     source: 'import',
+    city: {
+      name: 'Москва',
+    },
   },
 ];
 
@@ -208,6 +217,7 @@ export const setupMetroLinesCollectionApi = async (
       }
 
       return [item.name, item.line_id, item.color, item.city_id, item.source]
+        .concat(item.city?.name ?? [])
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(search));
     });

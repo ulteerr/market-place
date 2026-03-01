@@ -11,6 +11,9 @@ export interface AdminGeoRegion {
   id: string;
   name: string;
   country_id: string;
+  country?: {
+    name?: string | null;
+  } | null;
 }
 
 export interface AdminGeoCity {
@@ -18,12 +21,21 @@ export interface AdminGeoCity {
   name: string;
   country_id?: string | null;
   region_id?: string | null;
+  country?: {
+    name?: string | null;
+  } | null;
+  region?: {
+    name?: string | null;
+  } | null;
 }
 
 export interface AdminGeoDistrict {
   id: string;
   name: string;
   city_id: string;
+  city?: {
+    name?: string | null;
+  } | null;
 }
 
 export const geoCountriesFixture: AdminGeoCountry[] = [
@@ -32,18 +44,32 @@ export const geoCountriesFixture: AdminGeoCountry[] = [
 ];
 
 export const geoRegionsFixture: AdminGeoRegion[] = [
-  { id: 'r-1', name: 'Московская область', country_id: 'c-1' },
-  { id: 'r-2', name: 'Гомельская область', country_id: 'c-2' },
+  { id: 'r-1', name: 'Московская область', country_id: 'c-1', country: { name: 'Россия' } },
+  { id: 'r-2', name: 'Гомельская область', country_id: 'c-2', country: { name: 'Беларусь' } },
 ];
 
 export const geoCitiesFixture: AdminGeoCity[] = [
-  { id: 'ct-1', name: 'Москва', country_id: 'c-1', region_id: 'r-1' },
-  { id: 'ct-2', name: 'Гомель', country_id: 'c-2', region_id: 'r-2' },
+  {
+    id: 'ct-1',
+    name: 'Москва',
+    country_id: 'c-1',
+    region_id: 'r-1',
+    country: { name: 'Россия' },
+    region: { name: 'Московская область' },
+  },
+  {
+    id: 'ct-2',
+    name: 'Гомель',
+    country_id: 'c-2',
+    region_id: 'r-2',
+    country: { name: 'Беларусь' },
+    region: { name: 'Гомельская область' },
+  },
 ];
 
 export const geoDistrictsFixture: AdminGeoDistrict[] = [
-  { id: 'd-1', name: 'Арбат', city_id: 'ct-1' },
-  { id: 'd-2', name: 'Центральный', city_id: 'ct-2' },
+  { id: 'd-1', name: 'Арбат', city_id: 'ct-1', city: { name: 'Москва' } },
+  { id: 'd-2', name: 'Центральный', city_id: 'ct-2', city: { name: 'Гомель' } },
 ];
 
 const buildCollectionResponse = <T>(items: T[], perPage: number) => ({

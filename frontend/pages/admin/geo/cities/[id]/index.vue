@@ -11,17 +11,27 @@
 
       <template v-else-if="item">
         <dl class="grid gap-3 sm:grid-cols-2">
-          <div>
+          <div class="min-w-0">
             <dt class="admin-muted text-xs">{{ t('admin.geo.cities.fields.name') }}</dt>
-            <dd>{{ item.name }}</dd>
+            <dd class="break-words">{{ item.name }}</dd>
           </div>
-          <div>
-            <dt class="admin-muted text-xs">{{ t('admin.geo.cities.fields.countryId') }}</dt>
-            <dd class="font-mono text-xs">{{ item.country_id || t('common.dash') }}</dd>
+          <div class="min-w-0">
+            <dt class="admin-muted text-xs">{{ t('admin.geo.cities.fields.country') }}</dt>
+            <dd class="text-xs break-words">
+              <AdminLink v-if="item.country_id" :to="`/admin/geo/countries/${item.country_id}`">
+                {{ countryName }}
+              </AdminLink>
+              <span v-else>{{ t('common.dash') }}</span>
+            </dd>
           </div>
-          <div>
-            <dt class="admin-muted text-xs">{{ t('admin.geo.cities.fields.regionId') }}</dt>
-            <dd class="font-mono text-xs">{{ item.region_id || t('common.dash') }}</dd>
+          <div class="min-w-0">
+            <dt class="admin-muted text-xs">{{ t('admin.geo.cities.fields.region') }}</dt>
+            <dd class="text-xs break-words">
+              <AdminLink v-if="item.region_id" :to="`/admin/geo/regions/${item.region_id}`">
+                {{ regionName }}
+              </AdminLink>
+              <span v-else>{{ t('common.dash') }}</span>
+            </dd>
           </div>
         </dl>
 
@@ -47,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
 import type { AdminGeoCity } from '~/composables/useAdminGeoCities';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 
@@ -63,6 +74,14 @@ const api = useAdminGeoCities();
 const item = ref<AdminGeoCity | null>(null);
 const loading = ref(false);
 const loadError = ref('');
+
+const countryName = computed(() => {
+  return item.value?.country?.name || item.value?.country_id || t('common.dash');
+});
+
+const regionName = computed(() => {
+  return item.value?.region?.name || item.value?.region_id || t('common.dash');
+});
 
 const fetchItem = async () => {
   const id = String(route.params.id || '');

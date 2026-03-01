@@ -12,33 +12,55 @@ final class DistrictsRepository implements DistrictsRepositoryInterface
 {
     public function list(array $filters = []): Collection
     {
-        $query = District::query()->select(["id", "name", "city_id"]);
+        $query = District::query()
+            ->with(["city:id,name"])
+            ->leftJoin("cities", "cities.id", "=", "districts.city_id")
+            ->select(["districts.id", "districts.name", "districts.city_id"]);
 
         $cityId = trim((string) ($filters["city_id"] ?? ""));
         if ($cityId !== "") {
-            $query->where("city_id", $cityId);
+            $query->where("districts.city_id", $cityId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
+            $query->where(function ($searchQuery) use ($search): void {
+                $term = "%" . $search . "%";
+                $searchQuery
+                    ->where("districts.name", "like", $term)
+                    ->orWhere("cities.name", "like", $term);
+            });
         }
 
-        return $query->orderBy("name")->get();
+        return $query->orderBy("districts.name")->orderBy("districts.id")->get();
     }
 
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        $query = District::query()->select(["id", "name", "city_id", "created_at", "updated_at"]);
+        $query = District::query()
+            ->with(["city:id,name"])
+            ->leftJoin("cities", "cities.id", "=", "districts.city_id")
+            ->select([
+                "districts.id",
+                "districts.name",
+                "districts.city_id",
+                "districts.created_at",
+                "districts.updated_at",
+            ]);
 
         $cityId = trim((string) ($filters["city_id"] ?? ""));
         if ($cityId !== "") {
-            $query->where("city_id", $cityId);
+            $query->where("districts.city_id", $cityId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
+            $query->where(function ($searchQuery) use ($search): void {
+                $term = "%" . $search . "%";
+                $searchQuery
+                    ->where("districts.name", "like", $term)
+                    ->orWhere("cities.name", "like", $term);
+            });
         }
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
@@ -46,28 +68,36 @@ final class DistrictsRepository implements DistrictsRepositoryInterface
         if (!in_array($sortDir, ["asc", "desc"], true)) {
             $sortDir = "desc";
         }
-        if (!in_array($sortBy, ["id", "name", "created_at"], true)) {
-            $sortBy = "created_at";
-        }
+        $sortColumns = [
+            "id" => "districts.id",
+            "name" => "districts.name",
+            "city_id" => "cities.name",
+            "created_at" => "districts.created_at",
+        ];
+        $sortColumn = $sortColumns[$sortBy] ?? "districts.created_at";
 
-        return $query->orderBy($sortBy, $sortDir)->paginate($perPage);
+        return $query->orderBy($sortColumn, $sortDir)->orderBy("districts.id")->paginate($perPage);
     }
 
     public function create(array $data): District
     {
-        return District::query()->create($data);
+        return District::query()
+            ->create($data)
+            ->load(["city:id,name"]);
     }
 
     public function findById(string $id): ?District
     {
-        return District::query()->find($id);
+        return District::query()
+            ->with(["city:id,name"])
+            ->find($id);
     }
 
     public function update(District $district, array $data): District
     {
         $district->update($data);
 
-        return $district;
+        return $district->refresh()->load(["city:id,name"]);
     }
 
     public function delete(District $district): void

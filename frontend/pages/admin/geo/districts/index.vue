@@ -63,7 +63,11 @@
             </tr>
             <tr v-for="item in items" :key="item.id">
               <td>{{ item.name }}</td>
-              <td class="font-mono text-xs">{{ item.city_id }}</td>
+              <td class="text-xs">
+                <AdminLink :to="resolveCityLink(item)">
+                  {{ resolveCityName(item) }}
+                </AdminLink>
+              </td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/geo/districts/${item.id}`"
@@ -87,7 +91,7 @@
         <article v-for="item in items" :key="item.id" class="role-card rounded-xl p-4">
           <h4 class="text-sm font-semibold">{{ item.name }}</h4>
           <p class="admin-muted mt-1 text-xs">
-            {{ t('admin.geo.districts.index.card.cityId', { value: item.city_id }) }}
+            {{ t('admin.geo.districts.index.card.city', { value: resolveCityName(item) }) }}
           </p>
 
           <div class="mt-3">
@@ -122,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+import AdminLink from '~/components/admin/AdminLink.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
@@ -178,6 +183,23 @@ const onModeChange = (mode: 'table' | 'table-cards' | 'cards') => {
 
 const onToggleDesktopMode = () => {
   tableOnDesktop.value = !tableOnDesktop.value;
+};
+
+const getEmbeddedCity = (item: AdminGeoDistrict): { name?: string | null } | null => {
+  return item.city ?? null;
+};
+
+const resolveCityName = (item: AdminGeoDistrict): string => {
+  const embedded = getEmbeddedCity(item);
+  if (embedded?.name) {
+    return embedded.name;
+  }
+
+  return item.city_id || t('common.dash');
+};
+
+const resolveCityLink = (item: AdminGeoDistrict): string => {
+  return `/admin/geo/cities/${item.city_id}`;
 };
 
 const onRemove = (item: AdminGeoDistrict) => {

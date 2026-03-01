@@ -703,19 +703,19 @@ export default {
         title: 'Regions',
         subtitle: 'Search, sorting, limit and server pagination.',
         createLabel: 'New region',
-        searchPlaceholder: 'Search: name, country ID',
+        searchPlaceholder: 'Search: name, country',
         empty: 'No regions found.',
         headers: {
           name: 'Name',
-          countryId: 'Country ID',
+          countryId: 'Country',
           actions: 'Actions',
         },
         card: {
-          countryId: 'Country ID: {value}',
+          countryId: 'Country: {value}',
         },
         sort: {
           name: 'Name',
-          countryId: 'Country ID',
+          countryId: 'Country',
         },
       },
       new: {
@@ -747,6 +747,7 @@ export default {
       fields: {
         name: 'Name',
         countryId: 'Country ID',
+        country: 'Country',
       },
       confirmDelete: 'Delete region {name}?',
       errors: {
@@ -759,22 +760,22 @@ export default {
         title: 'Cities',
         subtitle: 'Search, sorting, limit and server pagination.',
         createLabel: 'New city',
-        searchPlaceholder: 'Search: name, country ID, region ID',
+        searchPlaceholder: 'Search: name, country, region',
         empty: 'No cities found.',
         headers: {
           name: 'Name',
-          countryId: 'Country ID',
-          regionId: 'Region ID',
+          countryId: 'Country',
+          regionId: 'Region',
           actions: 'Actions',
         },
         card: {
-          countryId: 'Country ID: {value}',
-          regionId: 'Region ID: {value}',
+          countryId: 'Country: {value}',
+          regionId: 'Region: {value}',
         },
         sort: {
           name: 'Name',
-          countryId: 'Country ID',
-          regionId: 'Region ID',
+          countryId: 'Country',
+          regionId: 'Region',
         },
       },
       new: {
@@ -807,6 +808,8 @@ export default {
         name: 'Name',
         countryId: 'Country ID',
         regionId: 'Region ID',
+        country: 'Country',
+        region: 'Region',
       },
       confirmDelete: 'Delete city {name}?',
       errors: {
@@ -819,19 +822,19 @@ export default {
         title: 'Districts',
         subtitle: 'Search, sorting, limit and server pagination.',
         createLabel: 'New district',
-        searchPlaceholder: 'Search: name, city ID',
+        searchPlaceholder: 'Search: name, city',
         empty: 'No districts found.',
         headers: {
           name: 'Name',
-          cityId: 'City ID',
+          cityId: 'City',
           actions: 'Actions',
         },
         card: {
-          cityId: 'City ID: {value}',
+          city: 'City: {value}',
         },
         sort: {
           name: 'Name',
-          cityId: 'City ID',
+          cityId: 'City',
         },
       },
       new: {
@@ -863,6 +866,7 @@ export default {
       fields: {
         name: 'Name',
         cityId: 'City ID',
+        city: 'City',
       },
       confirmDelete: 'Delete district {name}?',
       errors: {
@@ -878,23 +882,24 @@ export default {
         title: 'Metro lines',
         subtitle: 'Search, sorting, limit and server pagination.',
         createLabel: 'New line',
-        searchPlaceholder: 'Search: name, line ID, city ID',
+        searchPlaceholder: 'Search: name, line ID, city',
         empty: 'No metro lines found.',
         headers: {
           name: 'Name',
           lineId: 'Line ID',
           color: 'Color',
-          cityId: 'City ID',
+          cityId: 'City',
           actions: 'Actions',
         },
         card: {
           lineId: 'Line ID: {value}',
           color: 'Color:',
-          cityId: 'City ID: {value}',
+          cityId: 'City: {value}',
         },
         sort: {
           name: 'Name',
           lineId: 'Line ID',
+          cityId: 'City',
         },
       },
       new: {
@@ -929,6 +934,7 @@ export default {
         lineId: 'Line ID',
         color: 'Color',
         cityId: 'City ID',
+        city: 'City',
         source: 'Source',
       },
       confirmDelete: 'Delete metro line {name}?',

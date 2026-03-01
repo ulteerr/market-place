@@ -12,33 +12,55 @@ final class RegionsRepository implements RegionsRepositoryInterface
 {
     public function list(array $filters = []): Collection
     {
-        $query = Region::query()->select(["id", "name", "country_id"]);
+        $query = Region::query()
+            ->with(["country:id,name"])
+            ->leftJoin("countries", "countries.id", "=", "regions.country_id")
+            ->select(["regions.id", "regions.name", "regions.country_id"]);
 
         $countryId = trim((string) ($filters["country_id"] ?? ""));
         if ($countryId !== "") {
-            $query->where("country_id", $countryId);
+            $query->where("regions.country_id", $countryId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
+            $query->where(function ($searchQuery) use ($search): void {
+                $term = "%" . $search . "%";
+                $searchQuery
+                    ->where("regions.name", "like", $term)
+                    ->orWhere("countries.name", "like", $term);
+            });
         }
 
-        return $query->orderBy("name")->get();
+        return $query->orderBy("regions.name")->orderBy("regions.id")->get();
     }
 
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        $query = Region::query()->select(["id", "name", "country_id", "created_at", "updated_at"]);
+        $query = Region::query()
+            ->with(["country:id,name"])
+            ->leftJoin("countries", "countries.id", "=", "regions.country_id")
+            ->select([
+                "regions.id",
+                "regions.name",
+                "regions.country_id",
+                "regions.created_at",
+                "regions.updated_at",
+            ]);
 
         $countryId = trim((string) ($filters["country_id"] ?? ""));
         if ($countryId !== "") {
-            $query->where("country_id", $countryId);
+            $query->where("regions.country_id", $countryId);
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
+            $query->where(function ($searchQuery) use ($search): void {
+                $term = "%" . $search . "%";
+                $searchQuery
+                    ->where("regions.name", "like", $term)
+                    ->orWhere("countries.name", "like", $term);
+            });
         }
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
@@ -46,28 +68,36 @@ final class RegionsRepository implements RegionsRepositoryInterface
         if (!in_array($sortDir, ["asc", "desc"], true)) {
             $sortDir = "desc";
         }
-        if (!in_array($sortBy, ["id", "name", "created_at"], true)) {
-            $sortBy = "created_at";
-        }
+        $sortColumns = [
+            "id" => "regions.id",
+            "name" => "regions.name",
+            "country_id" => "countries.name",
+            "created_at" => "regions.created_at",
+        ];
+        $sortColumn = $sortColumns[$sortBy] ?? "regions.created_at";
 
-        return $query->orderBy($sortBy, $sortDir)->paginate($perPage);
+        return $query->orderBy($sortColumn, $sortDir)->orderBy("regions.id")->paginate($perPage);
     }
 
     public function create(array $data): Region
     {
-        return Region::query()->create($data);
+        return Region::query()
+            ->create($data)
+            ->load(["country:id,name"]);
     }
 
     public function findById(string $id): ?Region
     {
-        return Region::query()->find($id);
+        return Region::query()
+            ->with(["country:id,name"])
+            ->find($id);
     }
 
     public function update(Region $region, array $data): Region
     {
         $region->update($data);
 
-        return $region;
+        return $region->refresh()->load(["country:id,name"]);
     }
 
     public function delete(Region $region): void

@@ -23,6 +23,13 @@ components:
           format: uuid
         source:
           type: string
+        city:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
 
     MetroStation:
       type: object
@@ -137,3 +144,41 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/MetroStation'
+
+    AdminMetroLineResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: '#/components/schemas/MetroLine'
+
+    AdminMetroLinesPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 56
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/MetroLine'

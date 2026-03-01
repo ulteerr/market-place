@@ -69,6 +69,10 @@ admin_geo_metro_lines:
     responses:
       '200':
         description: Paginated metro lines list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/metro.yaml#/components/schemas/AdminMetroLinesPaginatedResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
@@ -128,6 +132,10 @@ admin_geo_metro_lines_by_id:
     responses:
       '200':
         description: Metro line details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/metro.yaml#/components/schemas/AdminMetroLineResponse
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
       '403':

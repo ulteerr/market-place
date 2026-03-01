@@ -7,6 +7,12 @@ const shownCity = {
   name: 'Москва',
   country_id: 'c-1',
   region_id: 'r-1',
+  country: {
+    name: 'Россия',
+  },
+  region: {
+    name: 'Московская область',
+  },
 };
 
 test.describe('Admin geo cities show page', () => {
@@ -27,8 +33,8 @@ test.describe('Admin geo cities show page', () => {
 
     await expect(page.getByRole('heading', { level: 2, name: 'Город' })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^Москва$/ })).toBeVisible();
-    await expect(page.locator('dd', { hasText: /^c-1$/ })).toBeVisible();
-    await expect(page.locator('dd', { hasText: /^r-1$/ })).toBeVisible();
+    await expect(page.locator('dd', { hasText: /^Россия$/ })).toBeVisible();
+    await expect(page.locator('dd', { hasText: /^Московская область$/ })).toBeVisible();
     await expect(page.locator('a[href="/admin/geo/cities/ct-1/edit"]')).toBeVisible();
   });
 });

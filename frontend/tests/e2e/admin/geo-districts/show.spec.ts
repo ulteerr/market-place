@@ -6,6 +6,9 @@ const shownDistrict = {
   id: 'd-1',
   name: 'Арбат',
   city_id: 'ct-1',
+  city: {
+    name: 'Москва',
+  },
 };
 
 test.describe('Admin geo districts show page', () => {
@@ -28,7 +31,7 @@ test.describe('Admin geo districts show page', () => {
 
     await expect(page.getByRole('heading', { level: 2, name: 'Район' })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^Арбат$/ })).toBeVisible();
-    await expect(page.locator('dd', { hasText: /^ct-1$/ })).toBeVisible();
+    await expect(page.locator('dd', { hasText: /^Москва$/ })).toBeVisible();
     await expect(page.locator('a[href="/admin/geo/districts/d-1/edit"]')).toBeVisible();
   });
 });

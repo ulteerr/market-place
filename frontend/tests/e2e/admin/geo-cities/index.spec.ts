@@ -25,6 +25,8 @@ test.describe('Admin geo cities page', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Города' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Москва', exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Гомель', exact: true })).toBeVisible();
+    await expect(page.locator('a[href="/admin/geo/countries/c-1"]')).toHaveText('Россия');
+    await expect(page.locator('a[href="/admin/geo/regions/r-1"]')).toHaveText('Московская область');
     await expect(page.getByText('Показано 2 из 2.')).toBeVisible();
   });
 

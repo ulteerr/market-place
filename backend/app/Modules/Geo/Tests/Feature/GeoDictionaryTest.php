@@ -106,25 +106,30 @@ final class GeoDictionaryTest extends TestCase
             ->getJson("/api/geo/regions?country_id={$countryRu->id}")
             ->assertOk()
             ->assertJsonCount(1, "data")
-            ->assertJsonPath("data.0.name", "Москва");
+            ->assertJsonPath("data.0.name", "Москва")
+            ->assertJsonPath("data.0.country.name", "Россия");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/geo/cities?region_id={$regionAlmaty->id}")
             ->assertOk()
             ->assertJsonCount(1, "data")
-            ->assertJsonPath("data.0.name", "Алматы");
+            ->assertJsonPath("data.0.name", "Алматы")
+            ->assertJsonPath("data.0.country.name", "Казахстан")
+            ->assertJsonPath("data.0.region.name", "Алматинская область");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/geo/districts?city_id={$cityMoscow->id}")
             ->assertOk()
             ->assertJsonCount(1, "data")
-            ->assertJsonPath("data.0.name", "Центральный");
+            ->assertJsonPath("data.0.name", "Центральный")
+            ->assertJsonPath("data.0.city.name", "Москва");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/metro-lines?city_id={$cityMoscow->id}")
             ->assertOk()
             ->assertJsonCount(1, "data")
-            ->assertJsonPath("data.0.name", "Сокольническая");
+            ->assertJsonPath("data.0.name", "Сокольническая")
+            ->assertJsonPath("data.0.city.name", "Москва");
 
         $this->withHeaders($auth["headers"])
             ->getJson("/api/metro-stations?metro_line_id={$lineAlmaty->id}")
