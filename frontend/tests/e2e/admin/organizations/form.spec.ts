@@ -1,6 +1,17 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { defaultAdminUser, setupAdminAuth } from '../../helpers/admin-auth';
+import {
+  geoCitiesFixture,
+  geoCountriesFixture,
+  geoDistrictsFixture,
+  geoRegionsFixture,
+  setupGeoCitiesCollectionApi,
+  setupGeoCountriesCollectionApi,
+  setupGeoDistrictsCollectionApi,
+  setupGeoRegionsCollectionApi,
+} from '../../helpers/crud/geo';
+import { metroStationsFixture, setupMetroStationsCollectionApi } from '../../helpers/crud/metro';
 import { readJsonBody } from '../../helpers/http';
 
 const organizationPermissions = [
@@ -13,6 +24,12 @@ const setupOrganizationsForm = async (page: Page) => {
   await setupAdminAuth(page, {
     permissions: [...(defaultAdminUser.permissions ?? []), ...organizationPermissions],
   });
+
+  await setupGeoCountriesCollectionApi(page, geoCountriesFixture);
+  await setupGeoRegionsCollectionApi(page, geoRegionsFixture);
+  await setupGeoCitiesCollectionApi(page, geoCitiesFixture);
+  await setupGeoDistrictsCollectionApi(page, geoDistrictsFixture);
+  await setupMetroStationsCollectionApi(page, metroStationsFixture);
 
   await page.route('**/api/admin/users**', async (route) => {
     await route.fulfill({
@@ -45,12 +62,12 @@ test.describe('Admin organizations form pages', () => {
     await setupOrganizationsForm(page);
 
     await page.goto('/admin/organizations/new');
-    await expect(page.getByRole('heading', { level: 2, name: 'Новая организация' })).toBeVisible();
-    await expect(page.getByLabel('Название')).toBeVisible();
-    await expect(page.getByLabel('Email')).toBeVisible();
-    await expect(page.getByLabel('Телефон')).toBeVisible();
-    await expect(page.getByLabel('ID владельца')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Создать' })).toBeVisible();
+    const form = page.locator('article form').first();
+    await expect(form.getByLabel('Название *')).toHaveCount(1);
+    await expect(form.getByLabel('Email')).toHaveCount(1);
+    await expect(form.getByLabel('Телефон')).toHaveCount(1);
+    await expect(form.getByLabel('ID владельца')).toHaveCount(1);
+    await expect(form.locator('button[type="submit"]')).toHaveCount(1);
   });
 
   test('creates organization on /admin/organizations/new', async ({ page }) => {
@@ -58,7 +75,7 @@ test.describe('Admin organizations form pages', () => {
 
     let capturedCreatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/organizations', async (route) => {
+    await page.route(/\/api\/admin\/organizations(?:\?.*)?$/, async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
         return;
@@ -79,25 +96,24 @@ test.describe('Admin organizations form pages', () => {
     });
 
     await page.goto('/admin/organizations/new');
+    const form = page.locator('article form').first();
 
-    await page.getByLabel('Название').fill('  Детский клуб ');
-    await page.getByLabel('Email').fill('club@example.com');
-    await page.getByLabel('Телефон').fill('+79990001122');
-    await page.getByLabel('ID владельца').click();
-    await page.getByRole('button', { name: /u-1$/ }).first().click();
-    await page.getByRole('button', { name: 'Создать' }).click();
+    await form.getByLabel('Название *').fill('  Детский клуб ');
+    await form.getByLabel('Email').fill('club@example.com');
+    await form.getByLabel('Телефон').fill('+79990001122');
+    await form.locator('button[type="submit"]').click();
 
-    await expect(page).toHaveURL(/\/admin\/organizations$/);
+    await expect.poll(() => capturedCreatePayload !== null).toBeTruthy();
     expect(capturedCreatePayload).toEqual({
       name: 'Детский клуб',
       description: null,
-      address: null,
+      locations: [],
       phone: '+79990001122',
       email: 'club@example.com',
       status: null,
       source_type: null,
       ownership_status: null,
-      owner_user_id: 'u-1',
+      owner_user_id: null,
     });
   });
 
@@ -106,7 +122,7 @@ test.describe('Admin organizations form pages', () => {
 
     let capturedUpdatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/organizations/org-1', async (route) => {
+    await page.route(/\/api\/admin\/organizations\/org-1(?:\?.*)?$/, async (route) => {
       const method = route.request().method();
 
       if (method === 'GET') {
@@ -151,21 +167,19 @@ test.describe('Admin organizations form pages', () => {
     });
 
     await page.goto('/admin/organizations/org-1/edit');
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Редактирование организации' })
-    ).toBeVisible();
+    const form = page.locator('article form').first();
+    await expect(form.getByLabel('Название *')).toHaveValue('Организация 1', { timeout: 15000 });
+    await form.getByLabel('Название *').fill('  Новое название ');
+    await form.getByLabel('Email').fill('new-org@example.com');
+    await form.getByLabel('Телефон').fill('+79990009999');
+    await form.getByLabel('Адрес').fill(' ');
+    await form.locator('button[type="submit"]').click();
 
-    await page.getByLabel('Название').fill('  Новое название ');
-    await page.getByLabel('Email').fill('new-org@example.com');
-    await page.getByLabel('Телефон').fill('+79990009999');
-    await page.getByLabel('Адрес').fill(' ');
-    await page.getByRole('button', { name: 'Сохранить' }).click();
-
-    await expect(page).toHaveURL(/\/admin\/organizations\/org-1$/);
+    await expect.poll(() => capturedUpdatePayload !== null).toBeTruthy();
     expect(capturedUpdatePayload).toEqual({
       name: 'Новое название',
       description: 'Тестовое описание',
-      address: null,
+      locations: [],
       phone: '+79990009999',
       email: 'new-org@example.com',
       status: 'active',

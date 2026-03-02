@@ -29,12 +29,6 @@
           :disabled="saving"
           :error="fieldErrors.phone"
         />
-        <UiInput
-          v-model="form.address"
-          :label="t('admin.organizations.fields.address')"
-          :disabled="saving"
-          :error="fieldErrors.address"
-        />
         <UiSelect
           v-model="form.owner_user_id"
           :label="t('admin.organizations.fields.ownerUserId')"
@@ -85,6 +79,12 @@
           :error="fieldErrors.description"
         />
 
+        <AdminOrganizationLocationsForm
+          v-model="form.locations"
+          :disabled="saving"
+          :get-error="getLocationFieldError"
+        />
+
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
         <div class="flex gap-2">
@@ -118,15 +118,21 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
+import AdminOrganizationLocationsForm from '~/components/admin/organizations/AdminOrganizationLocationsForm.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
 import { useAdminUserSelectOptions } from '~/composables/useAdminUserSelectOptions';
 import type {
+  OrganizationFormValue,
   OrganizationOwnershipStatus,
   OrganizationSourceType,
   OrganizationStatus,
-  UpdateOrganizationPayload,
+} from '~/composables/useAdminOrganizations';
+import {
+  buildUpdateOrganizationPayloadFromForm,
+  createEmptyOrganizationLocationForm,
+  mapOrganizationApiToForm,
 } from '~/composables/useAdminOrganizations';
 import {
   getApiErrorMessage,
@@ -154,11 +160,12 @@ const loading = ref(false);
 const loadError = ref('');
 const saving = ref(false);
 const formError = ref('');
+const validationErrors = ref<Record<string, string[]>>({});
 
-const form = reactive({
+const form = reactive<OrganizationFormValue>({
   name: '',
   description: '',
-  address: '',
+  locations: [createEmptyOrganizationLocationForm()],
   phone: '',
   email: '',
   status: '' as OrganizationStatus | '',
@@ -170,7 +177,6 @@ const form = reactive({
 const fieldErrors = reactive<Record<string, string>>({
   name: '',
   description: '',
-  address: '',
   phone: '',
   email: '',
   status: '',
@@ -201,9 +207,14 @@ const ownershipOptions = computed(() => [
 
 const resetErrors = () => {
   formError.value = '';
+  validationErrors.value = {};
   Object.keys(fieldErrors).forEach((key) => {
     fieldErrors[key] = '';
   });
+};
+
+const getLocationFieldError = (path: string): string => {
+  return getFieldError(validationErrors.value, path);
 };
 
 const loadOrganization = async () => {
@@ -219,17 +230,16 @@ const loadOrganization = async () => {
 
   try {
     const organization = await organizationsApi.show(id);
-
-    form.name = organization.name;
-    form.description = organization.description || '';
-    form.address = organization.address || '';
-    form.phone = organization.phone || '';
-    form.email = organization.email || '';
-    form.status = (organization.status as OrganizationStatus | null) || '';
-    form.source_type = (organization.source_type as OrganizationSourceType | null) || '';
-    form.ownership_status =
-      (organization.ownership_status as OrganizationOwnershipStatus | null) || '';
-    form.owner_user_id = organization.owner_user_id || '';
+    const mappedForm = mapOrganizationApiToForm(organization);
+    form.name = mappedForm.name;
+    form.description = mappedForm.description;
+    form.locations = mappedForm.locations;
+    form.phone = mappedForm.phone;
+    form.email = mappedForm.email;
+    form.status = mappedForm.status;
+    form.source_type = mappedForm.source_type;
+    form.ownership_status = mappedForm.ownership_status;
+    form.owner_user_id = mappedForm.owner_user_id;
     await ensureSelectedUserOption(form.owner_user_id);
   } catch (error) {
     loadError.value = getApiErrorMessage(error, t('admin.organizations.edit.errors.load'));
@@ -249,26 +259,16 @@ const submitForm = async () => {
   resetErrors();
 
   try {
-    const payload: UpdateOrganizationPayload = {
-      name: form.name.trim(),
-      description: form.description.trim() || null,
-      address: form.address.trim() || null,
-      phone: form.phone.trim() || null,
-      email: form.email.trim() || null,
-      status: form.status || null,
-      source_type: form.source_type || null,
-      ownership_status: form.ownership_status || null,
-      owner_user_id: form.owner_user_id.trim() || null,
-    };
+    const payload = buildUpdateOrganizationPayloadFromForm(form);
 
     await organizationsApi.update(id, payload);
     await navigateTo(`/admin/organizations/${id}`);
   } catch (error) {
     const payload = getApiErrorPayload(error);
+    validationErrors.value = payload.errors || {};
     formError.value = getApiErrorMessage(error, t('admin.organizations.edit.errors.update'));
     fieldErrors.name = getFieldError(payload.errors, 'name');
     fieldErrors.description = getFieldError(payload.errors, 'description');
-    fieldErrors.address = getFieldError(payload.errors, 'address');
     fieldErrors.phone = getFieldError(payload.errors, 'phone');
     fieldErrors.email = getFieldError(payload.errors, 'email');
     fieldErrors.status = getFieldError(payload.errors, 'status');

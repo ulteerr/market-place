@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Geo\Repositories;
 
+use App\Shared\Traits\AppliesEntitySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Modules\Geo\Models\Region;
 
 final class RegionsRepository implements RegionsRepositoryInterface
 {
+    use AppliesEntitySearch;
+
     public function list(array $filters = []): Collection
     {
         $query = Region::query()
@@ -22,15 +25,15 @@ final class RegionsRepository implements RegionsRepositoryInterface
             $query->where("regions.country_id", $countryId);
         }
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where(function ($searchQuery) use ($search): void {
-                $term = "%" . $search . "%";
-                $searchQuery
-                    ->where("regions.name", "like", $term)
-                    ->orWhere("countries.name", "like", $term);
-            });
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "regions.name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $term = "%" . $search . "%";
+            $searchQuery
+                ->where("regions.name", "like", $term)
+                ->orWhere("countries.name", "like", $term);
+        });
 
         return $query->orderBy("regions.name")->orderBy("regions.id")->get();
     }
@@ -53,15 +56,15 @@ final class RegionsRepository implements RegionsRepositoryInterface
             $query->where("regions.country_id", $countryId);
         }
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where(function ($searchQuery) use ($search): void {
-                $term = "%" . $search . "%";
-                $searchQuery
-                    ->where("regions.name", "like", $term)
-                    ->orWhere("countries.name", "like", $term);
-            });
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "regions.name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $term = "%" . $search . "%";
+            $searchQuery
+                ->where("regions.name", "like", $term)
+                ->orWhere("countries.name", "like", $term);
+        });
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
         $sortDir = strtolower((string) ($filters["sort_dir"] ?? "desc"));

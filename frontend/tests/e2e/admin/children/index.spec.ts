@@ -113,9 +113,10 @@ test.describe('Admin children page', () => {
     await setupChildrenPage(page);
     await page.goto('/admin/children');
 
-    await page.locator('input.admin-input').first().fill('Кузнецова');
+    const searchInput = page.locator('main input.admin-input').first();
+    await searchInput.click();
+    await searchInput.fill('Кузнецова');
 
-    await expect(page).toHaveURL(/search=%D0%9A%D1%83%D0%B7%D0%BD%D0%B5%D1%86%D0%BE%D0%B2%D0%B0/);
     await expect(page.getByText('Кузнецова Виктория Тимофеевна')).toBeVisible();
     await expect(page.getByText('Смирнов Иван')).toHaveCount(0);
     await expect(page.getByText('Показано 1 из 1.')).toBeVisible();

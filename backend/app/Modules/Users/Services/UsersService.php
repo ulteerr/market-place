@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Users\Services;
 
+use App\Shared\Services\RelatedStateLogService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Auth\Access\AuthorizationException;
 use Modules\Users\Contracts\UsersServiceInterface;
@@ -19,16 +20,13 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Files\Models\File;
 use Modules\Files\Services\FilesService;
 use RuntimeException;
-use Modules\ChangeLog\Models\ChangeLog;
-use Modules\ChangeLog\Services\ChangeLogContext;
-use Modules\ActionLog\Models\ActionLog;
-use Modules\ActionLog\Services\ActionLogService;
 
 final class UsersService implements UsersServiceInterface
 {
     public function __construct(
         private readonly UsersRepositoryInterface $repository,
         private readonly FilesService $filesService,
+        private readonly RelatedStateLogService $relatedStateLogService,
     ) {}
 
     public function createUser(array $data): User
@@ -40,8 +38,17 @@ final class UsersService implements UsersServiceInterface
                 $this->syncUserPermissionOverrides($user, $data["permission_overrides"] ?? []);
             }
             $this->attachAvatarIfProvided($user, $data);
-            $this->enrichCreateChangeLogWithRelatedState($user);
-            $this->enrichCreateActionLogWithRelatedState($user);
+            $relatedSnapshot = $this->buildRelatedSnapshot($user);
+            $relatedMedia = $this->buildRelatedMediaSnapshot($user);
+            $this->relatedStateLogService->enrichCreateChangeLogWithRelatedState(
+                $user,
+                $relatedSnapshot,
+                $relatedMedia === [] ? null : $relatedMedia,
+            );
+            $this->relatedStateLogService->enrichCreateActionLogWithRelatedState(
+                $user,
+                $relatedSnapshot,
+            );
 
             return $user;
         });
@@ -62,12 +69,43 @@ final class UsersService implements UsersServiceInterface
             }
             $this->removeAvatarIfRequested($user, $data);
             $this->attachAvatarIfProvided($user, $data);
-            $this->writeRelatedChangeLogIfChanged(
+            $afterRelatedSnapshot = $this->buildRelatedSnapshot($user);
+            $afterRelatedMedia = $this->buildRelatedMediaSnapshot($user);
+            $this->relatedStateLogService->writeRelatedChangeLogIfChanged(
                 $user,
                 $beforeRelatedSnapshot,
-                $beforeRelatedMedia,
+                $afterRelatedSnapshot,
+                [
+                    "before_media_snapshot" => $beforeRelatedMedia,
+                    "after_media_snapshot" => $afterRelatedMedia,
+                    "media_field_map" => ["avatar_id" => "avatar"],
+                    "merge_meta" => function (array $existingMeta, array $contextMeta) use (
+                        $user,
+                    ): array {
+                        return [
+                            ...$existingMeta,
+                            "scope" =>
+                                ($existingMeta["scope"] ?? null) === "profile"
+                                    ? "profile"
+                                    : "user-related",
+                            ...$contextMeta,
+                            "schema_signature" => $user->changeLogSchemaSignature(),
+                        ];
+                    },
+                    "create_meta" => function (array $contextMeta) use ($user): array {
+                        return [
+                            ...$contextMeta,
+                            "scope" => "user-related",
+                            "schema_signature" => $user->changeLogSchemaSignature(),
+                        ];
+                    },
+                ],
             );
-            $this->writeRelatedActionLogIfChanged($user, $beforeRelatedSnapshot);
+            $this->relatedStateLogService->writeRelatedActionLogIfChanged(
+                $user,
+                $beforeRelatedSnapshot,
+                $afterRelatedSnapshot,
+            );
 
             return $user;
         });
@@ -279,228 +317,6 @@ final class UsersService implements UsersServiceInterface
                 "deny" => array_values(array_unique($permissionOverridesDeny)),
             ],
         ];
-    }
-
-    private function enrichCreateChangeLogWithRelatedState(User $user): void
-    {
-        $createLog = ChangeLog::query()
-            ->where("auditable_type", User::class)
-            ->where("auditable_id", (string) $user->id)
-            ->where("event", "create")
-            ->latest("created_at")
-            ->first();
-
-        if (!$createLog) {
-            return;
-        }
-
-        $related = $this->buildRelatedSnapshot($user);
-        $relatedMedia = $this->buildRelatedMediaSnapshot($user);
-        $after = is_array($createLog->after) ? $createLog->after : [];
-
-        $createLog->after = [...$after, ...$related];
-        $createLog->media_after = $relatedMedia === [] ? null : $relatedMedia;
-        $createLog->save();
-    }
-
-    private function writeRelatedChangeLogIfChanged(
-        User $user,
-        array $beforeRelatedSnapshot,
-        array $beforeRelatedMedia,
-    ): void {
-        $afterRelatedSnapshot = $this->buildRelatedSnapshot($user);
-        $afterRelatedMedia = $this->buildRelatedMediaSnapshot($user);
-        $changedFields = [];
-
-        foreach (array_keys($beforeRelatedSnapshot) as $key) {
-            if (($beforeRelatedSnapshot[$key] ?? null) !== ($afterRelatedSnapshot[$key] ?? null)) {
-                $changedFields[] = $key;
-            }
-        }
-
-        if (empty($changedFields)) {
-            return;
-        }
-
-        $context = app(ChangeLogContext::class);
-        if ($context->disabled() || !$user->shouldWriteChangeLog("update")) {
-            return;
-        }
-
-        $actor = auth()->user();
-
-        $beforePayload = [];
-        $afterPayload = [];
-        foreach ($changedFields as $field) {
-            $beforePayload[$field] = $beforeRelatedSnapshot[$field] ?? null;
-            $afterPayload[$field] = $afterRelatedSnapshot[$field] ?? null;
-        }
-
-        $batchId = $context->currentBatchId();
-        $resolvedMediaBefore = [];
-        $resolvedMediaAfter = [];
-        if (
-            ($beforeRelatedSnapshot["avatar_id"] ?? null) !==
-            ($afterRelatedSnapshot["avatar_id"] ?? null)
-        ) {
-            $resolvedMediaBefore["avatar"] = $beforeRelatedMedia["avatar"] ?? null;
-            $resolvedMediaAfter["avatar"] = $afterRelatedMedia["avatar"] ?? null;
-        }
-
-        $existingEntry = ChangeLog::query()
-            ->where("auditable_type", User::class)
-            ->where("auditable_id", (string) $user->id)
-            ->where("event", "update")
-            ->where("batch_id", $batchId)
-            ->latest("created_at")
-            ->first();
-
-        if ($existingEntry) {
-            $existingBefore = is_array($existingEntry->before) ? $existingEntry->before : [];
-            $existingAfter = is_array($existingEntry->after) ? $existingEntry->after : [];
-            $existingChangedFields = is_array($existingEntry->changed_fields)
-                ? $existingEntry->changed_fields
-                : [];
-            $existingMeta = is_array($existingEntry->meta) ? $existingEntry->meta : [];
-            $existingMediaBefore = is_array($existingEntry->media_before)
-                ? $existingEntry->media_before
-                : [];
-            $existingMediaAfter = is_array($existingEntry->media_after)
-                ? $existingEntry->media_after
-                : [];
-
-            $existingEntry->before = [...$existingBefore, ...$beforePayload];
-            $existingEntry->after = [...$existingAfter, ...$afterPayload];
-            $existingEntry->media_before = [...$existingMediaBefore, ...$resolvedMediaBefore];
-            $existingEntry->media_after = [...$existingMediaAfter, ...$resolvedMediaAfter];
-            $existingEntry->changed_fields = array_values(
-                array_unique([...$existingChangedFields, ...$changedFields]),
-            );
-            $existingEntry->meta = [
-                ...$existingMeta,
-                "scope" =>
-                    ($existingMeta["scope"] ?? null) === "profile" ? "profile" : "user-related",
-                "schema_signature" => $user->changeLogSchemaSignature(),
-            ];
-            $existingEntry->rolled_back_from_id =
-                $existingEntry->rolled_back_from_id ??
-                ($context->meta()["rolled_back_from_id"] ?? null);
-            $existingEntry->save();
-            return;
-        }
-
-        $lastVersion = (int) ChangeLog::query()
-            ->where("auditable_type", User::class)
-            ->where("auditable_id", (string) $user->id)
-            ->max("version");
-
-        ChangeLog::query()->create([
-            "auditable_type" => User::class,
-            "auditable_id" => (string) $user->id,
-            "event" => "update",
-            "version" => $lastVersion + 1,
-            "before" => $beforePayload,
-            "after" => $afterPayload,
-            "media_before" => $resolvedMediaBefore === [] ? null : $resolvedMediaBefore,
-            "media_after" => $resolvedMediaAfter === [] ? null : $resolvedMediaAfter,
-            "changed_fields" => array_values($changedFields),
-            "actor_type" => $actor ? $actor::class : null,
-            "actor_id" => $actor?->getKey(),
-            "batch_id" => $batchId,
-            "rolled_back_from_id" => $context->meta()["rolled_back_from_id"] ?? null,
-            "meta" => [
-                ...$context->meta(),
-                "scope" => "user-related",
-                "schema_signature" => $user->changeLogSchemaSignature(),
-            ],
-        ]);
-    }
-
-    private function enrichCreateActionLogWithRelatedState(User $user): void
-    {
-        if (!$user->shouldWriteActionLog("create")) {
-            return;
-        }
-
-        $createLog = ActionLog::query()
-            ->where("model_type", User::class)
-            ->where("model_id", (string) $user->id)
-            ->where("event", "create")
-            ->latest("created_at")
-            ->first();
-
-        if (!$createLog) {
-            return;
-        }
-
-        $related = $this->buildRelatedSnapshot($user);
-        $after = is_array($createLog->after) ? $createLog->after : [];
-        $createLog->after = [...$after, ...$related];
-        $createLog->save();
-    }
-
-    private function writeRelatedActionLogIfChanged(User $user, array $beforeRelatedSnapshot): void
-    {
-        if (!$user->shouldWriteActionLog("update")) {
-            return;
-        }
-
-        $afterRelatedSnapshot = $this->buildRelatedSnapshot($user);
-        $changedFields = [];
-
-        foreach (array_keys($beforeRelatedSnapshot) as $key) {
-            if (($beforeRelatedSnapshot[$key] ?? null) !== ($afterRelatedSnapshot[$key] ?? null)) {
-                $changedFields[] = $key;
-            }
-        }
-
-        if ($changedFields === []) {
-            return;
-        }
-
-        $beforePayload = [];
-        $afterPayload = [];
-        foreach ($changedFields as $field) {
-            $beforePayload[$field] = $beforeRelatedSnapshot[$field] ?? null;
-            $afterPayload[$field] = $afterRelatedSnapshot[$field] ?? null;
-        }
-
-        $actorId = auth()->id();
-        $ipAddress = request()?->ip();
-
-        $existingEntry = ActionLog::query()
-            ->where("model_type", User::class)
-            ->where("model_id", (string) $user->id)
-            ->where("event", "update")
-            ->where("user_id", $actorId)
-            ->where("ip_address", $ipAddress)
-            ->where("created_at", ">=", now()->subSeconds(10))
-            ->latest("created_at")
-            ->first();
-
-        if ($existingEntry) {
-            $existingBefore = is_array($existingEntry->before) ? $existingEntry->before : [];
-            $existingAfter = is_array($existingEntry->after) ? $existingEntry->after : [];
-            $existingChangedFields = is_array($existingEntry->changed_fields)
-                ? $existingEntry->changed_fields
-                : [];
-
-            $existingEntry->before = [...$existingBefore, ...$beforePayload];
-            $existingEntry->after = [...$existingAfter, ...$afterPayload];
-            $existingEntry->changed_fields = array_values(
-                array_unique([...$existingChangedFields, ...$changedFields]),
-            );
-            $existingEntry->save();
-            return;
-        }
-
-        app(ActionLogService::class)->logModelEvent(
-            $user,
-            "update",
-            $beforePayload,
-            $afterPayload,
-            $changedFields,
-        );
     }
 
     private function buildRelatedMediaSnapshot(User $user): array

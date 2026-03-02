@@ -16,6 +16,12 @@ geo_metro_lines:
         required: false
         schema:
           type: string
+      - name: entity_search
+        in: query
+        required: false
+        description: Narrow search by metro station name only
+        schema:
+          type: string
     responses:
       '200':
         description: Metro lines list
@@ -200,6 +206,30 @@ admin_geo_metro_stations:
     summary: List metro stations (admin)
     security:
       - bearerAuth: []
+    parameters:
+      - name: city_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: metro_line_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: entity_search
+        in: query
+        required: false
+        description: Narrow search by metro station name only
+        schema:
+          type: string
     responses:
       '200':
         description: Paginated metro stations list

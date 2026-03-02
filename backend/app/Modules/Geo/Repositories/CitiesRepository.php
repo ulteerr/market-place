@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Geo\Repositories;
 
+use App\Shared\Traits\AppliesEntitySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Modules\Geo\Models\City;
 
 final class CitiesRepository implements CitiesRepositoryInterface
 {
+    use AppliesEntitySearch;
+
     public function list(array $filters = []): Collection
     {
         $query = City::query()
@@ -28,16 +31,16 @@ final class CitiesRepository implements CitiesRepositoryInterface
             $query->where("cities.region_id", $regionId);
         }
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where(function ($searchQuery) use ($search): void {
-                $term = "%" . $search . "%";
-                $searchQuery
-                    ->where("cities.name", "like", $term)
-                    ->orWhere("countries.name", "like", $term)
-                    ->orWhere("regions.name", "like", $term);
-            });
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "cities.name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $term = "%" . $search . "%";
+            $searchQuery
+                ->where("cities.name", "like", $term)
+                ->orWhere("countries.name", "like", $term)
+                ->orWhere("regions.name", "like", $term);
+        });
 
         return $query->orderBy("cities.name")->orderBy("cities.id")->get();
     }
@@ -67,16 +70,16 @@ final class CitiesRepository implements CitiesRepositoryInterface
             $query->where("cities.region_id", $regionId);
         }
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where(function ($searchQuery) use ($search): void {
-                $term = "%" . $search . "%";
-                $searchQuery
-                    ->where("cities.name", "like", $term)
-                    ->orWhere("countries.name", "like", $term)
-                    ->orWhere("regions.name", "like", $term);
-            });
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "cities.name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $term = "%" . $search . "%";
+            $searchQuery
+                ->where("cities.name", "like", $term)
+                ->orWhere("countries.name", "like", $term)
+                ->orWhere("regions.name", "like", $term);
+        });
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
         $sortDir = strtolower((string) ($filters["sort_dir"] ?? "desc"));

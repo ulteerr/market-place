@@ -23,6 +23,12 @@ final class OrganizationLocationResource extends JsonResource
             "address" => $this->address,
             "lat" => $this->lat,
             "lng" => $this->lng,
+            "metro_connections" => $this->whenLoaded(
+                "metroConnections",
+                fn() => OrganizationLocationMetroStationResource::collection(
+                    $this->metroConnections,
+                ),
+            ),
         ];
     }
 }

@@ -63,6 +63,7 @@ export interface AdminMetroStationsListParams {
   page?: number;
   per_page?: number;
   search?: string;
+  entity_search?: string;
   sort_by?: string;
   sort_dir?: SortDirection;
   city_id?: string;
@@ -79,17 +80,22 @@ export const useAdminMetroStations = () => {
       typeof params.search === 'string' && params.search.trim().length > 0
         ? params.search.trim()
         : undefined;
+    const rawEntitySearch =
+      typeof params.entity_search === 'string' && params.entity_search.trim().length > 0
+        ? params.entity_search.trim()
+        : undefined;
 
     const queryBase = {
       ...params,
       search: rawSearch,
+      entity_search: rawEntitySearch,
     };
 
     const response = await api<IndexResponse<AdminMetroStation>>('/api/admin/metro-stations', {
       query: queryBase,
     });
 
-    if (!rawSearch || response.data.total > 0) {
+    if (!rawSearch || rawEntitySearch || response.data.total > 0) {
       return response.data;
     }
 

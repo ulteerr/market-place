@@ -10,6 +10,7 @@ test.describe('Admin action logs page', () => {
 
   test('shows action logs list for authenticated admin', async ({ page }) => {
     await setupAdminAuth(page);
+    await page.unroute('**/api/admin/action-logs**');
 
     await page.route('**/api/admin/action-logs**', async (route) => {
       await route.fulfill({
@@ -72,6 +73,7 @@ test.describe('Admin action logs page', () => {
 
   test('applies event filter immediately after select change', async ({ page }) => {
     await setupAdminAuth(page);
+    await page.unroute('**/api/admin/action-logs**');
 
     await page.route('**/api/admin/action-logs**', async (route) => {
       const url = new URL(route.request().url());
@@ -150,6 +152,7 @@ test.describe('Admin action logs page', () => {
 
   test('normalizes invalid date range from query', async ({ page }) => {
     await setupAdminAuth(page);
+    await page.unroute('**/api/admin/action-logs**');
 
     let capturedFrom = '';
     let capturedTo = '';
@@ -184,6 +187,7 @@ test.describe('Admin action logs page', () => {
 
   test('keeps default per_page and sort params in query', async ({ page }) => {
     await setupAdminAuth(page);
+    await page.unroute('**/api/admin/action-logs**');
 
     let capturedSortBy = '';
     let capturedSortDir = '';

@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Modules\Geo\Repositories;
 
+use App\Shared\Traits\AppliesEntitySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Modules\Geo\Models\Country;
 
 final class CountriesRepository implements CountriesRepositoryInterface
 {
+    use AppliesEntitySearch;
+
     public function list(array $filters = []): Collection
     {
         $query = Country::query()->select(["id", "name", "iso_code"]);
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $searchQuery->where("name", "like", "%" . $search . "%");
+        });
 
         return $query->orderBy("name")->get();
     }
@@ -26,10 +31,12 @@ final class CountriesRepository implements CountriesRepositoryInterface
     {
         $query = Country::query()->select(["id", "name", "iso_code", "created_at", "updated_at"]);
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where("name", "like", "%" . $search . "%");
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $searchQuery->where("name", "like", "%" . $search . "%");
+        });
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
         $sortDir = strtolower((string) ($filters["sort_dir"] ?? "desc"));

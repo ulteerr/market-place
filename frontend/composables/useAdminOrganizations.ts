@@ -7,6 +7,53 @@ import type {
 export type OrganizationStatus = 'draft' | 'active' | 'suspended' | 'archived';
 export type OrganizationSourceType = 'manual' | 'import' | 'parsed' | 'self_registered';
 export type OrganizationOwnershipStatus = 'unclaimed' | 'pending_claim' | 'claimed';
+export type OrganizationLocationTravelMode = 'walk' | 'drive';
+
+export interface AdminOrganizationLocationMetroConnection {
+  id: string;
+  metro_station_id: string;
+  travel_mode: OrganizationLocationTravelMode;
+  duration_minutes: number;
+  metro_station?: {
+    id: string;
+    name?: string | null;
+    city_id?: string | null;
+    metro_line_id?: string | null;
+    metro_line?: {
+      name?: string | null;
+      color?: string | null;
+    } | null;
+  } | null;
+}
+
+export interface AdminOrganizationLocation {
+  id: string;
+  country_id?: string | null;
+  region_id?: string | null;
+  city_id?: string | null;
+  district_id?: string | null;
+  address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  metro_connections?: AdminOrganizationLocationMetroConnection[];
+}
+
+export interface OrganizationLocationMetroConnectionPayload {
+  metro_station_id: string;
+  travel_mode: OrganizationLocationTravelMode;
+  duration_minutes: number;
+}
+
+export interface OrganizationLocationPayload {
+  country_id?: string | null;
+  region_id?: string | null;
+  city_id?: string | null;
+  district_id?: string | null;
+  address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  metro_connections?: OrganizationLocationMetroConnectionPayload[];
+}
 
 export interface AdminOrganization {
   id: string;
@@ -30,6 +77,37 @@ export interface AdminOrganization {
     middle_name?: string | null;
     email?: string | null;
   } | null;
+  locations?: AdminOrganizationLocation[];
+}
+
+export interface OrganizationLocationMetroConnectionFormValue {
+  metro_station_id: string;
+  travel_mode: OrganizationLocationTravelMode;
+  duration_minutes: number | null | '';
+}
+
+export interface OrganizationLocationFormValue {
+  id?: string | null;
+  country_id?: string | null;
+  region_id?: string | null;
+  city_id?: string | null;
+  district_id?: string | null;
+  address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  metro_connections?: OrganizationLocationMetroConnectionFormValue[];
+}
+
+export interface OrganizationFormValue {
+  name: string;
+  description: string;
+  locations: OrganizationLocationFormValue[];
+  phone: string;
+  email: string;
+  status: OrganizationStatus | '';
+  source_type: OrganizationSourceType | '';
+  ownership_status: OrganizationOwnershipStatus | '';
+  owner_user_id: string;
 }
 
 interface OrganizationMutationResponse {
@@ -55,6 +133,7 @@ export interface CreateOrganizationPayload {
   name: string;
   description?: string | null;
   address?: string | null;
+  locations?: OrganizationLocationPayload[] | null;
   phone?: string | null;
   email?: string | null;
   status?: OrganizationStatus | null;
@@ -67,6 +146,7 @@ export interface UpdateOrganizationPayload {
   name?: string;
   description?: string | null;
   address?: string | null;
+  locations?: OrganizationLocationPayload[] | null;
   phone?: string | null;
   email?: string | null;
   status?: OrganizationStatus | null;
@@ -74,6 +154,148 @@ export interface UpdateOrganizationPayload {
   ownership_status?: OrganizationOwnershipStatus | null;
   owner_user_id?: string | null;
 }
+
+const normalizeDurationMinutes = (value: number | null | '' | undefined): number | null => {
+  if (value === '' || value === null || value === undefined) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return parsed > 0 ? Math.trunc(parsed) : null;
+};
+
+export const createEmptyOrganizationLocationForm = (): OrganizationLocationFormValue => ({
+  country_id: null,
+  region_id: null,
+  city_id: null,
+  district_id: null,
+  address: '',
+  lat: null,
+  lng: null,
+  metro_connections: [],
+});
+
+export const sanitizeOrganizationFormLocations = (
+  locations: OrganizationLocationFormValue[]
+): OrganizationLocationPayload[] => {
+  return locations
+    .map((location) => {
+      const metroConnections = (location.metro_connections || [])
+        .map((connection) => ({
+          metro_station_id: String(connection.metro_station_id || '').trim(),
+          travel_mode: connection.travel_mode,
+          duration_minutes: normalizeDurationMinutes(connection.duration_minutes),
+        }))
+        .filter(
+          (connection): connection is OrganizationLocationMetroConnectionPayload =>
+            connection.metro_station_id !== '' &&
+            ['walk', 'drive'].includes(connection.travel_mode) &&
+            connection.duration_minutes !== null
+        );
+
+      const normalized: OrganizationLocationPayload = {
+        country_id: location.country_id || null,
+        region_id: location.region_id || null,
+        city_id: location.city_id || null,
+        district_id: location.district_id || null,
+        address: location.address?.trim() || null,
+        lat:
+          typeof location.lat === 'number' && Number.isFinite(location.lat) ? location.lat : null,
+        lng:
+          typeof location.lng === 'number' && Number.isFinite(location.lng) ? location.lng : null,
+        metro_connections: metroConnections,
+      };
+
+      const hasValue = Boolean(
+        normalized.country_id ||
+        normalized.region_id ||
+        normalized.city_id ||
+        normalized.district_id ||
+        normalized.address ||
+        normalized.lat !== null ||
+        normalized.lng !== null ||
+        metroConnections.length
+      );
+
+      return hasValue ? normalized : null;
+    })
+    .filter((location): location is OrganizationLocationPayload => Boolean(location));
+};
+
+export const mapOrganizationApiToForm = (
+  organization: AdminOrganization
+): OrganizationFormValue => {
+  const locations = organization.locations?.length
+    ? organization.locations.map(
+        (location): OrganizationLocationFormValue => ({
+          id: location.id,
+          country_id: location.country_id || null,
+          region_id: location.region_id || null,
+          city_id: location.city_id || null,
+          district_id: location.district_id || null,
+          address: location.address || '',
+          lat: typeof location.lat === 'number' ? location.lat : null,
+          lng: typeof location.lng === 'number' ? location.lng : null,
+          metro_connections: (location.metro_connections || []).map((connection) => ({
+            metro_station_id: connection.metro_station_id,
+            travel_mode: connection.travel_mode,
+            duration_minutes: normalizeDurationMinutes(connection.duration_minutes),
+          })),
+        })
+      )
+    : organization.address
+      ? [
+          {
+            ...createEmptyOrganizationLocationForm(),
+            address: organization.address,
+          },
+        ]
+      : [createEmptyOrganizationLocationForm()];
+
+  return {
+    name: organization.name || '',
+    description: organization.description || '',
+    locations,
+    phone: organization.phone || '',
+    email: organization.email || '',
+    status: (organization.status as OrganizationStatus | null) || '',
+    source_type: (organization.source_type as OrganizationSourceType | null) || '',
+    ownership_status: (organization.ownership_status as OrganizationOwnershipStatus | null) || '',
+    owner_user_id: organization.owner_user_id || '',
+  };
+};
+
+export const buildCreateOrganizationPayloadFromForm = (
+  form: OrganizationFormValue
+): CreateOrganizationPayload => ({
+  name: form.name.trim(),
+  description: form.description.trim() || null,
+  locations: sanitizeOrganizationFormLocations(form.locations),
+  phone: form.phone.trim() || null,
+  email: form.email.trim() || null,
+  status: form.status || null,
+  source_type: form.source_type || null,
+  ownership_status: form.ownership_status || null,
+  owner_user_id: form.owner_user_id.trim() || null,
+});
+
+export const buildUpdateOrganizationPayloadFromForm = (
+  form: OrganizationFormValue
+): UpdateOrganizationPayload => ({
+  name: form.name.trim(),
+  description: form.description.trim() || null,
+  locations: sanitizeOrganizationFormLocations(form.locations),
+  phone: form.phone.trim() || null,
+  email: form.email.trim() || null,
+  status: form.status || null,
+  source_type: form.source_type || null,
+  ownership_status: form.ownership_status || null,
+  owner_user_id: form.owner_user_id.trim() || null,
+});
 
 export const getAdminOrganizationOwnerName = (organization: AdminOrganization): string => {
   const owner = organization.owner;

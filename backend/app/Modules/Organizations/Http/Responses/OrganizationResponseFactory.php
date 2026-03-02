@@ -16,7 +16,7 @@ final class OrganizationResponseFactory
     {
         $organization->loadMissing([
             "owner:id,first_name,last_name,middle_name,email",
-            "locations",
+            "locations.metroConnections.metroStation.metroLine",
         ]);
 
         return StatusResponseFactory::success(new OrganizationResource($organization), $status);
@@ -30,7 +30,7 @@ final class OrganizationResponseFactory
         if (method_exists($collection, "loadMissing")) {
             $collection->loadMissing([
                 "owner:id,first_name,last_name,middle_name,email",
-                "locations",
+                "locations.metroConnections.metroStation.metroLine",
             ]);
         }
 
@@ -48,7 +48,7 @@ final class OrganizationResponseFactory
     ): JsonResponse {
         $organization->loadMissing([
             "owner:id,first_name,last_name,middle_name,email",
-            "locations",
+            "locations.metroConnections.metroStation.metroLine",
         ]);
 
         return StatusResponseFactory::successWithMessage(

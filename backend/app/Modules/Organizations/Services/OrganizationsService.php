@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Organizations\Services;
 
+use App\Shared\Services\RelatedStateLogService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Modules\Organizations\DTOs\OrganizationLocationData;
+use Modules\Organizations\DTOs\OrganizationMetroConnectionData;
+use Modules\Organizations\DTOs\OrganizationUpsertData;
 use Modules\Organizations\Models\OrganizationLocation;
+use Modules\Organizations\Models\OrganizationLocationMetroStation;
 use Modules\Organizations\Models\OrganizationMember;
 use Modules\Organizations\Models\OrganizationRole;
 use Modules\Users\Models\User;
@@ -19,20 +23,33 @@ use Modules\Organizations\Repositories\OrganizationsRepositoryInterface;
 
 final class OrganizationsService
 {
-    public function __construct(private readonly OrganizationsRepositoryInterface $repository) {}
+    public function __construct(
+        private readonly OrganizationsRepositoryInterface $repository,
+        private readonly RelatedStateLogService $relatedStateLogService,
+    ) {}
 
     public function createOrganization(array $data): Organization
     {
         return DB::transaction(function () use ($data): Organization {
-            $organization = $this->repository->create(Arr::except($data, ["locations"]));
+            $upsertData = OrganizationUpsertData::fromArray($data);
+            $organization = $this->repository->create($upsertData->organizationAttributes);
 
-            if (array_key_exists("locations", $data)) {
-                $this->syncLocations($organization, (array) $data["locations"]);
+            if ($upsertData->hasLocations) {
+                $this->syncLocations($organization, $upsertData->locations);
+                $relatedSnapshot = $this->buildRelatedSnapshot($organization);
+                $this->relatedStateLogService->enrichCreateChangeLogWithRelatedState(
+                    $organization,
+                    $relatedSnapshot,
+                );
+                $this->relatedStateLogService->enrichCreateActionLogWithRelatedState(
+                    $organization,
+                    $relatedSnapshot,
+                );
             }
 
             return $organization->fresh([
                 "owner:id,first_name,last_name,middle_name,email",
-                "locations",
+                "locations.metroConnections.metroStation.metroLine",
             ]) ?? $organization;
         });
     }
@@ -45,18 +62,34 @@ final class OrganizationsService
     public function updateOrganization(Organization $organization, array $data): Organization
     {
         return DB::transaction(function () use ($organization, $data): Organization {
+            $upsertData = OrganizationUpsertData::fromArray($data);
+            $beforeRelatedSnapshot = $upsertData->hasLocations
+                ? $this->buildRelatedSnapshot($organization)
+                : [];
+
             $organization = $this->repository->update(
                 $organization,
-                Arr::except($data, ["locations"]),
+                $upsertData->organizationAttributes,
             );
 
-            if (array_key_exists("locations", $data)) {
-                $this->syncLocations($organization, (array) $data["locations"]);
+            if ($upsertData->hasLocations) {
+                $this->syncLocations($organization, $upsertData->locations);
+                $afterRelatedSnapshot = $this->buildRelatedSnapshot($organization);
+                $this->relatedStateLogService->writeRelatedChangeLogIfChanged(
+                    $organization,
+                    $beforeRelatedSnapshot,
+                    $afterRelatedSnapshot,
+                );
+                $this->relatedStateLogService->writeRelatedActionLogIfChanged(
+                    $organization,
+                    $beforeRelatedSnapshot,
+                    $afterRelatedSnapshot,
+                );
             }
 
             return $organization->fresh([
                 "owner:id,first_name,last_name,middle_name,email",
-                "locations",
+                "locations.metroConnections.metroStation.metroLine",
             ]) ?? $organization;
         });
     }
@@ -187,7 +220,7 @@ final class OrganizationsService
     }
 
     /**
-     * @param array<int, array<string, mixed>> $locations
+     * @param array<int, OrganizationLocationData> $locations
      */
     private function syncLocations(Organization $organization, array $locations): void
     {
@@ -196,16 +229,106 @@ final class OrganizationsService
             ->delete();
 
         foreach ($locations as $location) {
-            OrganizationLocation::query()->create([
+            $createdLocation = OrganizationLocation::query()->create([
                 "organization_id" => (string) $organization->id,
-                "country_id" => $location["country_id"] ?? null,
-                "region_id" => $location["region_id"] ?? null,
-                "city_id" => $location["city_id"] ?? null,
-                "district_id" => $location["district_id"] ?? null,
-                "address" => $location["address"] ?? null,
-                "lat" => $location["lat"] ?? null,
-                "lng" => $location["lng"] ?? null,
+                "country_id" => $location->countryId,
+                "region_id" => $location->regionId,
+                "city_id" => $location->cityId,
+                "district_id" => $location->districtId,
+                "address" => $location->address,
+                "lat" => $location->lat,
+                "lng" => $location->lng,
+            ]);
+
+            $this->syncLocationMetroConnections($createdLocation, $location->metroConnections);
+        }
+    }
+
+    /**
+     * @param array<int, OrganizationMetroConnectionData> $metroConnections
+     */
+    private function syncLocationMetroConnections(
+        OrganizationLocation $location,
+        array $metroConnections,
+    ): void {
+        if ($metroConnections === []) {
+            return;
+        }
+
+        $deduplicatedConnections = collect($metroConnections)
+            ->filter(fn(mixed $item): bool => $item instanceof OrganizationMetroConnectionData)
+            ->unique(
+                fn(OrganizationMetroConnectionData $item): string => implode(":", [
+                    $item->metroStationId,
+                    $item->travelMode,
+                ]),
+            );
+
+        foreach ($deduplicatedConnections as $connection) {
+            OrganizationLocationMetroStation::query()->create([
+                "organization_location_id" => (string) $location->id,
+                "metro_station_id" => $connection->metroStationId,
+                "travel_mode" => $connection->travelMode,
+                "duration_minutes" => $connection->durationMinutes,
             ]);
         }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildRelatedSnapshot(Organization $organization): array
+    {
+        return [
+            "locations" => $organization
+                ->locations()
+                ->with("metroConnections")
+                ->get()
+                ->map(function (OrganizationLocation $location): array {
+                    $metroConnections = $location->metroConnections
+                        ->map(
+                            fn(OrganizationLocationMetroStation $connection): array => [
+                                "metro_station_id" => (string) $connection->metro_station_id,
+                                "travel_mode" => (string) $connection->travel_mode,
+                                "duration_minutes" =>
+                                    $connection->duration_minutes === null
+                                        ? null
+                                        : (int) $connection->duration_minutes,
+                            ],
+                        )
+                        ->all();
+
+                    usort(
+                        $metroConnections,
+                        fn(array $left, array $right): int => strcmp(
+                            $this->encodeSnapshotValue($left),
+                            $this->encodeSnapshotValue($right),
+                        ),
+                    );
+
+                    return [
+                        "country_id" => $location->country_id
+                            ? (string) $location->country_id
+                            : null,
+                        "region_id" => $location->region_id ? (string) $location->region_id : null,
+                        "city_id" => $location->city_id ? (string) $location->city_id : null,
+                        "district_id" => $location->district_id
+                            ? (string) $location->district_id
+                            : null,
+                        "address" => $location->address,
+                        "lat" => $location->lat === null ? null : (float) $location->lat,
+                        "lng" => $location->lng === null ? null : (float) $location->lng,
+                        "metro_connections" => $metroConnections,
+                    ];
+                })
+                ->sortBy(fn(array $location): string => $this->encodeSnapshotValue($location))
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function encodeSnapshotValue(array $value): string
+    {
+        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: "";
     }
 }

@@ -41,6 +41,55 @@
             <dt class="admin-muted text-xs">{{ t('admin.organizations.fields.address') }}</dt>
             <dd>{{ organization.address || t('common.dash') }}</dd>
           </div>
+          <div v-if="organization.locations?.length" class="sm:col-span-2">
+            <dt class="admin-muted text-xs">{{ t('admin.organizations.locations.title') }}</dt>
+            <dd class="space-y-3">
+              <div
+                v-for="(location, index) in organization.locations"
+                :key="location.id"
+                class="rounded-xl border border-[color:var(--admin-border)] p-3"
+              >
+                <p class="text-sm font-semibold">
+                  {{ t('admin.organizations.locations.locationTitle', { index: index + 1 }) }}
+                </p>
+                <p class="mt-1 text-sm">{{ location.address || t('common.dash') }}</p>
+                <p class="admin-muted text-xs">
+                  {{ t('admin.organizations.fields.city') }}:
+                  {{ location.city_id || t('common.dash') }}
+                </p>
+                <p class="admin-muted text-xs">
+                  {{ t('admin.organizations.fields.district') }}:
+                  {{ location.district_id || t('common.dash') }}
+                </p>
+                <p class="admin-muted text-xs">
+                  {{ t('admin.organizations.fields.coordinates') }}:
+                  {{ formatCoordinates(location.lat, location.lng) }}
+                </p>
+                <div v-if="location.metro_connections?.length" class="mt-2 space-y-1">
+                  <p class="admin-muted text-xs">
+                    {{ t('admin.organizations.locations.metroTitle') }}
+                  </p>
+                  <p
+                    v-for="(connection, connectionIndex) in location.metro_connections"
+                    :key="connection.id"
+                    class="text-xs"
+                  >
+                    {{
+                      t('admin.organizations.locations.metroSummary', {
+                        index: connectionIndex + 1,
+                        station:
+                          connection.metro_station?.name ||
+                          connection.metro_station_id ||
+                          t('common.dash'),
+                        mode: resolveTravelModeLabel(connection.travel_mode),
+                        minutes: connection.duration_minutes,
+                      })
+                    }}
+                  </p>
+                </div>
+              </div>
+            </dd>
+          </div>
           <div class="sm:col-span-2">
             <dt class="admin-muted text-xs">{{ t('admin.organizations.fields.description') }}</dt>
             <dd>{{ organization.description || t('common.dash') }}</dd>
@@ -150,6 +199,17 @@ const formatDate = (date: string | null | undefined): string => {
   }).format(parsed);
 };
 
+const formatCoordinates = (
+  lat: number | null | undefined,
+  lng: number | null | undefined
+): string => {
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    return t('common.dash');
+  }
+
+  return `${lat}, ${lng}`;
+};
+
 const resolveStatusLabel = (status: OrganizationStatus | null | undefined): string => {
   if (!status) {
     return t('common.dash');
@@ -179,6 +239,14 @@ const resolveSourceLabel = (source: OrganizationSourceType | null | undefined): 
   };
 
   return t(sourceMap[source]);
+};
+
+const resolveTravelModeLabel = (mode: 'walk' | 'drive' | null | undefined): string => {
+  if (!mode) {
+    return t('common.dash');
+  }
+
+  return t(`admin.organizations.travelMode.${mode}`);
 };
 
 const resolveOwnerLabel = (item: AdminOrganization): string => {

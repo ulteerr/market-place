@@ -26,12 +26,6 @@
           :disabled="saving"
           :error="fieldErrors.phone"
         />
-        <UiInput
-          v-model="form.address"
-          :label="t('admin.organizations.fields.address')"
-          :disabled="saving"
-          :error="fieldErrors.address"
-        />
         <UiSelect
           v-model="form.owner_user_id"
           :label="t('admin.organizations.fields.ownerUserId')"
@@ -82,6 +76,12 @@
           :error="fieldErrors.description"
         />
 
+        <AdminOrganizationLocationsForm
+          v-model="form.locations"
+          :disabled="saving"
+          :get-error="getLocationFieldError"
+        />
+
         <p v-if="formError" class="admin-error text-sm">{{ formError }}</p>
 
         <div class="flex gap-2">
@@ -105,15 +105,20 @@
 </template>
 
 <script setup lang="ts">
+import AdminOrganizationLocationsForm from '~/components/admin/organizations/AdminOrganizationLocationsForm.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';
 import { useAdminUserSelectOptions } from '~/composables/useAdminUserSelectOptions';
 import type {
-  CreateOrganizationPayload,
+  OrganizationFormValue,
   OrganizationOwnershipStatus,
   OrganizationSourceType,
   OrganizationStatus,
+} from '~/composables/useAdminOrganizations';
+import {
+  buildCreateOrganizationPayloadFromForm,
+  createEmptyOrganizationLocationForm,
 } from '~/composables/useAdminOrganizations';
 import {
   getApiErrorMessage,
@@ -134,11 +139,12 @@ const { userOptions, loadUserOptions, onUserSearch } = useAdminUserSelectOptions
 
 const saving = ref(false);
 const formError = ref('');
+const validationErrors = ref<Record<string, string[]>>({});
 
-const form = reactive({
+const form = reactive<OrganizationFormValue>({
   name: '',
   description: '',
-  address: '',
+  locations: [createEmptyOrganizationLocationForm()],
   phone: '',
   email: '',
   status: '' as OrganizationStatus | '',
@@ -150,7 +156,6 @@ const form = reactive({
 const fieldErrors = reactive<Record<string, string>>({
   name: '',
   description: '',
-  address: '',
   phone: '',
   email: '',
   status: '',
@@ -181,9 +186,14 @@ const ownershipOptions = computed(() => [
 
 const resetErrors = () => {
   formError.value = '';
+  validationErrors.value = {};
   Object.keys(fieldErrors).forEach((key) => {
     fieldErrors[key] = '';
   });
+};
+
+const getLocationFieldError = (path: string): string => {
+  return getFieldError(validationErrors.value, path);
 };
 
 const submitForm = async () => {
@@ -191,26 +201,16 @@ const submitForm = async () => {
   resetErrors();
 
   try {
-    const payload: CreateOrganizationPayload = {
-      name: form.name.trim(),
-      description: form.description.trim() || null,
-      address: form.address.trim() || null,
-      phone: form.phone.trim() || null,
-      email: form.email.trim() || null,
-      status: form.status || null,
-      source_type: form.source_type || null,
-      ownership_status: form.ownership_status || null,
-      owner_user_id: form.owner_user_id.trim() || null,
-    };
+    const payload = buildCreateOrganizationPayloadFromForm(form);
 
     await organizationsApi.create(payload);
     await navigateTo('/admin/organizations');
   } catch (error) {
     const payload = getApiErrorPayload(error);
+    validationErrors.value = payload.errors || {};
     formError.value = getApiErrorMessage(error, t('admin.organizations.new.errors.create'));
     fieldErrors.name = getFieldError(payload.errors, 'name');
     fieldErrors.description = getFieldError(payload.errors, 'description');
-    fieldErrors.address = getFieldError(payload.errors, 'address');
     fieldErrors.phone = getFieldError(payload.errors, 'phone');
     fieldErrors.email = getFieldError(payload.errors, 'email');
     fieldErrors.status = getFieldError(payload.errors, 'status');

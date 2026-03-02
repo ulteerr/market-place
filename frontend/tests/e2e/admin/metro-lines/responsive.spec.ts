@@ -69,7 +69,14 @@ test.describe('Admin metro lines responsive pages', () => {
       await setupAdminAuth(page);
       await setupMetroLinesCollectionApi(page, metroLinesFixture);
 
+      const linesLoadResponsePromise = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'GET' &&
+          response.url().includes('/api/admin/metro-lines') &&
+          response.status() === 200
+      );
       await page.goto('/admin/metro-lines');
+      await linesLoadResponsePromise;
       await ensureMobileSidebarClosed(page);
       await expectPageHeading(page, 'Линии метро', viewport.width);
       await expect(page.getByText('Сокольническая', { exact: true })).toBeVisible();
@@ -100,16 +107,18 @@ test.describe('Admin metro lines responsive pages', () => {
       await setupAdminAuth(page);
       await setupMetroLineShowApi(page, existingLine);
 
+      const lineLoadResponsePromise = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'GET' &&
+          response.url().includes('/api/admin/metro-lines/ml-2') &&
+          response.status() === 200
+      );
       await page.goto('/admin/metro-lines/ml-2');
+      await lineLoadResponsePromise;
       await ensureMobileSidebarClosed(page);
       await expectPageHeading(page, 'Линия метро', viewport.width);
-      if (viewport.width < 1024) {
-        await expect(page.locator('text=/^Арбатско-Покровская$/')).toHaveCount(1);
-        await expect(page.locator('text=/^3$/')).toHaveCount(1);
-      } else {
-        await expect(page.locator('dd', { hasText: /^Арбатско-Покровская$/ })).toBeVisible();
-        await expect(page.locator('dd', { hasText: /^3$/ })).toBeVisible();
-      }
+      await expect(page.locator('dd', { hasText: /^Арбатско-Покровская$/ })).toBeVisible();
+      await expect(page.locator('dd', { hasText: /^3$/ })).toBeVisible();
       await expect(page.locator('a[href="/admin/metro-lines/ml-2/edit"]')).toBeVisible();
 
       await assertNoHorizontalOverflow(page);

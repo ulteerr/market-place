@@ -25,7 +25,7 @@ test.describe('Admin geo districts form pages', () => {
 
     let capturedCreatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/geo/districts', async (route) => {
+    await page.route(/\/api\/admin\/geo\/districts(?:\?.*)?$/, async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
         return;
@@ -41,12 +41,13 @@ test.describe('Admin geo districts form pages', () => {
     });
 
     await page.goto('/admin/geo/districts/new');
+    const form = page.locator('article form').first();
 
-    await page.getByLabel('Название').fill('  Фрунзенский ');
-    await page.getByLabel('ID города').fill(' ct-9 ');
-    await page.getByRole('button', { name: 'Создать' }).click();
+    await form.getByLabel('Название').fill('  Фрунзенский ');
+    await form.getByLabel('ID города').fill(' ct-9 ');
+    await form.locator('button[type="submit"]').click();
 
-    await expect(page).toHaveURL(/\/admin\/geo\/districts$/);
+    await expect.poll(() => capturedCreatePayload !== null).toBeTruthy();
     expect(capturedCreatePayload).toEqual({
       name: 'Фрунзенский',
       city_id: 'ct-9',
@@ -62,7 +63,15 @@ test.describe('Admin geo districts form pages', () => {
       capturedUpdatePayload = payload;
     });
 
+    const districtLoadResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        response.url().includes('/api/admin/geo/districts/d-2') &&
+        response.status() === 200
+    );
+
     await page.goto('/admin/geo/districts/d-2/edit');
+    await districtLoadResponsePromise;
     await expect(
       page.getByRole('heading', { level: 2, name: 'Редактирование района' })
     ).toBeVisible();

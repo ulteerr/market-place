@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Geo\Repositories;
 
+use App\Shared\Traits\AppliesEntitySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Modules\Geo\Models\District;
 
 final class DistrictsRepository implements DistrictsRepositoryInterface
 {
+    use AppliesEntitySearch;
+
     public function list(array $filters = []): Collection
     {
         $query = District::query()
@@ -22,15 +25,15 @@ final class DistrictsRepository implements DistrictsRepositoryInterface
             $query->where("districts.city_id", $cityId);
         }
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where(function ($searchQuery) use ($search): void {
-                $term = "%" . $search . "%";
-                $searchQuery
-                    ->where("districts.name", "like", $term)
-                    ->orWhere("cities.name", "like", $term);
-            });
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "districts.name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $term = "%" . $search . "%";
+            $searchQuery
+                ->where("districts.name", "like", $term)
+                ->orWhere("cities.name", "like", $term);
+        });
 
         return $query->orderBy("districts.name")->orderBy("districts.id")->get();
     }
@@ -53,15 +56,15 @@ final class DistrictsRepository implements DistrictsRepositoryInterface
             $query->where("districts.city_id", $cityId);
         }
 
-        $search = trim((string) ($filters["search"] ?? ""));
-        if ($search !== "") {
-            $query->where(function ($searchQuery) use ($search): void {
-                $term = "%" . $search . "%";
-                $searchQuery
-                    ->where("districts.name", "like", $term)
-                    ->orWhere("cities.name", "like", $term);
-            });
-        }
+        $this->applyEntitySearchOrSearch($query, $filters, "districts.name", function (
+            $searchQuery,
+            string $search,
+        ): void {
+            $term = "%" . $search . "%";
+            $searchQuery
+                ->where("districts.name", "like", $term)
+                ->orWhere("cities.name", "like", $term);
+        });
 
         $sortBy = (string) ($filters["sort_by"] ?? "created_at");
         $sortDir = strtolower((string) ($filters["sort_dir"] ?? "desc"));

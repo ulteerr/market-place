@@ -35,6 +35,7 @@ export interface AdminGeoCountriesListParams {
   page?: number;
   per_page?: number;
   search?: string;
+  entity_search?: string;
   sort_by?: string;
   sort_dir?: SortDirection;
 }

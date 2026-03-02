@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Geo\Services;
 
+use App\Shared\DTOs\EntitySearchFiltersDTO;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Modules\Geo\Models\City;
@@ -16,7 +17,7 @@ final class CitiesService
 
     public function list(array $filters = []): Collection
     {
-        return $this->repository->list($filters);
+        return $this->repository->list(EntitySearchFiltersDTO::fromArray($filters)->toArray());
     }
 
     public function paginate(
@@ -24,7 +25,10 @@ final class CitiesService
         array $with = [],
         array $filters = [],
     ): LengthAwarePaginator {
-        return $this->repository->paginate($perPage, $filters);
+        return $this->repository->paginate(
+            $perPage,
+            EntitySearchFiltersDTO::fromArray($filters)->toArray(),
+        );
     }
 
     public function create(array $data): City

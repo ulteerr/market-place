@@ -2578,6 +2578,12 @@ paths:
           required: false
           schema:
             type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by country name only
+          schema:
+            type: string
       responses:
         '200':
           description: Countries list
@@ -2627,6 +2633,12 @@ paths:
         - name: search
           in: query
           required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by region name only
           schema:
             type: string
       responses:
@@ -2687,6 +2699,12 @@ paths:
           required: false
           schema:
             type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by city name only
+          schema:
+            type: string
       responses:
         '200':
           description: Cities list
@@ -2741,6 +2759,12 @@ paths:
         - name: search
           in: query
           required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by district name only
           schema:
             type: string
       responses:
@@ -2865,6 +2889,12 @@ paths:
           required: false
           schema:
             type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by metro station name only
+          schema:
+            type: string
       responses:
         '200':
           description: Metro stations list
@@ -2929,6 +2959,18 @@ paths:
       summary: List countries (admin)
       security:
         - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by country name only
+          schema:
+            type: string
       responses:
         '200':
           description: Paginated countries list
@@ -3050,6 +3092,24 @@ paths:
       summary: List regions (admin)
       security:
         - bearerAuth: []
+      parameters:
+        - name: country_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by region name only
+          schema:
+            type: string
       responses:
         '200':
           description: Paginated regions list
@@ -3159,6 +3219,30 @@ paths:
       summary: List cities (admin)
       security:
         - bearerAuth: []
+      parameters:
+        - name: country_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: region_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by city name only
+          schema:
+            type: string
       responses:
         '200':
           description: Paginated cities list
@@ -3277,6 +3361,24 @@ paths:
       summary: List districts (admin)
       security:
         - bearerAuth: []
+      parameters:
+        - name: city_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by district name only
+          schema:
+            type: string
       responses:
         '200':
           description: Paginated districts list
@@ -3518,6 +3620,30 @@ paths:
       summary: List metro stations (admin)
       security:
         - bearerAuth: []
+      parameters:
+        - name: city_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: metro_line_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by metro station name only
+          schema:
+            type: string
       responses:
         '200':
           description: Paginated metro stations list

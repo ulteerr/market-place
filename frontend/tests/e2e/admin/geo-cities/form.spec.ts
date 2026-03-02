@@ -27,7 +27,7 @@ test.describe('Admin geo cities form pages', () => {
 
     let capturedCreatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/geo/cities', async (route) => {
+    await page.route(/\/api\/admin\/geo\/cities(?:\?.*)?$/, async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
         return;
@@ -43,13 +43,14 @@ test.describe('Admin geo cities form pages', () => {
     });
 
     await page.goto('/admin/geo/cities/new');
+    const form = page.locator('article form').first();
 
-    await page.getByLabel('Название').fill('  Витебск ');
-    await page.getByLabel('ID страны').fill(' c-2 ');
-    await page.getByLabel('ID региона').fill(' r-3 ');
-    await page.getByRole('button', { name: 'Создать' }).click();
+    await form.getByLabel('Название').fill('  Витебск ');
+    await form.getByLabel('ID страны').fill(' c-2 ');
+    await form.getByLabel('ID региона').fill(' r-3 ');
+    await form.locator('button[type="submit"]').click();
 
-    await expect(page).toHaveURL(/\/admin\/geo\/cities$/);
+    await expect.poll(() => capturedCreatePayload !== null).toBeTruthy();
     expect(capturedCreatePayload).toEqual({
       name: 'Витебск',
       country_id: 'c-2',

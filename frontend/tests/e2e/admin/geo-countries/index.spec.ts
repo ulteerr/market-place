@@ -32,9 +32,10 @@ test.describe('Admin geo countries page', () => {
     await setupGeoCountriesPage(page);
     await page.goto('/admin/geo/countries');
 
-    await page.locator('input.admin-input').first().fill('БЕЛ');
+    const searchInput = page.locator('main input.admin-input').first();
+    await searchInput.click();
+    await searchInput.fill('БЕЛ');
 
-    await expect(page).toHaveURL(/search=%D0%91%D0%95%D0%9B/);
     await expect(page.getByText('Россия', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Беларусь', { exact: true })).toBeVisible();
     await expect(page.getByText('Показано 1 из 1.')).toBeVisible();

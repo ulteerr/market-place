@@ -8,6 +8,7 @@ use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
@@ -59,6 +60,11 @@ final class OrganizationLocation extends Model
     public function district(): BelongsTo
     {
         return $this->belongsTo(District::class, "district_id");
+    }
+
+    public function metroConnections(): HasMany
+    {
+        return $this->hasMany(OrganizationLocationMetroStation::class, "organization_location_id");
     }
 
     protected static function newFactory(): OrganizationLocationFactory

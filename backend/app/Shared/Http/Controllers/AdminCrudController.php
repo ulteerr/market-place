@@ -89,6 +89,7 @@ abstract class AdminCrudController extends Controller
         $sortBy = trim((string) $request->query("sort_by", ""));
         $sortDir = strtolower((string) $request->query("sort_dir", "asc"));
         $search = trim((string) $request->query("search", ""));
+        $entitySearch = trim((string) $request->query("entity_search", ""));
 
         if (!in_array($sortDir, ["asc", "desc"], true)) {
             $sortDir = "asc";
@@ -103,6 +104,7 @@ abstract class AdminCrudController extends Controller
                     "sort_by" => $sortBy,
                     "sort_dir" => $sortDir,
                     "search" => $search,
+                    "entity_search" => $entitySearch,
                 ],
                 $this->indexFilters(),
             ),

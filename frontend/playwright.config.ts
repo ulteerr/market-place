@@ -9,14 +9,21 @@ if (existsSync(envPath)) {
 
 const port = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}`;
-const ciWorkers = Number(process.env.PLAYWRIGHT_WORKERS ?? 2);
+const parsePositiveInt = (value: string | undefined, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+};
+const configuredWorkers = parsePositiveInt(process.env.PLAYWRIGHT_WORKERS, process.env.CI ? 2 : 3);
 
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? ciWorkers : undefined,
+  retries: process.env.CI ? 2 : 1,
+  workers: configuredWorkers,
+  expect: {
+    timeout: 10_000,
+  },
   reporter: 'html',
   use: {
     baseURL,

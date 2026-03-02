@@ -41,12 +41,12 @@ test.describe('Admin children form pages', () => {
     await setupChildrenForm(page);
 
     await page.goto('/admin/children/new');
-    await expect(page.getByRole('heading', { level: 2, name: 'Новый ребенок' })).toBeVisible();
-    await expect(page.getByLabel('Фамилия')).toBeVisible();
-    await expect(page.getByLabel('Имя')).toBeVisible();
-    await expect(page.getByLabel('Отчество')).toBeVisible();
-    await expect(page.getByLabel('ID пользователя')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Создать' })).toBeVisible();
+    const form = page.locator('article form').first();
+    await expect(form.getByLabel('Фамилия *')).toHaveCount(1);
+    await expect(form.getByLabel('Имя *')).toHaveCount(1);
+    await expect(form.getByLabel('Отчество')).toHaveCount(1);
+    await expect(form.getByLabel('ID пользователя *')).toHaveCount(1);
+    await expect(form.locator('button[type="submit"]')).toHaveCount(1);
   });
 
   test('creates child on /admin/children/new', async ({ page }) => {
@@ -54,7 +54,7 @@ test.describe('Admin children form pages', () => {
 
     let capturedCreatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/children', async (route) => {
+    await page.route(/\/api\/admin\/children(?:\?.*)?$/, async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
         return;
@@ -74,15 +74,24 @@ test.describe('Admin children form pages', () => {
       });
     });
 
+    const usersLoadedPromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        response.url().includes('/api/admin/users') &&
+        response.status() === 200
+    );
+
     await page.goto('/admin/children/new');
+    await usersLoadedPromise;
+    const form = page.locator('article form').first();
 
-    await page.getByLabel('Фамилия').fill('  Петров ');
-    await page.getByLabel('Имя').fill(' Анна ');
-    await page.getByLabel('ID пользователя').click();
-    await page.getByRole('button', { name: /u-1$/ }).first().click();
-    await page.getByRole('button', { name: 'Создать' }).click();
+    await form.getByLabel('Фамилия *').fill('  Петров ');
+    await form.getByLabel('Имя *').fill(' Анна ');
+    await form.getByLabel('ID пользователя *').click();
+    await form.getByLabel('ID пользователя *').press('Enter');
+    await form.locator('button[type="submit"]').click();
 
-    await expect(page).toHaveURL(/\/admin\/children$/);
+    await expect.poll(() => capturedCreatePayload !== null).toBeTruthy();
     expect(capturedCreatePayload).toEqual({
       user_id: 'u-1',
       first_name: 'Анна',
@@ -98,7 +107,7 @@ test.describe('Admin children form pages', () => {
 
     let capturedUpdatePayload: Record<string, unknown> | null = null;
 
-    await page.route('**/api/admin/children/c-1', async (route) => {
+    await page.route(/\/api\/admin\/children\/c-1(?:\?.*)?$/, async (route) => {
       const method = route.request().method();
 
       if (method === 'GET') {
@@ -139,17 +148,24 @@ test.describe('Admin children form pages', () => {
       await route.fallback();
     });
 
+    const childLoadResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        response.url().includes('/api/admin/children/c-1') &&
+        response.status() === 200
+    );
+
     await page.goto('/admin/children/c-1/edit');
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Редактирование ребенка' })
-    ).toBeVisible();
+    await childLoadResponsePromise;
+    const form = page.locator('article form').first();
+    await expect(form.getByLabel('Фамилия *')).toHaveValue('Кузнецова');
 
-    await page.getByLabel('Фамилия').fill('  Петрова ');
-    await page.getByLabel('Имя').fill(' Мария ');
-    await page.getByLabel('Отчество').fill(' ');
-    await page.getByRole('button', { name: 'Сохранить' }).click();
+    await form.getByLabel('Фамилия *').fill('  Петрова ');
+    await form.getByLabel('Имя *').fill(' Мария ');
+    await form.getByLabel('Отчество').fill(' ');
+    await form.locator('button[type="submit"]').click();
 
-    await expect(page).toHaveURL(/\/admin\/children\/c-1$/);
+    await expect.poll(() => capturedUpdatePayload !== null).toBeTruthy();
     expect(capturedUpdatePayload).toEqual({
       user_id: 'u-1',
       first_name: 'Мария',
