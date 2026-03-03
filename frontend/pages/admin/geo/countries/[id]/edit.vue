@@ -1,5 +1,5 @@
 <template>
-  <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="admin-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.geo.countries.edit.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.geo.countries.edit.subtitle') }}</p>
@@ -54,9 +54,10 @@
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import type { UpdateGeoCountryPayload } from '~/composables/useAdminGeoCountries';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorMessage,
   getApiErrorPayload,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 
 const { t } = useI18n();
@@ -86,9 +87,7 @@ const fieldErrors = reactive<Record<string, string>>({
 
 const resetErrors = () => {
   formError.value = '';
-  Object.keys(fieldErrors).forEach((key) => {
-    fieldErrors[key] = '';
-  });
+  clearFieldErrors(fieldErrors);
 };
 
 const fetchItem = async () => {
@@ -127,8 +126,7 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.geo.countries.edit.errors.update'));
-    fieldErrors.name = getFieldError(payload.errors, 'name');
-    fieldErrors.iso_code = getFieldError(payload.errors, 'iso_code');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }
@@ -137,4 +135,4 @@ const submitForm = async () => {
 onMounted(fetchItem);
 </script>
 
-<style lang="scss" scoped src="../../../roles/[id]/edit.scss"></style>
+<style lang="scss" scoped src="../../../_shared/admin-edit-form-page.scss"></style>

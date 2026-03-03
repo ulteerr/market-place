@@ -736,7 +736,7 @@ const loadMetroStationOptions = async (locationIndex: number, search = '') => {
   metroStationOptionCache.putMany(options);
   metroStationOptions.value[locationIndex] = replaceOptions(options);
 
-  const selectedMetroOptions = (location.metro_connections || [])
+  const selectedMetroOptions = (location?.metro_connections || [])
     .map((connection) =>
       metroStationOptionCache.get(String(connection.metro_station_id || '').trim())
     )

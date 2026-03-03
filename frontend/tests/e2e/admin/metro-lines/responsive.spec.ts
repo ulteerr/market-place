@@ -9,7 +9,7 @@ import {
 } from '../../helpers/crud/metro';
 import { E2E_RESPONSIVE_VIEWPORTS } from '../../helpers/viewports';
 
-const existingLine = metroLinesFixture[1];
+const existingLine = metroLinesFixture[1]!;
 
 const ensureMobileSidebarClosed = async (page: Page) => {
   const sidebar = page.locator('aside.admin-sidebar');

@@ -29,6 +29,10 @@ export interface AdminAuthUser {
   };
 }
 
+type AdminAuthUserOverrides = Partial<AdminAuthUser> & {
+  settings?: Partial<NonNullable<AdminAuthUser['settings']>>;
+};
+
 export const defaultAdminUser: AdminAuthUser = {
   id: '1',
   email: 'admin@example.com',
@@ -53,8 +57,24 @@ export const defaultAdminUser: AdminAuthUser = {
   ],
 };
 
-export const setAdminAuthCookies = async (page: Page, user: AdminAuthUser = defaultAdminUser) => {
-  const mergedUser: AdminAuthUser = { ...defaultAdminUser, ...user };
+const mergeAdminUser = (user: AdminAuthUserOverrides = {}): AdminAuthUser => {
+  const mergedSettings =
+    user.settings !== undefined
+      ? {
+          ...(defaultAdminUser.settings ?? {}),
+          ...user.settings,
+        }
+      : defaultAdminUser.settings;
+
+  return {
+    ...defaultAdminUser,
+    ...user,
+    ...(mergedSettings ? { settings: mergedSettings } : {}),
+  };
+};
+
+export const setAdminAuthCookies = async (page: Page, user: AdminAuthUserOverrides = {}) => {
+  const mergedUser = mergeAdminUser(user);
 
   await page.context().addCookies([
     {
@@ -75,8 +95,8 @@ export const setAdminAuthCookies = async (page: Page, user: AdminAuthUser = defa
   ]);
 };
 
-export const mockMeEndpoint = async (page: Page, user: AdminAuthUser = defaultAdminUser) => {
-  const mergedUser: AdminAuthUser = { ...defaultAdminUser, ...user };
+export const mockMeEndpoint = async (page: Page, user: AdminAuthUserOverrides = {}) => {
+  const mergedUser = mergeAdminUser(user);
 
   await page.route('**/api/me', async (route: Route) => {
     await route.fulfill({
@@ -90,7 +110,7 @@ export const mockMeEndpoint = async (page: Page, user: AdminAuthUser = defaultAd
   });
 };
 
-export const setupAdminAuth = async (page: Page, user: AdminAuthUser = defaultAdminUser) => {
+export const setupAdminAuth = async (page: Page, user: AdminAuthUserOverrides = {}) => {
   await setAdminAuthCookies(page, user);
   await mockMeEndpoint(page, user);
   await page.route('**/api/admin/changelog**', async (route: Route) => {

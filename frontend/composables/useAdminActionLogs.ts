@@ -41,10 +41,12 @@ export const useAdminActionLogs = () => {
   const api = useApi();
 
   const list = async (
-    params: AdminActionLogsListParams = {}
+    params: AdminActionLogsListParams = {},
+    context: { signal?: AbortSignal } = {}
   ): Promise<PaginationPayload<AdminActionLogItem>> => {
     const response = await api<ActionLogsIndexResponse>('/api/admin/action-logs', {
       query: params,
+      signal: context.signal,
     });
 
     return response.data;

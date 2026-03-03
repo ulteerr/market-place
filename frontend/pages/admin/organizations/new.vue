@@ -121,6 +121,8 @@ import {
   createEmptyOrganizationLocationForm,
 } from '~/composables/useAdminOrganizations';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorMessage,
   getApiErrorPayload,
   getFieldError,
@@ -187,9 +189,7 @@ const ownershipOptions = computed(() => [
 const resetErrors = () => {
   formError.value = '';
   validationErrors.value = {};
-  Object.keys(fieldErrors).forEach((key) => {
-    fieldErrors[key] = '';
-  });
+  clearFieldErrors(fieldErrors);
 };
 
 const getLocationFieldError = (path: string): string => {
@@ -209,14 +209,7 @@ const submitForm = async () => {
     const payload = getApiErrorPayload(error);
     validationErrors.value = payload.errors || {};
     formError.value = getApiErrorMessage(error, t('admin.organizations.new.errors.create'));
-    fieldErrors.name = getFieldError(payload.errors, 'name');
-    fieldErrors.description = getFieldError(payload.errors, 'description');
-    fieldErrors.phone = getFieldError(payload.errors, 'phone');
-    fieldErrors.email = getFieldError(payload.errors, 'email');
-    fieldErrors.status = getFieldError(payload.errors, 'status');
-    fieldErrors.source_type = getFieldError(payload.errors, 'source_type');
-    fieldErrors.ownership_status = getFieldError(payload.errors, 'ownership_status');
-    fieldErrors.owner_user_id = getFieldError(payload.errors, 'owner_user_id');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }

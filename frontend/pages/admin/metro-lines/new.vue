@@ -1,5 +1,5 @@
 <template>
-  <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="admin-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.metro.lines.new.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.metro.lines.new.subtitle') }}</p>
@@ -73,9 +73,10 @@ import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiColorPicker from '~/components/ui/FormControls/UiColorPicker/UiColorPicker.vue';
 import type { CreateMetroLinePayload } from '~/composables/useAdminMetroLines';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorPayload,
   getApiErrorMessage,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
 
@@ -109,9 +110,7 @@ const fieldErrors = reactive<Record<string, string>>({
 
 const resetErrors = () => {
   formError.value = '';
-  Object.keys(fieldErrors).forEach((key) => {
-    fieldErrors[key] = '';
-  });
+  clearFieldErrors(fieldErrors);
 };
 
 const submitForm = async () => {
@@ -133,16 +132,11 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.metro.lines.new.errors.create'));
-    fieldErrors.name = getFieldError(payload.errors, 'name');
-    fieldErrors.external_id = getFieldError(payload.errors, 'external_id');
-    fieldErrors.line_id = getFieldError(payload.errors, 'line_id');
-    fieldErrors.color = getFieldError(payload.errors, 'color');
-    fieldErrors.city_id = getFieldError(payload.errors, 'city_id');
-    fieldErrors.source = getFieldError(payload.errors, 'source');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }
 };
 </script>
 
-<style lang="scss" scoped src="../roles/new.scss"></style>
+<style lang="scss" scoped src="../_shared/admin-form-page.scss"></style>

@@ -1,5 +1,5 @@
 <template>
-  <section class="roles-show-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="admin-show-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.metro.lines.show.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.metro.lines.show.subtitle') }}</p>
@@ -112,4 +112,4 @@ const fetchItem = async () => {
 onMounted(fetchItem);
 </script>
 
-<style lang="scss" scoped src="../../roles/[id]/index.scss"></style>
+<style lang="scss" scoped src="../../_shared/admin-show-page.scss"></style>

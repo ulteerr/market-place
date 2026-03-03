@@ -83,9 +83,10 @@ import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import { useAdminUserSelectOptions } from '~/composables/useAdminUserSelectOptions';
 import type { CreateChildPayload } from '~/composables/useAdminChildren';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorPayload,
   getApiErrorMessage,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
 
@@ -126,12 +127,7 @@ const genderOptions = computed(() => [
 
 const resetErrors = () => {
   formError.value = '';
-  fieldErrors.user_id = '';
-  fieldErrors.first_name = '';
-  fieldErrors.last_name = '';
-  fieldErrors.middle_name = '';
-  fieldErrors.gender = '';
-  fieldErrors.birth_date = '';
+  clearFieldErrors(fieldErrors);
 };
 
 const submitForm = async () => {
@@ -153,12 +149,7 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.children.new.errors.create'));
-    fieldErrors.user_id = getFieldError(payload.errors, 'user_id');
-    fieldErrors.first_name = getFieldError(payload.errors, 'first_name');
-    fieldErrors.last_name = getFieldError(payload.errors, 'last_name');
-    fieldErrors.middle_name = getFieldError(payload.errors, 'middle_name');
-    fieldErrors.gender = getFieldError(payload.errors, 'gender');
-    fieldErrors.birth_date = getFieldError(payload.errors, 'birth_date');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }

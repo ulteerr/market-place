@@ -37,6 +37,31 @@ export const getFieldError = (
   return errors?.[field]?.[0] ?? '';
 };
 
+type FieldErrorMapping<T extends Record<string, string>> = Partial<
+  Record<keyof T, string | string[]>
+>;
+
+export const clearFieldErrors = <T extends Record<string, string>>(fieldErrors: T): void => {
+  const mutableFieldErrors = fieldErrors as Record<string, string>;
+  Object.keys(mutableFieldErrors).forEach((key) => {
+    mutableFieldErrors[key] = '';
+  });
+};
+
+export const applyFieldErrors = <T extends Record<string, string>>(
+  fieldErrors: T,
+  errors: Record<string, string[]> | undefined,
+  mapping: FieldErrorMapping<T> = {}
+): void => {
+  const mutableFieldErrors = fieldErrors as Record<string, string>;
+  Object.keys(mutableFieldErrors).forEach((key) => {
+    const source = mapping[key] ?? (key as string);
+    const paths = Array.isArray(source) ? source : [source];
+    const message = paths.map((path) => getFieldError(errors, path)).find((value) => value !== '');
+    mutableFieldErrors[key] = message ?? '';
+  });
+};
+
 export type SortDirection = 'asc' | 'desc';
 export type PaginationItem = number | '...';
 

@@ -217,6 +217,7 @@ import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import AdminTagFilter from '~/components/admin/Listing/AdminTagFilter.vue';
 import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
+import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import {
   getHighestRoleLevelForUser,
@@ -391,40 +392,17 @@ const removeUser = async (user: AdminUser) => {
   });
 };
 
-const searchAutoReady = ref(false);
-let searchAutoTimer: ReturnType<typeof setTimeout> | null = null;
-
-watch(
+useDebouncedSearch(
   () => listState.searchInput.value,
   (nextValue) => {
-    if (!searchAutoReady.value) {
-      return;
-    }
-
     if (nextValue.trim() === listState.search.value) {
       return;
     }
 
-    if (searchAutoTimer) {
-      clearTimeout(searchAutoTimer);
-    }
-
-    searchAutoTimer = setTimeout(() => {
-      fetchUsers(listState.applySearch());
-    }, 300);
-  }
+    fetchUsers(listState.applySearch());
+  },
+  { delay: 300, skipInitial: true }
 );
-
-onMounted(() => {
-  searchAutoReady.value = true;
-});
-
-onBeforeUnmount(() => {
-  if (searchAutoTimer) {
-    clearTimeout(searchAutoTimer);
-    searchAutoTimer = null;
-  }
-});
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

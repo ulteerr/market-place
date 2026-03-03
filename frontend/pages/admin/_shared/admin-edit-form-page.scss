@@ -1,0 +1,61 @@
+.admin-form-page {
+  color: var(--text);
+  min-width: 0;
+}
+.admin-card {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  min-width: 0;
+}
+.admin-muted {
+  color: var(--muted);
+}
+.admin-error {
+  color: #b91c1c;
+}
+.admin-button,
+.admin-button-secondary {
+  border: 1px solid var(--border);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+.admin-button {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--text);
+}
+.admin-button:hover,
+.admin-button-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.admin-button-secondary {
+  background: transparent;
+  color: var(--muted);
+}
+
+.admin-form-page :deep(form),
+.admin-form-page :deep(.ui-field),
+.admin-form-page :deep(.ui-input),
+.admin-form-page :deep(.ui-select),
+.admin-form-page :deep(.ui-switch) {
+  min-width: 0;
+}
+
+.admin-form-page :deep(input),
+.admin-form-page :deep(button),
+.admin-form-page :deep([role='combobox']) {
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .admin-form-page :deep(.admin-button),
+  .admin-form-page :deep(.admin-button-secondary) {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+}

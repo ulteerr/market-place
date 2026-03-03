@@ -1,5 +1,6 @@
 import type { PaginationPayload } from '~/composables/useAdminCrudCommon';
 import { buildPaginationItems, getApiErrorMessage } from '~/composables/useAdminCrudCommon';
+import type { SortDirection } from '~/composables/useAdminCrudCommon';
 import type { AdminCrudContentMode } from '~/composables/useUserSettings';
 
 interface ListQueryParams {
@@ -14,15 +15,21 @@ interface UseAdminCrudIndexOptions<T, P extends ListQueryParams = ListQueryParam
   settingsKey: string;
   useViewPreference?: boolean;
   defaultSortBy: string;
+  defaultSortDir?: SortDirection;
+  allowedSortBy?: string[];
   defaultPerPage?: number;
   perPageOptions?: number[];
   defaultContentMode?: AdminCrudContentMode;
   defaultTableOnDesktop?: boolean;
   listErrorMessage: string;
   deleteErrorMessage: string;
-  list: (params: P) => Promise<PaginationPayload<T>>;
+  list: (params: P, context?: { signal?: AbortSignal }) => Promise<PaginationPayload<T>>;
   remove: (id: string) => Promise<void>;
   getItemId: (item: T) => string;
+  readCustomStateFromQuery?: () => void;
+  buildCustomListQuery?: () => Partial<P>;
+  buildCustomQuery?: () => Record<string, string | undefined>;
+  resetCustomFilters?: () => void;
 }
 
 interface RemoveItemOptions {
@@ -41,6 +48,8 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
 
   const listState = useAdminListState({
     defaultSortBy: options.defaultSortBy,
+    defaultSortDir: options.defaultSortDir,
+    allowedSortBy: options.allowedSortBy,
     defaultPerPage: options.defaultPerPage,
     perPageOptions: options.perPageOptions,
   });
@@ -55,6 +64,8 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
   const removeConfirmLabel = ref('');
   const removeCancelLabel = ref('');
   const pendingRemoveItem = ref<T | null>(null);
+  const latestRequestId = ref(0);
+  let activeController: AbortController | null = null;
 
   const contentMode = ref<AdminCrudContentMode>(options.defaultContentMode ?? 'table');
   const tableOnDesktop = ref(options.defaultTableOnDesktop ?? true);
@@ -79,16 +90,50 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     buildPaginationItems(pagination.current_page, pagination.last_page, 5)
   );
 
+  const isAbortError = (error: unknown): boolean => {
+    if (error instanceof DOMException) {
+      return error.name === 'AbortError';
+    }
+
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      (error as { name?: string }).name === 'AbortError'
+    );
+  };
+
   const fetchItems = async (page = 1) => {
+    const requestId = latestRequestId.value + 1;
+    latestRequestId.value = requestId;
+
+    if (activeController) {
+      activeController.abort();
+    }
+
+    const controller = new AbortController();
+    activeController = controller;
+
     loading.value = true;
-    loadError.value = '';
+    if (requestId === latestRequestId.value) {
+      loadError.value = '';
+    }
 
     try {
       const query = listState.createListQuery(page);
-      const response = await options.list({
-        ...query,
-        page: query.page > 1 ? query.page : undefined,
-      } as P);
+      const customListQuery = options.buildCustomListQuery?.() ?? {};
+      const response = await options.list(
+        {
+          ...query,
+          ...customListQuery,
+          page: query.page > 1 ? query.page : undefined,
+        } as P,
+        { signal: controller.signal }
+      );
+
+      if (requestId !== latestRequestId.value) {
+        return;
+      }
 
       items.value = response.data;
       pagination.current_page = response.current_page;
@@ -96,29 +141,44 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
       pagination.per_page = response.per_page;
       pagination.total = response.total;
 
-      await listState.syncQuery(response.current_page);
+      await listState.syncQuery(response.current_page, options.buildCustomQuery?.() ?? {});
     } catch (error) {
+      if (requestId !== latestRequestId.value || isAbortError(error)) {
+        return;
+      }
+
       loadError.value = getApiErrorMessage(error, options.listErrorMessage);
     } finally {
-      loading.value = false;
+      if (requestId === latestRequestId.value) {
+        loading.value = false;
+      }
+
+      if (activeController === controller) {
+        activeController = null;
+      }
     }
   };
 
+  const applyAndFetch = async (page = pagination.current_page || 1) => {
+    await fetchItems(page);
+  };
+
   const onToggleSort = (column: string) => {
-    fetchItems(listState.toggleSort(column));
+    void applyAndFetch(listState.toggleSort(column));
   };
 
   const onApplySearch = () => {
-    fetchItems(listState.applySearch());
+    void applyAndFetch(listState.applySearch());
   };
 
   const onResetFilters = () => {
-    fetchItems(listState.resetFilters());
+    options.resetCustomFilters?.();
+    void applyAndFetch(listState.resetFilters());
   };
 
   const onUpdatePerPage = (value: number) => {
     listState.perPage.value = value;
-    fetchItems(listState.onPerPageChange());
+    void applyAndFetch(listState.onPerPageChange());
   };
 
   const closeRemoveConfirm = () => {
@@ -192,7 +252,8 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     }
 
     const page = listState.readStateFromQuery();
-    await fetchItems(page);
+    options.readCustomStateFromQuery?.();
+    await applyAndFetch(page);
   });
 
   watch(viewPreference, (nextPreference) => {
@@ -218,6 +279,11 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     });
   });
 
+  onBeforeUnmount(() => {
+    activeController?.abort();
+    activeController = null;
+  });
+
   return {
     listState,
     items,
@@ -235,6 +301,7 @@ export const useAdminCrudIndex = <T, P extends ListQueryParams = ListQueryParams
     showPagination,
     paginationItems,
     fetchItems,
+    applyAndFetch,
     onToggleSort,
     onApplySearch,
     onResetFilters,

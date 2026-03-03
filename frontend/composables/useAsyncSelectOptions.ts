@@ -1,7 +1,14 @@
+import type { WatchSource } from 'vue';
+
 export interface AsyncSelectOption {
   value: string;
   label: string;
   color?: string | null;
+}
+
+interface UseDebouncedSearchOptions {
+  delay?: number;
+  skipInitial?: boolean;
 }
 
 export const sortAsyncSelectOptions = <T extends AsyncSelectOption>(options: T[]): T[] => {
@@ -46,34 +53,82 @@ export const useAsyncSelectOptionCache = <T extends AsyncSelectOption>() => {
   };
 };
 
-export const useDebouncedSearch = (debounceMs = 250) => {
+export function useDebouncedSearch(debounceMs?: number): {
+  schedule: (callback: () => void) => void;
+  clear: () => void;
+};
+export function useDebouncedSearch<T>(
+  source: WatchSource<T> | WatchSource<T>[],
+  callback: (value: T, oldValue: T | undefined) => void | Promise<void>,
+  options?: UseDebouncedSearchOptions
+): void;
+export function useDebouncedSearch<T>(
+  sourceOrDebounce: number | WatchSource<T> | WatchSource<T>[] = 250,
+  callback?: (value: T, oldValue: T | undefined) => void | Promise<void>,
+  options: UseDebouncedSearchOptions = {}
+) {
+  if (typeof sourceOrDebounce === 'number') {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const debounceMs = sourceOrDebounce;
+
+    const schedule = (scheduleCallback: () => void) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      timer = setTimeout(() => {
+        scheduleCallback();
+        timer = null;
+      }, debounceMs);
+    };
+
+    const clear = () => {
+      if (!timer) {
+        return;
+      }
+
+      clearTimeout(timer);
+      timer = null;
+    };
+
+    return {
+      schedule,
+      clear,
+    };
+  }
+
+  const delay = options.delay ?? 300;
+  const skipInitial = options.skipInitial ?? false;
+  const ready = ref(!skipInitial);
+  const source = sourceOrDebounce as WatchSource<T> | WatchSource<T>[];
+  const debouncedCallback = callback;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  const schedule = (callback: () => void) => {
+  watch(source, (value, oldValue) => {
+    if (!ready.value || !debouncedCallback) {
+      return;
+    }
+
     if (timer) {
       clearTimeout(timer);
     }
 
     timer = setTimeout(() => {
-      callback();
+      void debouncedCallback(value as T, oldValue as T | undefined);
+    }, delay);
+  });
+
+  onMounted(() => {
+    ready.value = true;
+  });
+
+  onBeforeUnmount(() => {
+    if (timer) {
+      clearTimeout(timer);
       timer = null;
-    }, debounceMs);
-  };
-
-  const clear = () => {
-    if (!timer) {
-      return;
     }
-
-    clearTimeout(timer);
-    timer = null;
-  };
-
-  return {
-    schedule,
-    clear,
-  };
-};
+  });
+}
 
 export const useIndexedDebouncedSearch = (debounceMs = 250) => {
   const timers = new Map<number, ReturnType<typeof setTimeout>>();

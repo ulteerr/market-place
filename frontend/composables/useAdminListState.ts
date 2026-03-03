@@ -2,6 +2,8 @@ import type { SortDirection } from '~/composables/useAdminCrudCommon';
 
 interface UseAdminListStateOptions {
   defaultSortBy: string;
+  defaultSortDir?: SortDirection;
+  allowedSortBy?: string[];
   defaultPerPage?: number;
   perPageOptions?: number[];
 }
@@ -25,7 +27,7 @@ export const useAdminListState = (options: UseAdminListStateOptions) => {
   const searchInput = ref('');
   const search = ref('');
   const sortBy = ref(options.defaultSortBy);
-  const sortDir = ref<SortDirection>('asc');
+  const sortDir = ref<SortDirection>(options.defaultSortDir ?? 'asc');
 
   const parsePositiveInt = (value: unknown, fallback: number): number => {
     const parsed = Number(value);
@@ -38,14 +40,22 @@ export const useAdminListState = (options: UseAdminListStateOptions) => {
   };
 
   const normalizeSortDir = (value: unknown): SortDirection => {
-    return value === 'desc' ? 'desc' : 'asc';
+    if (value === 'asc' || value === 'desc') {
+      return value;
+    }
+
+    return options.defaultSortDir ?? 'asc';
   };
 
   const readStateFromQuery = (): number => {
     const nextPage = parsePositiveInt(route.query.page, 1);
     const nextPerPage = parsePositiveInt(route.query.per_page, defaultPerPage);
     const nextSearch = String(route.query.search ?? '').trim();
-    const nextSortBy = String(route.query.sort_by ?? options.defaultSortBy);
+    const rawSortBy = String(route.query.sort_by ?? options.defaultSortBy);
+    const nextSortBy =
+      options.allowedSortBy && !options.allowedSortBy.includes(rawSortBy)
+        ? options.defaultSortBy
+        : rawSortBy;
     const nextSortDir = normalizeSortDir(route.query.sort_dir);
 
     perPage.value = perPageOptions.includes(nextPerPage) ? nextPerPage : defaultPerPage;
@@ -67,7 +77,7 @@ export const useAdminListState = (options: UseAdminListStateOptions) => {
     };
   };
 
-  const syncQuery = async (page: number) => {
+  const syncQuery = async (page: number, extraQuery: Record<string, string | undefined> = {}) => {
     await router.replace({
       query: {
         ...route.query,
@@ -76,6 +86,7 @@ export const useAdminListState = (options: UseAdminListStateOptions) => {
         sort_by: sortBy.value,
         sort_dir: sortDir.value,
         search: search.value || undefined,
+        ...extraQuery,
       },
     });
   };
@@ -109,7 +120,7 @@ export const useAdminListState = (options: UseAdminListStateOptions) => {
     search.value = '';
     perPage.value = defaultPerPage;
     sortBy.value = options.defaultSortBy;
-    sortDir.value = 'asc';
+    sortDir.value = options.defaultSortDir ?? 'asc';
     return 1;
   };
 

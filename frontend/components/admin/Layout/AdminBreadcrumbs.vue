@@ -179,8 +179,11 @@ const breadcrumbs = computed<Breadcrumb[]>(() => {
 
   const tail = trimLeadingSlash(currentPath.slice(navItem.to.length));
   if (!tail) {
-    crumbs[crumbs.length - 1].current = true;
-    crumbs[crumbs.length - 1].to = undefined;
+    const lastCrumb = crumbs[crumbs.length - 1];
+    if (lastCrumb) {
+      lastCrumb.current = true;
+      lastCrumb.to = undefined;
+    }
     return crumbs;
   }
 

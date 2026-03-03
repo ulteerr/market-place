@@ -1,5 +1,5 @@
 <template>
-  <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="admin-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.geo.cities.new.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.geo.cities.new.subtitle') }}</p>
@@ -52,9 +52,10 @@
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import type { CreateGeoCityPayload } from '~/composables/useAdminGeoCities';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorMessage,
   getApiErrorPayload,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 
 const { t } = useI18n();
@@ -73,9 +74,7 @@ const fieldErrors = reactive<Record<string, string>>({ name: '', country_id: '',
 
 const resetErrors = () => {
   formError.value = '';
-  Object.keys(fieldErrors).forEach((key) => {
-    fieldErrors[key] = '';
-  });
+  clearFieldErrors(fieldErrors);
 };
 
 const submitForm = async () => {
@@ -94,13 +93,11 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.geo.cities.new.errors.create'));
-    fieldErrors.name = getFieldError(payload.errors, 'name');
-    fieldErrors.country_id = getFieldError(payload.errors, 'country_id');
-    fieldErrors.region_id = getFieldError(payload.errors, 'region_id');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }
 };
 </script>
 
-<style lang="scss" scoped src="../../roles/new.scss"></style>
+<style lang="scss" scoped src="../../_shared/admin-form-page.scss"></style>

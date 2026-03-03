@@ -97,7 +97,7 @@
 
     <template #cards>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <article v-for="item in items" :key="item.id" class="role-card rounded-xl p-4">
+        <article v-for="item in items" :key="item.id" class="admin-entity-card rounded-xl p-4">
           <h4 class="text-sm font-semibold">{{ item.name }}</h4>
           <p class="admin-muted mt-1 text-xs">
             {{
@@ -152,6 +152,7 @@ import AdminColorDot from '~/components/admin/Metro/AdminColorDot.vue';
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
+import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 
 const { t } = useI18n();
@@ -229,28 +230,14 @@ const onRemove = (item: AdminMetroLine) => {
   });
 };
 
-const searchAutoReady = ref(false);
-let searchAutoTimer: ReturnType<typeof setTimeout> | null = null;
-
-watch(
+useDebouncedSearch(
   () => listState.searchInput.value,
   (nextValue) => {
-    if (!searchAutoReady.value) return;
     if (nextValue.trim() === listState.search.value) return;
-    if (searchAutoTimer) clearTimeout(searchAutoTimer);
-    searchAutoTimer = setTimeout(() => {
-      fetchItems(listState.applySearch());
-    }, 300);
-  }
+    fetchItems(listState.applySearch());
+  },
+  { delay: 300, skipInitial: true }
 );
-
-onMounted(() => {
-  searchAutoReady.value = true;
-});
-
-onBeforeUnmount(() => {
-  if (searchAutoTimer) clearTimeout(searchAutoTimer);
-});
 </script>
 
-<style lang="scss" scoped src="../roles/index.scss"></style>
+<style lang="scss" scoped src="../_shared/admin-index-page.scss"></style>

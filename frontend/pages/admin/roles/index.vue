@@ -150,6 +150,7 @@
 import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
 import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
+import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 import type { AdminRole } from '~/composables/useAdminRoles';
 const { t } = useI18n();
 
@@ -227,40 +228,17 @@ const removeRole = async (role: AdminRole) => {
   });
 };
 
-const searchAutoReady = ref(false);
-let searchAutoTimer: ReturnType<typeof setTimeout> | null = null;
-
-watch(
+useDebouncedSearch(
   () => listState.searchInput.value,
   (nextValue) => {
-    if (!searchAutoReady.value) {
-      return;
-    }
-
     if (nextValue.trim() === listState.search.value) {
       return;
     }
 
-    if (searchAutoTimer) {
-      clearTimeout(searchAutoTimer);
-    }
-
-    searchAutoTimer = setTimeout(() => {
-      fetchRoles(listState.applySearch());
-    }, 300);
-  }
+    fetchRoles(listState.applySearch());
+  },
+  { delay: 300, skipInitial: true }
 );
-
-onMounted(() => {
-  searchAutoReady.value = true;
-});
-
-onBeforeUnmount(() => {
-  if (searchAutoTimer) {
-    clearTimeout(searchAutoTimer);
-    searchAutoTimer = null;
-  }
-});
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

@@ -1,5 +1,5 @@
 <template>
-  <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="admin-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.metro.stations.new.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.metro.stations.new.subtitle') }}</p>
@@ -101,9 +101,10 @@ import UiSwitch from '~/components/ui/FormControls/UiSwitch/UiSwitch.vue';
 import { useAdminMetroStationSelectOptions } from '~/composables/useAdminMetroStationSelectOptions';
 import type { CreateMetroStationPayload } from '~/composables/useAdminMetroStations';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorPayload,
   getApiErrorMessage,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
 
@@ -144,9 +145,7 @@ const fieldErrors = reactive<Record<string, string>>({
 
 const resetErrors = () => {
   formError.value = '';
-  Object.keys(fieldErrors).forEach((key) => {
-    fieldErrors[key] = '';
-  });
+  clearFieldErrors(fieldErrors);
 };
 
 const submitForm = async () => {
@@ -171,14 +170,7 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.metro.stations.new.errors.create'));
-    fieldErrors.name = getFieldError(payload.errors, 'name');
-    fieldErrors.external_id = getFieldError(payload.errors, 'external_id');
-    fieldErrors.line_id = getFieldError(payload.errors, 'line_id');
-    fieldErrors.geo_lat = getFieldError(payload.errors, 'geo_lat');
-    fieldErrors.geo_lon = getFieldError(payload.errors, 'geo_lon');
-    fieldErrors.metro_line_id = getFieldError(payload.errors, 'metro_line_id');
-    fieldErrors.city_id = getFieldError(payload.errors, 'city_id');
-    fieldErrors.source = getFieldError(payload.errors, 'source');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }
@@ -189,4 +181,4 @@ onMounted(async () => {
 });
 </script>
 
-<style lang="scss" scoped src="../roles/new.scss"></style>
+<style lang="scss" scoped src="../_shared/admin-form-page.scss"></style>

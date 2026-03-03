@@ -3,6 +3,9 @@ export default defineNuxtRouteMiddleware((to) => {
     return;
   }
 
+  // Keep admin routes on the admin shell even if page meta fails to resolve.
+  setPageLayout('admin');
+
   const { isAuthenticated, canAccessAdminPanel } = useAuth();
 
   if (!isAuthenticated.value) {

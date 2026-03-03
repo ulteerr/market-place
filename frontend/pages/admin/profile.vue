@@ -95,9 +95,10 @@ import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';
 import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone/UiImageDropzone.vue';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorPayload,
   getApiErrorMessage,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
 
@@ -144,10 +145,7 @@ const avatarImages = computed(() =>
 
 const resetErrors = () => {
   formError.value = '';
-  fieldErrors.first_name = '';
-  fieldErrors.last_name = '';
-  fieldErrors.middle_name = '';
-  fieldErrors.email = '';
+  clearFieldErrors(fieldErrors);
 };
 
 const syncFormFromUser = () => {
@@ -172,10 +170,7 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.profile.errors.update'));
-    fieldErrors.first_name = getFieldError(payload.errors, 'first_name');
-    fieldErrors.last_name = getFieldError(payload.errors, 'last_name');
-    fieldErrors.middle_name = getFieldError(payload.errors, 'middle_name');
-    fieldErrors.email = getFieldError(payload.errors, 'email');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }

@@ -72,9 +72,10 @@ import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import type { AdminAccessPermission } from '~/composables/useAdminPermissions';
 import type { CreateRolePayload } from '~/composables/useAdminRoles';
 import {
+  applyFieldErrors,
+  clearFieldErrors,
   getApiErrorPayload,
   getApiErrorMessage,
-  getFieldError,
 } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();
 
@@ -105,8 +106,7 @@ const fieldErrors = reactive<Record<string, string>>({
 
 const resetErrors = () => {
   formError.value = '';
-  fieldErrors.code = '';
-  fieldErrors.label = '';
+  clearFieldErrors(fieldErrors);
 };
 
 const permissionsByScope = computed(() => {
@@ -164,8 +164,7 @@ const submitForm = async () => {
   } catch (error) {
     const payload = getApiErrorPayload(error);
     formError.value = getApiErrorMessage(error, t('admin.roles.new.errors.create'));
-    fieldErrors.code = getFieldError(payload.errors, 'code');
-    fieldErrors.label = getFieldError(payload.errors, 'label');
+    applyFieldErrors(fieldErrors, payload.errors);
   } finally {
     saving.value = false;
   }
