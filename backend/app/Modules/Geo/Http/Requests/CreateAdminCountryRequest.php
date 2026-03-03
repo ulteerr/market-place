@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Geo\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Shared\Http\Requests\CrudRequest;
 
-final class CreateAdminCountryRequest extends FormRequest
+final class CreateAdminCountryRequest extends CrudRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    public function rules(): array
+    protected function ruleset(): array
     {
         return [
             "name" => ["required", "string", "max:255"],

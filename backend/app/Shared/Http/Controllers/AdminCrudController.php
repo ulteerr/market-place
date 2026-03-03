@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Http\Controllers;
 
+use App\Shared\DTOs\EntitySearchFiltersDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use App\Shared\Http\Responses\StatusResponseFactory;
@@ -40,7 +41,7 @@ abstract class AdminCrudController extends Controller
 
     protected function deleteMethod(): string
     {
-        return "delete";
+        return "deleteById";
     }
 
     protected function updateArguments(string $id, array $data): array
@@ -95,19 +96,23 @@ abstract class AdminCrudController extends Controller
             $sortDir = "asc";
         }
 
+        $filters = array_merge(
+            [
+                "sort_by" => $sortBy,
+                "sort_dir" => $sortDir,
+                "search" => $search,
+                "entity_search" => $entitySearch,
+            ],
+            $this->indexFilters(),
+        );
+
+        $filtersForService = EntitySearchFiltersDTO::fromArray($filters)->toArray();
+
         $method = $this->paginateMethod();
         $items = $this->service()->{$method}(
             $perPage,
             [],
-            array_merge(
-                [
-                    "sort_by" => $sortBy,
-                    "sort_dir" => $sortDir,
-                    "search" => $search,
-                    "entity_search" => $entitySearch,
-                ],
-                $this->indexFilters(),
-            ),
+            $filtersForService,
         );
 
         if (($factory = $this->responseFactory()) && method_exists($factory, "paginated")) {

@@ -1,21 +1,38 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Modules\Children\Services;
 
+use App\Shared\Traits\HasDictionaryCrudOperations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use RuntimeException;
+use Modules\Children\DTOs\ChildUpsertData;
 use Modules\Children\Models\Child;
 use Modules\Children\Repositories\ChildRepositoryInterface;
 
 final class ChildService
 {
+    use HasDictionaryCrudOperations;
+
     public function __construct(private readonly ChildRepositoryInterface $repository) {}
+
+    protected function entityNotFoundMessage(): string
+    {
+        return "Child not found";
+    }
+
+    protected function deleteEntity(object $entity): void
+    {
+        assert($entity instanceof Child);
+        $this->repository->delete($entity);
+    }
 
     public function createChild(array $data): Child
     {
-        return $this->repository->create($data);
+        $dto = ChildUpsertData::fromArray($data);
+
+        return $this->repository->create($dto->toArray());
     }
 
     public function create(array $data): Child
@@ -25,17 +42,17 @@ final class ChildService
 
     public function updateChild(Child $child, array $data): Child
     {
-        return $this->repository->update($child, $data);
+        $dto = ChildUpsertData::fromArray($data);
+
+        return $this->repository->update($child, $dto->toArray());
     }
 
     public function update(string $id, array $data): Child
     {
-        $child = $this->getChildById($id);
-        if (!$child) {
-            throw new RuntimeException("Child not found");
-        }
+        $entity = $this->findByIdOrFail($id);
+        assert($entity instanceof Child);
 
-        return $this->updateChild($child, $data);
+        return $this->updateChild($entity, $data);
     }
 
     public function getChildById(string $id): ?Child
@@ -64,15 +81,5 @@ final class ChildService
     public function delete(Child $child): bool
     {
         return $this->repository->delete($child);
-    }
-
-    public function deleteById(string $id): void
-    {
-        $child = $this->getChildById($id);
-        if (!$child) {
-            throw new RuntimeException("Child not found");
-        }
-
-        $this->delete($child);
     }
 }

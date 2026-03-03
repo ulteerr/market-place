@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace Modules\Geo\Services;
 
 use App\Shared\DTOs\EntitySearchFiltersDTO;
+use App\Shared\Traits\HasDictionaryCrudOperations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Modules\Geo\DTOs\CountryUpsertData;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Repositories\CountriesRepositoryInterface;
-use RuntimeException;
 
 final class CountriesService
 {
+    use HasDictionaryCrudOperations;
+
     public function __construct(private readonly CountriesRepositoryInterface $repository) {}
+
+    protected function entityNotFoundMessage(): string
+    {
+        return "Country not found";
+    }
+
+    protected function deleteEntity(object $entity): void
+    {
+        assert($entity instanceof Country);
+        $this->repository->delete($entity);
+    }
 
     public function list(array $filters = []): Collection
     {
@@ -33,11 +47,9 @@ final class CountriesService
 
     public function create(array $data): Country
     {
-        if (isset($data["iso_code"]) && is_string($data["iso_code"])) {
-            $data["iso_code"] = strtoupper($data["iso_code"]);
-        }
+        $dto = CountryUpsertData::fromArray($data);
 
-        return $this->repository->create($data);
+        return $this->repository->create($dto->toArray());
     }
 
     public function findById(string $id): ?Country
@@ -47,25 +59,12 @@ final class CountriesService
 
     public function update(string $id, array $data): Country
     {
-        $country = $this->repository->findById($id);
-        if (!$country) {
-            throw new RuntimeException("Country not found");
-        }
+        $entity = $this->findByIdOrFail($id);
+        assert($entity instanceof Country);
+        $country = $entity;
 
-        if (isset($data["iso_code"]) && is_string($data["iso_code"])) {
-            $data["iso_code"] = strtoupper($data["iso_code"]);
-        }
+        $dto = CountryUpsertData::fromArray($data);
 
-        return $this->repository->update($country, $data);
-    }
-
-    public function deleteById(string $id): void
-    {
-        $country = $this->repository->findById($id);
-        if (!$country) {
-            throw new RuntimeException("Country not found");
-        }
-
-        $this->repository->delete($country);
+        return $this->repository->update($country, $dto->toArray());
     }
 }

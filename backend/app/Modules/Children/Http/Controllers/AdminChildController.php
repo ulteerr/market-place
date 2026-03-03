@@ -48,9 +48,4 @@ final class AdminChildController extends AdminCrudController
     {
         return "update";
     }
-
-    protected function deleteMethod(): string
-    {
-        return "deleteById";
-    }
 }

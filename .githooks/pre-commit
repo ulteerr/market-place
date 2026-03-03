@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Running Prettier checks in Docker for staged files..."
+echo "Running Prettier (format) in Docker for staged files..."
 
 mapfile -t staged_files < <(git diff --cached --name-only --diff-filter=ACMR)
 
@@ -17,7 +17,7 @@ for file in "${staged_files[@]}"; do
 done
 
 if [ "${#backend_files[@]}" -eq 0 ] && [ "${#frontend_files[@]}" -eq 0 ]; then
-  echo "No staged files for Prettier check."
+  echo "No staged files for Prettier."
   exit 0
 fi
 
@@ -25,10 +25,14 @@ docker-compose up -d backend-node frontend >/dev/null
 
 if [ "${#backend_files[@]}" -gt 0 ]; then
   docker-compose exec -T backend-node sh -lc 'if [ ! -f node_modules/.bin/prettier ]; then npm install; fi'
-  docker-compose exec -T backend-node npx prettier --check "${backend_files[@]}"
+  docker-compose exec -T backend-node npx prettier --write "${backend_files[@]}"
+  for f in "${backend_files[@]}"; do git add "backend/$f"; done
 fi
 
 if [ "${#frontend_files[@]}" -gt 0 ]; then
   docker-compose exec -T frontend sh -lc 'if [ ! -f node_modules/.bin/prettier ]; then npm install; fi'
-  docker-compose exec -T frontend npx prettier --check "${frontend_files[@]}"
+  docker-compose exec -T frontend npx prettier --write "${frontend_files[@]}"
+  for f in "${frontend_files[@]}"; do git add "frontend/$f"; done
 fi
+
+echo "Prettier formatting done. Staged files updated."

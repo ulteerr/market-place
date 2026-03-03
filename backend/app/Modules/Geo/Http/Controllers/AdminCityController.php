@@ -34,11 +34,6 @@ final class AdminCityController extends AdminCrudController
         return CityResponseFactory::class;
     }
 
-    protected function deleteMethod(): string
-    {
-        return "deleteById";
-    }
-
     protected function indexFilters(): array
     {
         $countryId = trim((string) request()->query("country_id", ""));

@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace Modules\Geo\Services;
 
 use App\Shared\DTOs\EntitySearchFiltersDTO;
+use App\Shared\Traits\HasDictionaryCrudOperations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Modules\Geo\DTOs\DistrictUpsertData;
 use Modules\Geo\Models\District;
 use Modules\Geo\Repositories\DistrictsRepositoryInterface;
-use RuntimeException;
 
 final class DistrictsService
 {
+    use HasDictionaryCrudOperations;
+
     public function __construct(private readonly DistrictsRepositoryInterface $repository) {}
+
+    protected function entityNotFoundMessage(): string
+    {
+        return "District not found";
+    }
+
+    protected function deleteEntity(object $entity): void
+    {
+        assert($entity instanceof District);
+        $this->repository->delete($entity);
+    }
 
     public function list(array $filters = []): Collection
     {
@@ -33,7 +47,9 @@ final class DistrictsService
 
     public function create(array $data): District
     {
-        return $this->repository->create($data);
+        $dto = DistrictUpsertData::fromArray($data);
+
+        return $this->repository->create($dto->toArray());
     }
 
     public function findById(string $id): ?District
@@ -43,21 +59,11 @@ final class DistrictsService
 
     public function update(string $id, array $data): District
     {
-        $district = $this->repository->findById($id);
-        if (!$district) {
-            throw new RuntimeException("District not found");
-        }
+        $entity = $this->findByIdOrFail($id);
+        assert($entity instanceof District);
 
-        return $this->repository->update($district, $data);
-    }
+        $dto = DistrictUpsertData::fromArray($data);
 
-    public function deleteById(string $id): void
-    {
-        $district = $this->repository->findById($id);
-        if (!$district) {
-            throw new RuntimeException("District not found");
-        }
-
-        $this->repository->delete($district);
+        return $this->repository->update($entity, $dto->toArray());
     }
 }

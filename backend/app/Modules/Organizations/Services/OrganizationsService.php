@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Organizations\Services;
 
 use App\Shared\Services\RelatedStateLogService;
+use App\Shared\Traits\HasDictionaryCrudOperations;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ use Modules\Organizations\Repositories\OrganizationsRepositoryInterface;
 
 final class OrganizationsService
 {
+    use HasDictionaryCrudOperations;
+
     public function __construct(
         private readonly OrganizationsRepositoryInterface $repository,
         private readonly RelatedStateLogService $relatedStateLogService,
@@ -96,12 +99,10 @@ final class OrganizationsService
 
     public function update(string $id, array $data): Organization
     {
-        $organization = $this->getOrganizationById($id);
-        if (!$organization) {
-            throw new RuntimeException("Organization not found");
-        }
+        $entity = $this->findByIdOrFail($id);
+        assert($entity instanceof Organization);
 
-        return $this->updateOrganization($organization, $data);
+        return $this->updateOrganization($entity, $data);
     }
 
     public function getOrganizationById(string $id): ?Organization
@@ -112,6 +113,17 @@ final class OrganizationsService
     public function findById(string $id): ?Organization
     {
         return $this->getOrganizationById($id);
+    }
+
+    protected function entityNotFoundMessage(): string
+    {
+        return "Organization not found";
+    }
+
+    protected function deleteEntity(object $entity): void
+    {
+        assert($entity instanceof Organization);
+        $this->delete($entity);
     }
 
     public function paginate(
@@ -200,16 +212,6 @@ final class OrganizationsService
     public function delete(Organization $organization): bool
     {
         return $this->repository->delete($organization);
-    }
-
-    public function deleteById(string $id): void
-    {
-        $organization = $this->getOrganizationById($id);
-        if (!$organization) {
-            throw new RuntimeException("Organization not found");
-        }
-
-        $this->delete($organization);
     }
 
     private function resolveRoleId(string $roleCode): string

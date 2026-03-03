@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace Modules\Geo\Services;
 
 use App\Shared\DTOs\EntitySearchFiltersDTO;
+use App\Shared\Traits\HasDictionaryCrudOperations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Modules\Geo\DTOs\CityUpsertData;
 use Modules\Geo\Models\City;
 use Modules\Geo\Repositories\CitiesRepositoryInterface;
-use RuntimeException;
 
 final class CitiesService
 {
+    use HasDictionaryCrudOperations;
+
     public function __construct(private readonly CitiesRepositoryInterface $repository) {}
+
+    protected function entityNotFoundMessage(): string
+    {
+        return "City not found";
+    }
+
+    protected function deleteEntity(object $entity): void
+    {
+        assert($entity instanceof City);
+        $this->repository->delete($entity);
+    }
 
     public function list(array $filters = []): Collection
     {
@@ -33,7 +47,9 @@ final class CitiesService
 
     public function create(array $data): City
     {
-        return $this->repository->create($data);
+        $dto = CityUpsertData::fromArray($data);
+
+        return $this->repository->create($dto->toArray());
     }
 
     public function findById(string $id): ?City
@@ -43,21 +59,11 @@ final class CitiesService
 
     public function update(string $id, array $data): City
     {
-        $city = $this->repository->findById($id);
-        if (!$city) {
-            throw new RuntimeException("City not found");
-        }
+        $entity = $this->findByIdOrFail($id);
+        assert($entity instanceof City);
 
-        return $this->repository->update($city, $data);
-    }
+        $dto = CityUpsertData::fromArray($data);
 
-    public function deleteById(string $id): void
-    {
-        $city = $this->repository->findById($id);
-        if (!$city) {
-            throw new RuntimeException("City not found");
-        }
-
-        $this->repository->delete($city);
+        return $this->repository->update($entity, $dto->toArray());
     }
 }

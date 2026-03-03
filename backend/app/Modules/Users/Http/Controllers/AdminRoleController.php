@@ -50,4 +50,9 @@ final class AdminRoleController extends AdminCrudController
     {
         return 'updateRole';
     }
+
+    protected function deleteMethod(): string
+    {
+        return 'delete';
+    }
 }

@@ -34,11 +34,6 @@ final class AdminMetroLineController extends AdminCrudController
         return MetroLineResponseFactory::class;
     }
 
-    protected function deleteMethod(): string
-    {
-        return "deleteById";
-    }
-
     protected function indexFilters(): array
     {
         $cityId = trim((string) request()->query("city_id", ""));

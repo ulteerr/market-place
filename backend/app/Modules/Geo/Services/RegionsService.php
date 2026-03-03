@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace Modules\Geo\Services;
 
 use App\Shared\DTOs\EntitySearchFiltersDTO;
+use App\Shared\Traits\HasDictionaryCrudOperations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Modules\Geo\DTOs\RegionUpsertData;
 use Modules\Geo\Models\Region;
 use Modules\Geo\Repositories\RegionsRepositoryInterface;
-use RuntimeException;
 
 final class RegionsService
 {
+    use HasDictionaryCrudOperations;
+
     public function __construct(private readonly RegionsRepositoryInterface $repository) {}
+
+    protected function entityNotFoundMessage(): string
+    {
+        return "Region not found";
+    }
+
+    protected function deleteEntity(object $entity): void
+    {
+        assert($entity instanceof Region);
+        $this->repository->delete($entity);
+    }
 
     public function list(array $filters = []): Collection
     {
@@ -33,7 +47,9 @@ final class RegionsService
 
     public function create(array $data): Region
     {
-        return $this->repository->create($data);
+        $dto = RegionUpsertData::fromArray($data);
+
+        return $this->repository->create($dto->toArray());
     }
 
     public function findById(string $id): ?Region
@@ -43,21 +59,11 @@ final class RegionsService
 
     public function update(string $id, array $data): Region
     {
-        $region = $this->repository->findById($id);
-        if (!$region) {
-            throw new RuntimeException("Region not found");
-        }
+        $entity = $this->findByIdOrFail($id);
+        assert($entity instanceof Region);
 
-        return $this->repository->update($region, $data);
-    }
+        $dto = RegionUpsertData::fromArray($data);
 
-    public function deleteById(string $id): void
-    {
-        $region = $this->repository->findById($id);
-        if (!$region) {
-            throw new RuntimeException("Region not found");
-        }
-
-        $this->repository->delete($region);
+        return $this->repository->update($entity, $dto->toArray());
     }
 }

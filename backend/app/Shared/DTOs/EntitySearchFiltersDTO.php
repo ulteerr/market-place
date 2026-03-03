@@ -16,6 +16,8 @@ final readonly class EntitySearchFiltersDTO
         public ?string $regionId,
         public ?string $cityId,
         public ?string $metroLineId,
+        public ?string $sortBy,
+        public ?string $sortDir,
         public array $extra = [],
     ) {}
 
@@ -31,6 +33,8 @@ final readonly class EntitySearchFiltersDTO
             "region_id",
             "city_id",
             "metro_line_id",
+            "sort_by",
+            "sort_dir",
         ];
 
         $extra = [];
@@ -40,6 +44,11 @@ final readonly class EntitySearchFiltersDTO
             }
         }
 
+        $sortDirRaw = self::toNullableString($filters["sort_dir"] ?? null);
+        $sortDir = $sortDirRaw !== null && in_array($sortDirRaw, ["asc", "desc"], true)
+            ? $sortDirRaw
+            : null;
+
         return new self(
             search: self::toNullableString($filters["search"] ?? null),
             entitySearch: self::toNullableString($filters["entity_search"] ?? null),
@@ -47,6 +56,8 @@ final readonly class EntitySearchFiltersDTO
             regionId: self::toNullableString($filters["region_id"] ?? null),
             cityId: self::toNullableString($filters["city_id"] ?? null),
             metroLineId: self::toNullableString($filters["metro_line_id"] ?? null),
+            sortBy: self::toNullableString($filters["sort_by"] ?? null),
+            sortDir: $sortDir,
             extra: $extra,
         );
     }
@@ -64,6 +75,8 @@ final readonly class EntitySearchFiltersDTO
             "region_id" => $this->regionId ?? "",
             "city_id" => $this->cityId ?? "",
             "metro_line_id" => $this->metroLineId ?? "",
+            "sort_by" => $this->sortBy ?? "",
+            "sort_dir" => $this->sortDir ?? "asc",
         ];
     }
 

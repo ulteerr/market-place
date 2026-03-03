@@ -8,6 +8,7 @@ use App\Shared\Services\RelatedStateLogService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Auth\Access\AuthorizationException;
 use Modules\Users\Contracts\UsersServiceInterface;
+use Modules\Users\DTOs\UserUpsertData;
 use Modules\Users\Enums\RoleCode;
 use Modules\Users\Models\AccessPermission;
 use Modules\Users\Models\User;
@@ -31,11 +32,13 @@ final class UsersService implements UsersServiceInterface
 
     public function createUser(array $data): User
     {
-        return DB::transaction(function () use ($data) {
-            $user = $this->repository->create($data);
-            $this->syncGlobalRoles($user, $data["roles"] ?? []);
-            if (array_key_exists("permission_overrides", $data)) {
-                $this->syncUserPermissionOverrides($user, $data["permission_overrides"] ?? []);
+        $dto = UserUpsertData::fromArray($data);
+
+        return DB::transaction(function () use ($dto, $data) {
+            $user = $this->repository->create($dto->userAttributes);
+            $this->syncGlobalRoles($user, $dto->roles);
+            if ($dto->hasPermissionOverrides) {
+                $this->syncUserPermissionOverridesFromDto($user, $dto);
             }
             $this->attachAvatarIfProvided($user, $data);
             $relatedSnapshot = $this->buildRelatedSnapshot($user);
@@ -56,18 +59,20 @@ final class UsersService implements UsersServiceInterface
 
     public function updateUser(User $user, array $data): User
     {
-        return DB::transaction(function () use ($user, $data) {
+        $dto = UserUpsertData::fromArray($data);
+
+        return DB::transaction(function () use ($user, $dto, $data) {
             $beforeRelatedSnapshot = $this->buildRelatedSnapshot($user);
             $beforeRelatedMedia = $this->buildRelatedMediaSnapshot($user);
 
-            $user = $this->repository->update($user, $data);
-            if (array_key_exists("roles", $data)) {
-                $this->syncGlobalRoles($user, $data["roles"] ?? []);
+            $user = $this->repository->update($user, $dto->userAttributes);
+            if ($dto->hasRoles) {
+                $this->syncGlobalRoles($user, $dto->roles);
             }
-            if (array_key_exists("permission_overrides", $data)) {
-                $this->syncUserPermissionOverrides($user, $data["permission_overrides"] ?? []);
+            if ($dto->hasPermissionOverrides) {
+                $this->syncUserPermissionOverridesFromDto($user, $dto);
             }
-            $this->removeAvatarIfRequested($user, $data);
+            $this->removeAvatarIfRequested($user, $dto->avatarDelete);
             $this->attachAvatarIfProvided($user, $data);
             $afterRelatedSnapshot = $this->buildRelatedSnapshot($user);
             $afterRelatedMedia = $this->buildRelatedMediaSnapshot($user);
@@ -214,6 +219,14 @@ final class UsersService implements UsersServiceInterface
         }
     }
 
+    private function syncUserPermissionOverridesFromDto(User $user, UserUpsertData $dto): void
+    {
+        $this->syncUserPermissionOverrides($user, [
+            "allow" => $dto->permissionOverridesAllow,
+            "deny" => $dto->permissionOverridesDeny,
+        ]);
+    }
+
     private function normalizePermissionCodes(mixed $codes): array
     {
         if (!is_array($codes)) {
@@ -263,9 +276,9 @@ final class UsersService implements UsersServiceInterface
         $this->filesService->attachUploadedFile($avatar, $user, "avatar", "public", false);
     }
 
-    private function removeAvatarIfRequested(User $user, array $data): void
+    private function removeAvatarIfRequested(User $user, bool $avatarDelete): void
     {
-        if (!($data["avatar_delete"] ?? false)) {
+        if (!$avatarDelete) {
             return;
         }
 

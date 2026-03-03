@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Children\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Shared\Http\Requests\CrudRequest;
 
-final class CreateAdminChildRequest extends FormRequest
+final class CreateAdminChildRequest extends CrudRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    public function rules(): array
+    protected function ruleset(): array
     {
         return [
             "user_id" => ["required", "uuid", "exists:users,id"],

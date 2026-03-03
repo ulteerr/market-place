@@ -33,9 +33,4 @@ final class AdminCountryController extends AdminCrudController
     {
         return CountryResponseFactory::class;
     }
-
-    protected function deleteMethod(): string
-    {
-        return "deleteById";
-    }
 }

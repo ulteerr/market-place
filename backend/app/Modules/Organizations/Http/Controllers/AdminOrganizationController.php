@@ -48,9 +48,4 @@ final class AdminOrganizationController extends AdminCrudController
     {
         return "update";
     }
-
-    protected function deleteMethod(): string
-    {
-        return "deleteById";
-    }
 }
