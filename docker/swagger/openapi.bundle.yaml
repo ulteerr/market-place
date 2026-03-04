@@ -538,10 +538,6 @@ paths:
                                   code:
                                     type: string
                                     example: moderator
-                            can_access_admin_panel:
-                              type: boolean
-                              nullable: true
-                              example: true
                             avatar:
                               allOf:
                                 - $ref: '#/paths/~1api~1admin~1users/post/responses/201/content/application~1json/schema/properties/data/properties/avatar/allOf/0'
@@ -705,9 +701,6 @@ paths:
                       permission_overrides:
                         $ref: '#/paths/~1api~1admin~1users/post/requestBody/content/application~1json/schema/properties/permission_overrides'
                       is_admin:
-                        type: boolean
-                        example: true
-                      can_access_admin_panel:
                         type: boolean
                         example: true
                       settings:

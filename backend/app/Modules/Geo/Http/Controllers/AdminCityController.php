@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminCityRequest;
 use Modules\Geo\Http\Requests\UpdateAdminCityRequest;
 use Modules\Geo\Http\Responses\CityResponseFactory;
+use Modules\Geo\Models\City;
 use Modules\Geo\Services\CitiesService;
 
 final class AdminCityController extends AdminCrudController
@@ -48,5 +49,10 @@ final class AdminCityController extends AdminCrudController
         }
 
         return $filters;
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return City::class;
     }
 }

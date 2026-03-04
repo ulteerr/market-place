@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminCountryRequest;
 use Modules\Geo\Http\Requests\UpdateAdminCountryRequest;
 use Modules\Geo\Http\Responses\CountryResponseFactory;
+use Modules\Geo\Models\Country;
 use Modules\Geo\Services\CountriesService;
 
 final class AdminCountryController extends AdminCrudController
@@ -32,5 +33,10 @@ final class AdminCountryController extends AdminCrudController
     protected function responseFactory(): ?string
     {
         return CountryResponseFactory::class;
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return Country::class;
     }
 }

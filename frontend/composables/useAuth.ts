@@ -35,7 +35,6 @@ interface AuthUser {
   roles?: string[];
   permissions?: string[];
   is_admin?: boolean;
-  can_access_admin_panel?: boolean;
 }
 
 interface LoginResponse {
@@ -66,7 +65,11 @@ export const useAuth = () => {
   });
 
   const isAuthenticated = computed(() => Boolean(token.value));
-  const canAccessAdminPanel = computed(() => Boolean(user.value?.can_access_admin_panel));
+  const canAccessAdminPanel = computed(
+    () =>
+      Array.isArray(user.value?.permissions) &&
+      user.value.permissions.includes('admin.panel.access')
+  );
 
   const normalizeUserAssets = (nextUser: AuthUser | null): AuthUser | null => {
     if (!nextUser) {

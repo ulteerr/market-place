@@ -12,7 +12,7 @@ const existingUser = {
   middle_name: 'Иванович',
   phone: '+79990001122',
   roles: ['admin'],
-  can_access_admin_panel: true,
+  permissions: ['admin.panel.access'],
   avatar: {
     id: 'file-u-1',
     url: 'https://example.com/users/u-1-avatar.png',

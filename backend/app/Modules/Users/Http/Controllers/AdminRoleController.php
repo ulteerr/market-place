@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Users\Http\Controllers;
 
 use App\Shared\Http\Controllers\AdminCrudController;
+use Modules\Users\Models\Role;
 use Modules\Users\Services\RolesService;
 use Modules\Users\Http\Requests\CreateRoleRequest;
 use Modules\Users\Http\Requests\UpdateRoleRequest;
@@ -12,9 +13,7 @@ use Modules\Users\Http\Responses\RoleResponseFactory;
 
 final class AdminRoleController extends AdminCrudController
 {
-    public function __construct(
-        private readonly RolesService $rolesService
-    ) {}
+    public function __construct(private readonly RolesService $rolesService) {}
 
     protected function service(): object
     {
@@ -38,21 +37,26 @@ final class AdminRoleController extends AdminCrudController
 
     protected function createMethod(): string
     {
-        return 'createRole';
+        return "createRole";
     }
 
     protected function findMethod(): string
     {
-        return 'getRoleById';
+        return "getRoleById";
     }
 
     protected function updateMethod(): string
     {
-        return 'updateRole';
+        return "updateRole";
     }
 
     protected function deleteMethod(): string
     {
-        return 'delete';
+        return "delete";
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return Role::class;
     }
 }

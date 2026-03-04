@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Users\Http\Controllers;
 
 use App\Shared\Http\Controllers\AdminCrudController;
+use Modules\Users\Models\User;
 use Modules\Users\Services\UsersService;
 use Modules\Users\Http\Responses\UserResponseFactory;
 use Modules\Users\Http\Requests\CreateAdminUserRequest;
@@ -52,6 +53,11 @@ final class AdminUserController extends AdminCrudController
     protected function deleteMethod(): string
     {
         return "deleteUser";
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return User::class;
     }
 
     protected function updateArguments(string $id, array $data): array

@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Shared\Http\Controllers;
 
 use App\Shared\DTOs\EntitySearchFiltersDTO;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use App\Shared\Http\Responses\StatusResponseFactory;
 
 abstract class AdminCrudController extends Controller
 {
+    use AuthorizesRequests;
+
     abstract protected function service(): object;
 
     abstract protected function createRequestClass(): string;
@@ -82,8 +85,62 @@ abstract class AdminCrudController extends Controller
         $this->service()->{$method}($id);
     }
 
+    protected function policyModelClass(): ?string
+    {
+        return null;
+    }
+
+    protected function authorizeViewAny(): void
+    {
+        $modelClass = $this->policyModelClass();
+        if ($modelClass === null) {
+            return;
+        }
+
+        $this->authorize("viewAny", $modelClass);
+    }
+
+    protected function authorizeCreate(): void
+    {
+        $modelClass = $this->policyModelClass();
+        if ($modelClass === null) {
+            return;
+        }
+
+        $this->authorize("create", $modelClass);
+    }
+
+    protected function authorizeView(mixed $item): void
+    {
+        if ($this->policyModelClass() === null) {
+            return;
+        }
+
+        $this->authorize("view", $item);
+    }
+
+    protected function authorizeUpdate(mixed $item): void
+    {
+        if ($this->policyModelClass() === null) {
+            return;
+        }
+
+        $this->authorize("update", $item);
+    }
+
+    protected function authorizeDelete(mixed $item): void
+    {
+        if ($this->policyModelClass() === null) {
+            return;
+        }
+
+        $this->authorize("delete", $item);
+    }
+
     public function index(): JsonResponse
     {
+        $this->authorizeViewAny();
+
         $request = request();
 
         $perPage = max(1, min(100, (int) $request->integer("per_page", 20)));
@@ -109,11 +166,7 @@ abstract class AdminCrudController extends Controller
         $filtersForService = EntitySearchFiltersDTO::fromArray($filters)->toArray();
 
         $method = $this->paginateMethod();
-        $items = $this->service()->{$method}(
-            $perPage,
-            [],
-            $filtersForService,
-        );
+        $items = $this->service()->{$method}($perPage, [], $filtersForService);
 
         if (($factory = $this->responseFactory()) && method_exists($factory, "paginated")) {
             return $factory::paginated($items);
@@ -124,6 +177,8 @@ abstract class AdminCrudController extends Controller
 
     public function store(): JsonResponse
     {
+        $this->authorizeCreate();
+
         $requestClass = $this->createRequestClass();
         $request = app($requestClass);
 
@@ -147,6 +202,8 @@ abstract class AdminCrudController extends Controller
             abort(404, "Not found");
         }
 
+        $this->authorizeView($item);
+
         if ($factory = $this->responseFactory()) {
             return $factory::success($item);
         }
@@ -156,6 +213,12 @@ abstract class AdminCrudController extends Controller
 
     public function update(string $id): JsonResponse
     {
+        $existing = $this->findItem($id);
+        if (!$existing) {
+            abort(404, "Not found");
+        }
+        $this->authorizeUpdate($existing);
+
         $requestClass = $this->updateRequestClass();
         $request = app($requestClass);
 
@@ -173,6 +236,12 @@ abstract class AdminCrudController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
+        $existing = $this->findItem($id);
+        if (!$existing) {
+            abort(404, "Not found");
+        }
+        $this->authorizeDelete($existing);
+
         $this->deleteItem($id);
 
         return StatusResponseFactory::ok("Deleted successfully");

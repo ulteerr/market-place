@@ -54,7 +54,7 @@ Route::middleware(["auth:sanctum"])->group(function (): void {
     ]);
 });
 
-Route::middleware(["auth:sanctum", "can_access_admin_panel"])
+Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
     ->prefix("api/admin")
     ->group(function (): void {
         Route::get("/organizations", [AdminOrganizationController::class, "index"])->middleware(

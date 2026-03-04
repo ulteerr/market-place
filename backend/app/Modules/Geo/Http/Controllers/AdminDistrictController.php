@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminDistrictRequest;
 use Modules\Geo\Http\Requests\UpdateAdminDistrictRequest;
 use Modules\Geo\Http\Responses\DistrictResponseFactory;
+use Modules\Geo\Models\District;
 use Modules\Geo\Services\DistrictsService;
 
 final class AdminDistrictController extends AdminCrudController
@@ -39,5 +40,10 @@ final class AdminDistrictController extends AdminCrudController
         $cityId = trim((string) request()->query("city_id", ""));
 
         return $cityId === "" ? [] : ["city_id" => $cityId];
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return District::class;
     }
 }

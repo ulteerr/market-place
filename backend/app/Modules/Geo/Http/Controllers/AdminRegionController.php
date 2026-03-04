@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Geo\Http\Requests\CreateAdminRegionRequest;
 use Modules\Geo\Http\Requests\UpdateAdminRegionRequest;
 use Modules\Geo\Http\Responses\RegionResponseFactory;
+use Modules\Geo\Models\Region;
 use Modules\Geo\Services\RegionsService;
 
 final class AdminRegionController extends AdminCrudController
@@ -39,5 +40,10 @@ final class AdminRegionController extends AdminCrudController
         $countryId = trim((string) request()->query("country_id", ""));
 
         return $countryId === "" ? [] : ["country_id" => $countryId];
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return Region::class;
     }
 }

@@ -402,13 +402,16 @@ make redoc               # Restart ReDoc CE
 - Для `admin.users` и `admin.roles` используются отдельные CRUD-коды:
 - `admin.users.read|create|update|delete`
 - `admin.roles.read|create|update|delete`
+- Для geo-справочников: `admin.geo.read|create|update|delete`
+- Для metro-справочников: `admin.metro.read|create|update|delete`
+- Обычный пользователь управляет только своими детьми через `/children` (full CRUD на собственные записи)
 - Для action logs: `admin.action-log.read`
 - Для changelog: `admin.changelog.read`
 - Для rollback changelog: `admin.changelog.rollback` + проверка права на целевую модель:
 - `User` rollback требует `admin.users.update`
 - `Role` rollback требует `admin.roles.update`
 - Для моделей подключены Policy:
-- `UserPolicy`, `RolePolicy`, `ActionLogPolicy`, `ChangeLogPolicy`
+- `UserPolicy`, `RolePolicy`, `ActionLogPolicy`, `ChangeLogPolicy`, `OrganizationPolicy`, `ChildPolicy`, `CountryPolicy`, `RegionPolicy`, `CityPolicy`, `DistrictPolicy`, `MetroLinePolicy`, `MetroStationPolicy`
 - Регистрация policy выполнена в `Modules\\Auth\\AuthServiceProvider` через `Gate::policy(...)`
 - Источник прав: таблицы `access_permissions` и `role_access_permission` (role-based).
 - Дополнительно поддерживаются персональные оверрайды прав пользователя в `user_access_permissions`:
@@ -424,7 +427,7 @@ Route::middleware(['auth:sanctum', 'can_permission:admin.users.read'])->group(fu
 });
 ```
 
-- Старый `can_access_admin_panel` оставлен для обратной совместимости.
+- Доступ в админ-маршруты проверяется через `can_permission:admin.panel.access`.
 
 ---
 

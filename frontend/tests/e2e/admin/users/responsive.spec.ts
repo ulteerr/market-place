@@ -13,7 +13,7 @@ const users = [
     middle_name: 'Иванович',
     phone: '+79990001122',
     roles: ['admin'],
-    can_access_admin_panel: true,
+    permissions: ['admin.panel.access'],
   },
   {
     id: 'u-2',
@@ -23,7 +23,7 @@ const users = [
     middle_name: null,
     phone: null,
     roles: ['participant'],
-    can_access_admin_panel: false,
+    permissions: [],
   },
 ];
 

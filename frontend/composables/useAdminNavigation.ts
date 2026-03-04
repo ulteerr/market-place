@@ -32,12 +32,12 @@ const navigationPermissions: Record<string, string> = {
   organizations: 'org.company.profile.read',
   children: 'org.children.read',
   'action-logs': 'admin.action-log.read',
-  'metro-lines': 'admin.panel.access',
-  'metro-stations': 'admin.panel.access',
-  'geo-countries': 'admin.panel.access',
-  'geo-regions': 'admin.panel.access',
-  'geo-cities': 'admin.panel.access',
-  'geo-districts': 'admin.panel.access',
+  'metro-lines': 'admin.metro.read',
+  'metro-stations': 'admin.metro.read',
+  'geo-countries': 'admin.geo.read',
+  'geo-regions': 'admin.geo.read',
+  'geo-cities': 'admin.geo.read',
+  'geo-districts': 'admin.geo.read',
 };
 
 export const useAdminNavigation = ({

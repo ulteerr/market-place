@@ -15,18 +15,42 @@ Route::middleware(["auth:sanctum"])
         Route::get("/metro-stations", [MetroStationsController::class, "index"]);
     });
 
-Route::middleware(["auth:sanctum", "can_access_admin_panel"])
+Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
     ->prefix("api/admin")
     ->group(function (): void {
-        Route::get("/metro-lines", [AdminMetroLineController::class, "index"]);
-        Route::post("/metro-lines", [AdminMetroLineController::class, "store"]);
-        Route::get("/metro-lines/{id}", [AdminMetroLineController::class, "show"]);
-        Route::patch("/metro-lines/{id}", [AdminMetroLineController::class, "update"]);
-        Route::delete("/metro-lines/{id}", [AdminMetroLineController::class, "destroy"]);
+        Route::get("/metro-lines", [AdminMetroLineController::class, "index"])->middleware(
+            "can_permission:admin.metro.read",
+        );
+        Route::post("/metro-lines", [AdminMetroLineController::class, "store"])->middleware(
+            "can_permission:admin.metro.create",
+        );
+        Route::get("/metro-lines/{id}", [AdminMetroLineController::class, "show"])->middleware(
+            "can_permission:admin.metro.read",
+        );
+        Route::patch("/metro-lines/{id}", [AdminMetroLineController::class, "update"])->middleware(
+            "can_permission:admin.metro.update",
+        );
+        Route::delete("/metro-lines/{id}", [
+            AdminMetroLineController::class,
+            "destroy",
+        ])->middleware("can_permission:admin.metro.delete");
 
-        Route::get("/metro-stations", [AdminMetroStationController::class, "index"]);
-        Route::post("/metro-stations", [AdminMetroStationController::class, "store"]);
-        Route::get("/metro-stations/{id}", [AdminMetroStationController::class, "show"]);
-        Route::patch("/metro-stations/{id}", [AdminMetroStationController::class, "update"]);
-        Route::delete("/metro-stations/{id}", [AdminMetroStationController::class, "destroy"]);
+        Route::get("/metro-stations", [AdminMetroStationController::class, "index"])->middleware(
+            "can_permission:admin.metro.read",
+        );
+        Route::post("/metro-stations", [AdminMetroStationController::class, "store"])->middleware(
+            "can_permission:admin.metro.create",
+        );
+        Route::get("/metro-stations/{id}", [
+            AdminMetroStationController::class,
+            "show",
+        ])->middleware("can_permission:admin.metro.read");
+        Route::patch("/metro-stations/{id}", [
+            AdminMetroStationController::class,
+            "update",
+        ])->middleware("can_permission:admin.metro.update");
+        Route::delete("/metro-stations/{id}", [
+            AdminMetroStationController::class,
+            "destroy",
+        ])->middleware("can_permission:admin.metro.delete");
     });

@@ -17,7 +17,6 @@ export interface AdminAuthUser {
     mime_type?: string | null;
     size?: number;
   } | null;
-  can_access_admin_panel: boolean;
   roles?: string[];
   permissions?: string[];
   settings?: {
@@ -39,7 +38,6 @@ export const defaultAdminUser: AdminAuthUser = {
   first_name: 'Админ',
   last_name: 'Системный',
   middle_name: 'Тестовый',
-  can_access_admin_panel: true,
   roles: ['participant', 'admin'],
   permissions: [
     'admin.panel.access',
@@ -54,6 +52,14 @@ export const defaultAdminUser: AdminAuthUser = {
     'admin.changelog.read',
     'admin.changelog.rollback',
     'admin.action-log.read',
+    'admin.geo.read',
+    'admin.geo.create',
+    'admin.geo.update',
+    'admin.geo.delete',
+    'admin.metro.read',
+    'admin.metro.create',
+    'admin.metro.update',
+    'admin.metro.delete',
   ],
 };
 

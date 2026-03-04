@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Metro\Http\Requests\CreateAdminMetroLineRequest;
 use Modules\Metro\Http\Requests\UpdateAdminMetroLineRequest;
 use Modules\Metro\Http\Responses\MetroLineResponseFactory;
+use Modules\Metro\Models\MetroLine;
 use Modules\Metro\Services\MetroLinesService;
 
 final class AdminMetroLineController extends AdminCrudController
@@ -39,5 +40,10 @@ final class AdminMetroLineController extends AdminCrudController
         $cityId = trim((string) request()->query("city_id", ""));
 
         return $cityId === "" ? [] : ["city_id" => $cityId];
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return MetroLine::class;
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Modules\ChangeLog\Http\Controllers\ChangeLogController;
 
-Route::middleware(["auth:sanctum", "can_access_admin_panel"])
+Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
     ->prefix("api/admin/changelog")
     ->group(function (): void {
         Route::get("/", [ChangeLogController::class, "index"])->middleware(

@@ -59,10 +59,6 @@ final class UserResource extends JsonResource
                 ];
             }),
             "is_admin" => $this->whenLoaded("roles", fn() => $this->isAdmin()),
-            "can_access_admin_panel" => $this->whenLoaded(
-                "roles",
-                fn() => $this->canAccessAdminPanel(),
-            ),
         ];
     }
 }

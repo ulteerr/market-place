@@ -44,10 +44,6 @@ components:
         is_admin:
           type: boolean
           example: true
-
-        can_access_admin_panel:
-          type: boolean
-          example: true
         settings:
           $ref: '#/components/schemas/UserSettings'
         avatar:
@@ -332,10 +328,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminUserRoleListItem'
-        can_access_admin_panel:
-          type: boolean
-          nullable: true
-          example: true
         avatar:
           allOf:
             - $ref: '#/components/schemas/UserFile'

@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Organizations\Http\Requests\CreateAdminOrganizationRequest;
 use Modules\Organizations\Http\Requests\UpdateAdminOrganizationRequest;
 use Modules\Organizations\Http\Responses\OrganizationResponseFactory;
+use Modules\Organizations\Models\Organization;
 use Modules\Organizations\Services\OrganizationsService;
 
 final class AdminOrganizationController extends AdminCrudController
@@ -47,5 +48,10 @@ final class AdminOrganizationController extends AdminCrudController
     protected function updateMethod(): string
     {
         return "update";
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return Organization::class;
     }
 }

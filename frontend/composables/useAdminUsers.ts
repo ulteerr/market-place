@@ -22,11 +22,11 @@ export interface AdminUser {
   gender?: 'male' | 'female' | null;
   phone?: string | null;
   roles?: Array<string | { code?: string | null }>;
+  permissions?: string[];
   permission_overrides?: {
     allow: string[];
     deny: string[];
   };
-  can_access_admin_panel?: boolean;
 }
 
 const ROLE_LEVELS: Record<string, number> = {
@@ -102,8 +102,8 @@ export const getAdminUserFullName = (user: AdminUser): string => {
 };
 
 export const resolveAdminUserPanelAccess = (user: AdminUser): boolean | null => {
-  if (typeof user.can_access_admin_panel === 'boolean') {
-    return user.can_access_admin_panel;
+  if (Array.isArray(user.permissions)) {
+    return user.permissions.includes('admin.panel.access');
   }
 
   if (Array.isArray(user.roles)) {

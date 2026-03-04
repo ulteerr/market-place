@@ -63,7 +63,7 @@ const { t } = useI18n();
 definePageMeta({
   layout: 'admin',
   middleware: 'admin-permission',
-  permission: 'admin.panel.access',
+  permission: 'admin.geo.create',
 });
 
 const api = useAdminGeoCities();

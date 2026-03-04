@@ -17,7 +17,7 @@ const users = [
       original_name: 'u-1-avatar.png',
       collection: 'avatar',
     },
-    can_access_admin_panel: true,
+    permissions: ['admin.panel.access'],
   },
   {
     id: 'u-2',
@@ -25,7 +25,7 @@ const users = [
     first_name: 'Анна',
     last_name: 'Петрова',
     middle_name: null,
-    can_access_admin_panel: false,
+    permissions: [],
   },
 ];
 
@@ -76,12 +76,16 @@ const setupUsersPage = async (page: Page, contentMode: AdminCrudContentMode = 't
     });
 
     const byAccess = filtered.filter((item) => {
+      const hasAdminAccess = Array.isArray(item.permissions)
+        ? item.permissions.includes('admin.panel.access')
+        : false;
+
       if (accessGroup === 'admin') {
-        return item.can_access_admin_panel;
+        return hasAdminAccess;
       }
 
       if (accessGroup === 'basic') {
-        return !item.can_access_admin_panel;
+        return !hasAdminAccess;
       }
 
       return true;
@@ -255,7 +259,7 @@ test.describe('Admin users page', () => {
       first_name: `Имя${index + 1}`,
       last_name: `Фамилия${index + 1}`,
       middle_name: null,
-      can_access_admin_panel: index % 2 === 0,
+      permissions: index % 2 === 0 ? ['admin.panel.access'] : [],
     }));
 
     await page.route('**/api/admin/users**', async (route) => {
@@ -311,7 +315,7 @@ test.describe('Admin users page', () => {
       first_name: `Имя${index + 1}`,
       last_name: `Фамилия${index + 1}`,
       middle_name: null,
-      can_access_admin_panel: true,
+      permissions: ['admin.panel.access'],
     }));
 
     await page.route('**/api/admin/users**', async (route) => {

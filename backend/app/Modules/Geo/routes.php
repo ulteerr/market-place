@@ -21,30 +21,70 @@ Route::middleware(["auth:sanctum"])
         Route::get("/districts", [DistrictsController::class, "index"]);
     });
 
-Route::middleware(["auth:sanctum", "can_access_admin_panel"])
+Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
     ->prefix("api/admin/geo")
     ->group(function (): void {
-        Route::get("/countries", [AdminCountryController::class, "index"]);
-        Route::post("/countries", [AdminCountryController::class, "store"]);
-        Route::get("/countries/{id}", [AdminCountryController::class, "show"]);
-        Route::patch("/countries/{id}", [AdminCountryController::class, "update"]);
-        Route::delete("/countries/{id}", [AdminCountryController::class, "destroy"]);
+        Route::get("/countries", [AdminCountryController::class, "index"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::post("/countries", [AdminCountryController::class, "store"])->middleware(
+            "can_permission:admin.geo.create",
+        );
+        Route::get("/countries/{id}", [AdminCountryController::class, "show"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::patch("/countries/{id}", [AdminCountryController::class, "update"])->middleware(
+            "can_permission:admin.geo.update",
+        );
+        Route::delete("/countries/{id}", [AdminCountryController::class, "destroy"])->middleware(
+            "can_permission:admin.geo.delete",
+        );
 
-        Route::get("/regions", [AdminRegionController::class, "index"]);
-        Route::post("/regions", [AdminRegionController::class, "store"]);
-        Route::get("/regions/{id}", [AdminRegionController::class, "show"]);
-        Route::patch("/regions/{id}", [AdminRegionController::class, "update"]);
-        Route::delete("/regions/{id}", [AdminRegionController::class, "destroy"]);
+        Route::get("/regions", [AdminRegionController::class, "index"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::post("/regions", [AdminRegionController::class, "store"])->middleware(
+            "can_permission:admin.geo.create",
+        );
+        Route::get("/regions/{id}", [AdminRegionController::class, "show"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::patch("/regions/{id}", [AdminRegionController::class, "update"])->middleware(
+            "can_permission:admin.geo.update",
+        );
+        Route::delete("/regions/{id}", [AdminRegionController::class, "destroy"])->middleware(
+            "can_permission:admin.geo.delete",
+        );
 
-        Route::get("/cities", [AdminCityController::class, "index"]);
-        Route::post("/cities", [AdminCityController::class, "store"]);
-        Route::get("/cities/{id}", [AdminCityController::class, "show"]);
-        Route::patch("/cities/{id}", [AdminCityController::class, "update"]);
-        Route::delete("/cities/{id}", [AdminCityController::class, "destroy"]);
+        Route::get("/cities", [AdminCityController::class, "index"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::post("/cities", [AdminCityController::class, "store"])->middleware(
+            "can_permission:admin.geo.create",
+        );
+        Route::get("/cities/{id}", [AdminCityController::class, "show"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::patch("/cities/{id}", [AdminCityController::class, "update"])->middleware(
+            "can_permission:admin.geo.update",
+        );
+        Route::delete("/cities/{id}", [AdminCityController::class, "destroy"])->middleware(
+            "can_permission:admin.geo.delete",
+        );
 
-        Route::get("/districts", [AdminDistrictController::class, "index"]);
-        Route::post("/districts", [AdminDistrictController::class, "store"]);
-        Route::get("/districts/{id}", [AdminDistrictController::class, "show"]);
-        Route::patch("/districts/{id}", [AdminDistrictController::class, "update"]);
-        Route::delete("/districts/{id}", [AdminDistrictController::class, "destroy"]);
+        Route::get("/districts", [AdminDistrictController::class, "index"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::post("/districts", [AdminDistrictController::class, "store"])->middleware(
+            "can_permission:admin.geo.create",
+        );
+        Route::get("/districts/{id}", [AdminDistrictController::class, "show"])->middleware(
+            "can_permission:admin.geo.read",
+        );
+        Route::patch("/districts/{id}", [AdminDistrictController::class, "update"])->middleware(
+            "can_permission:admin.geo.update",
+        );
+        Route::delete("/districts/{id}", [AdminDistrictController::class, "destroy"])->middleware(
+            "can_permission:admin.geo.delete",
+        );
     });

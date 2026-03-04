@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Children\Http\Controllers;
 
 use App\Shared\Http\Controllers\AdminCrudController;
+use Modules\Children\Models\Child;
 use Modules\Children\Http\Requests\CreateAdminChildRequest;
 use Modules\Children\Http\Requests\UpdateAdminChildRequest;
 use Modules\Children\Http\Responses\ChildResponseFactory;
@@ -47,5 +48,10 @@ final class AdminChildController extends AdminCrudController
     protected function updateMethod(): string
     {
         return "update";
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return Child::class;
     }
 }

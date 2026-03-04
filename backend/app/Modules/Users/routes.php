@@ -16,7 +16,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::delete("/api/me/avatar", [MeController::class, "deleteAvatar"]);
 });
 
-Route::middleware(["auth:sanctum", "can_access_admin_panel"])
+Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
     ->prefix("api/admin")
     ->group(function () {
         Route::get("/users", [AdminUserController::class, "index"])->middleware(

@@ -15,7 +15,7 @@ test.describe('Admin authorization', () => {
     await setAdminAuthCookies(page, {
       id: '1',
       email: 'admin@example.com',
-      can_access_admin_panel: true,
+      permissions: ['admin.panel.access'],
     });
 
     await page.goto('/admin');

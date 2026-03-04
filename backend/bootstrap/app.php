@@ -1,6 +1,5 @@
 <?php
 
-use App\Shared\Http\Middleware\CanAccessAdminPanel;
 use App\Shared\Http\Middleware\CanPermission;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -18,7 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            "can_access_admin_panel" => CanAccessAdminPanel::class,
             "can_permission" => CanPermission::class,
         ]);
     })

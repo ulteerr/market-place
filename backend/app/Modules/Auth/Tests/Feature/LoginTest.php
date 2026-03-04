@@ -10,7 +10,6 @@ use Modules\Users\Database\Seeders\RolesSeeder;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 
-
 class LoginTest extends TestCase
 {
     use RefreshDatabase;
@@ -19,58 +18,52 @@ class LoginTest extends TestCase
     public function user_can_login_with_valid_credentials()
     {
         $this->seed(RolesSeeder::class);
-        
+
         User::factory()->create([
-            'email' => 'test@example.com',
-            'password' => 'password123',
+            "email" => "test@example.com",
+            "password" => "password123",
         ]);
 
-        $response = $this->postJson('/api/auth/login', [
-            'email' => 'test@example.com',
-            'password' => 'password123',
+        $response = $this->postJson("/api/auth/login", [
+            "email" => "test@example.com",
+            "password" => "password123",
         ]);
 
-        $response
-            ->assertStatus(200)
-            ->assertJson(
-                fn($json) =>
-                $json
-                    ->where('status', 'ok')
-                    ->has(
-                        'user',
-                        fn($json) =>
-                        $json
-                            ->has('id')
-                            ->has('email')
-                            ->has('first_name')
-                            ->has('last_name')
-                            ->has('middle_name')
-                            ->has('settings')
-                            ->has('roles')
-                            ->has('is_admin')
-                            ->has('can_access_admin_panel')
-                            ->etc()
-                    )
+        $response->assertStatus(200)->assertJson(
+            fn($json) => $json
+                ->where("status", "ok")
+                ->has(
+                    "user",
+                    fn($json) => $json
+                        ->has("id")
+                        ->has("email")
+                        ->has("first_name")
+                        ->has("last_name")
+                        ->has("middle_name")
+                        ->has("settings")
+                        ->has("roles")
+                        ->has("permissions")
+                        ->has("is_admin")
+                        ->etc(),
+                )
 
-                    ->has('token')
-            );
+                ->has("token"),
+        );
     }
 
     #[Test]
     public function login_fails_with_wrong_password()
     {
         User::factory()->create([
-            'email' => 'test@example.com',
-            'password' => 'password123',
+            "email" => "test@example.com",
+            "password" => "password123",
         ]);
 
-        $response = $this->postJson('/api/auth/login', [
-            'email' => 'test@example.com',
-            'password' => 'wrong-password',
+        $response = $this->postJson("/api/auth/login", [
+            "email" => "test@example.com",
+            "password" => "wrong-password",
         ]);
 
-        $response
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(422)->assertJsonValidationErrors(["email"]);
     }
 }

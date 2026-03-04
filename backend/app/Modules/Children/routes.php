@@ -15,7 +15,7 @@ Route::prefix("children")
         Route::delete("{id}", [ChildController::class, "destroy"]);
     });
 
-Route::middleware(["auth:sanctum", "can_access_admin_panel"])
+Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
     ->prefix("api/admin")
     ->group(function (): void {
         Route::get("/children", [AdminChildController::class, "index"])->middleware(

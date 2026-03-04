@@ -115,12 +115,6 @@ final class User extends Authenticatable
         return $this->roles->contains("code", RoleCode::ADMIN->value);
     }
 
-    public function canAccessAdminPanel(): bool
-    {
-        return $this->hasPermission("admin.panel.access") ||
-            $this->roles->where("code", "!=", RoleCode::PARTICIPANT->value)->isNotEmpty();
-    }
-
     public function hasPermission(string $code): bool
     {
         $override = $this->resolvePermissionOverride($code);

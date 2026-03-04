@@ -8,6 +8,7 @@ use App\Shared\Http\Controllers\AdminCrudController;
 use Modules\Metro\Http\Requests\CreateAdminMetroStationRequest;
 use Modules\Metro\Http\Requests\UpdateAdminMetroStationRequest;
 use Modules\Metro\Http\Responses\MetroStationResponseFactory;
+use Modules\Metro\Models\MetroStation;
 use Modules\Metro\Services\MetroStationsService;
 
 final class AdminMetroStationController extends AdminCrudController
@@ -48,5 +49,10 @@ final class AdminMetroStationController extends AdminCrudController
         }
 
         return $filters;
+    }
+
+    protected function policyModelClass(): ?string
+    {
+        return MetroStation::class;
     }
 }
