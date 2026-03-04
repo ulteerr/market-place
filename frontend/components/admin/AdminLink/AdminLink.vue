@@ -12,14 +12,4 @@ defineProps<{
 }>();
 </script>
 
-<style scoped lang="scss">
-.admin-link {
-  color: #93c5fd;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.admin-link:hover {
-  color: #bfdbfe;
-}
-</style>
+<style lang="scss" scoped src="./AdminLink.scss"></style>

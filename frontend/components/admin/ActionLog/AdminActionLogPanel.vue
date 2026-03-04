@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import type { AdminActionLogItem } from '~/composables/useAdminActionLogs';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 

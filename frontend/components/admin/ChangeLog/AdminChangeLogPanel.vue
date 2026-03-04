@@ -200,7 +200,7 @@ import type {
   ChangeLogMediaSnapshotItem,
   ChangeLogListMode,
 } from '~/composables/useAdminChangeLog';
-import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';

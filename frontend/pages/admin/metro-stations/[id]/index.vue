@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import AdminMetroLineBadge from '~/components/admin/Metro/AdminMetroLineBadge.vue';
 import type { AdminMetroStation } from '~/composables/useAdminMetroStations';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';

@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import type { AdminChild } from '~/composables/useAdminChildren';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();

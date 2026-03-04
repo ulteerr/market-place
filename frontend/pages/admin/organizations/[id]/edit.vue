@@ -118,7 +118,7 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import AdminOrganizationLocationsForm from '~/components/admin/organizations/AdminOrganizationLocationsForm.vue';
+import AdminOrganizationLocationsForm from '~/components/admin/Organizations/AdminOrganizationLocationsForm.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiTextarea from '~/components/ui/FormControls/UiTextarea/UiTextarea.vue';

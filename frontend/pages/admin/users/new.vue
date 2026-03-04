@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminUserFormFields from '~/components/admin/users/AdminUserFormFields.vue';
+import AdminUserFormFields from '~/components/admin/Users/AdminUserFormFields.vue';
 import type { CreateUserPayload } from '~/composables/useAdminUsers';
 import { getApiErrorPayload, getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();

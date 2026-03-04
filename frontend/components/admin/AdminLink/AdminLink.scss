@@ -1,0 +1,9 @@
+.admin-link {
+  color: #93c5fd;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #bfdbfe;
+  }
+}

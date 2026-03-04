@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import AdminColorDot from '~/components/admin/Metro/AdminColorDot.vue';
 import type { AdminMetroLine } from '~/composables/useAdminMetroLines';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';

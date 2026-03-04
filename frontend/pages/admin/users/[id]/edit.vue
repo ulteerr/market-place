@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
-import AdminUserFormFields from '~/components/admin/users/AdminUserFormFields.vue';
+import AdminUserFormFields from '~/components/admin/Users/AdminUserFormFields.vue';
 import type { UpdateUserPayload } from '~/composables/useAdminUsers';
 import { getApiErrorPayload, getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 const { t } = useI18n();

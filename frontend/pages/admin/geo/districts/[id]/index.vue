@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLink from '~/components/admin/AdminLink.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import type { AdminGeoDistrict } from '~/composables/useAdminGeoDistricts';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
 
