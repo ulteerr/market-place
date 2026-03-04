@@ -1,3 +1,5 @@
+@use './admin-layout-shared' as shared;
+
 .admin-user-menu {
   position: relative;
 }
@@ -32,12 +34,16 @@
   align-items: center;
   gap: 0.7rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
+  border-radius: shared.$admin-panel-radius;
   padding: 0.6rem 0.7rem;
-  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  background: shared.$admin-user-trigger-bg;
   color: var(--text);
   text-align: left;
   cursor: pointer;
+
+  &:focus-visible {
+    @include shared.admin-focus-ring;
+  }
 }
 
 .admin-avatar {
@@ -48,8 +54,8 @@
   height: var(--user-avatar-size-menu);
   border-radius: 999px;
   font-size: 0.72rem;
-  color: #f8fafc;
-  background: #f59e8b;
+  color: shared.$admin-avatar-fallback-text;
+  background: shared.$admin-avatar-fallback-bg;
   flex: 0 0 auto;
   overflow: hidden;
 }
@@ -91,9 +97,9 @@
   width: 100%;
   min-width: 14rem;
   border: 1px solid var(--border);
-  border-radius: 0.9rem;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  border-radius: shared.$admin-panel-radius;
+  background: shared.$admin-user-dropdown-bg;
+  box-shadow: shared.$admin-dropdown-shadow;
   padding: 0.4rem;
   z-index: 50;
 }
@@ -103,7 +109,7 @@
   display: flex;
   align-items: center;
   border: 0;
-  border-radius: 0.65rem;
+  border-radius: shared.$admin-radius-sm;
   padding: 0.55rem 0.65rem;
   background: transparent;
   color: var(--text);
@@ -111,27 +117,26 @@
   text-align: left;
   cursor: pointer;
   transition:
-    background-color 0.18s ease,
-    color 0.18s ease;
+    background-color shared.$admin-transition-duration-fast ease,
+    color shared.$admin-transition-duration-fast ease;
 }
 
 .admin-user-item:hover {
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  background: shared.$admin-user-item-hover-bg;
   color: var(--accent);
 }
 
 .admin-user-item.is-danger {
-  color: #ef4444;
+  color: shared.$admin-danger;
 }
 
 .admin-user-item.is-danger:hover {
-  background: color-mix(in srgb, #ef4444 10%, transparent);
-  color: #f87171;
+  background: shared.$admin-danger-hover-bg;
+  color: shared.$admin-danger-strong;
 }
 
 .admin-user-item:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 1px;
+  @include shared.admin-focus-ring;
 }
 
 .admin-user-divider {

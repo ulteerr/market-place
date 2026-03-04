@@ -31,6 +31,11 @@
 
   .admin-title {
     color: var(--text);
+
+    &:focus-visible {
+      @include shared.admin-focus-ring;
+      border-radius: shared.$admin-radius-sm;
+    }
   }
 
   .admin-nav-link {
@@ -46,6 +51,11 @@
     &.is-active {
       background: shared.$admin-nav-link-active-bg;
       color: var(--text);
+    }
+
+    &:focus-visible {
+      @include shared.admin-focus-ring;
+      border-radius: shared.$admin-panel-radius;
     }
   }
 
@@ -121,10 +131,9 @@
     padding-left: 0.3rem;
     padding-right: 0.3rem;
   }
-}
-
-.admin-icon-button {
-  @include shared.admin-action-button;
+  .admin-icon-button {
+    @include shared.admin-action-button;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -132,7 +141,7 @@
     position: static;
     transform: none;
 
-    nav {
+    .admin-sidebar-nav {
       overflow-x: hidden;
     }
 
@@ -155,7 +164,7 @@
         padding-right: 0.5rem;
 
         &.is-active-block {
-          border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+          border: 1px solid shared.$admin-accent-border-strong;
           background: shared.$admin-collapsed-active-bg;
           box-shadow: 0 0 0 1px shared.$admin-accent-ring-strong;
         }

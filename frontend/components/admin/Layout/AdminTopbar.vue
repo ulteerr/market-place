@@ -4,7 +4,7 @@
       <div class="admin-topbar-left flex items-center gap-3">
         <button
           type="button"
-          class="admin-icon-button rounded-lg p-2 lg:hidden"
+          class="admin-topbar-menu-toggle admin-icon-button rounded-lg p-2 lg:hidden"
           :aria-label="t('admin.layout.closeSidebar')"
           @click="emit('open-sidebar')"
         >
@@ -15,9 +15,9 @@
         </h1>
       </div>
       <div class="admin-topbar-right flex items-center gap-2">
-        <div class="admin-locale-select">
+        <div class="admin-topbar-locale-select admin-locale-select">
           <UiSelect
-            class="admin-locale-ui-select"
+            class="admin-topbar-locale-ui-select admin-locale-ui-select"
             :model-value="locale"
             :options="normalizedLocaleSelectOptions"
             :searchable="false"
@@ -28,7 +28,7 @@
 
         <button
           type="button"
-          class="admin-mini-button theme-switcher-btn rounded-md px-2 py-2"
+          class="admin-topbar-theme-button admin-mini-button theme-switcher-btn rounded-md px-2 py-2"
           :title="
             resolvedIsDark ? t('admin.layout.toggleLightMode') : t('admin.layout.toggleDarkMode')
           "
@@ -39,7 +39,7 @@
         >
           <svg
             v-if="!resolvedIsDark"
-            class="theme-switcher-icon"
+            class="admin-topbar-theme-icon theme-switcher-icon"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -55,7 +55,7 @@
           </svg>
           <svg
             v-else
-            class="theme-switcher-icon"
+            class="admin-topbar-theme-icon theme-switcher-icon"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

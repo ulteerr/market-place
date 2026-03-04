@@ -3,7 +3,7 @@
     class="admin-sidebar"
     :class="{ 'is-open': isSidebarOpen, 'is-collapsed': isCollapsedNavigation }"
   >
-    <div class="flex h-full flex-col">
+    <div class="admin-sidebar-body flex h-full flex-col">
       <div class="admin-sidebar-header flex items-center justify-between px-5 py-4">
         <NuxtLink to="/admin" class="admin-title text-lg font-semibold tracking-wide">
           <span :class="isCollapsedNavigation ? 'lg:hidden' : ''">{{
@@ -23,8 +23,8 @@
         </button>
       </div>
 
-      <nav class="flex-1 overflow-y-auto px-3 py-4">
-        <ul class="space-y-1">
+      <nav class="admin-sidebar-nav flex-1 overflow-y-auto px-3 py-4">
+        <ul class="admin-sidebar-nav-list space-y-1">
           <li>
             <NuxtLink
               :to="dashboardItem.to"
@@ -52,16 +52,17 @@
               'is-active-block': isCollapsedNavigation && isSectionItemActive(section.items),
             }"
           >
-            <div v-if="isCollapsedNavigation" class="admin-nav-collapsed-group">
+            <div :class="{ 'admin-nav-collapsed-group': isCollapsedNavigation }">
               <button
                 type="button"
-                class="admin-nav-link admin-nav-section-toggle admin-nav-section-collapsed-toggle group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
-                :class="
-                  (isSectionItemActive(section.items) || isSectionOpen(section.key)) && 'is-active'
-                "
-                :title="section.label"
+                class="admin-nav-link admin-nav-section-toggle group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                :class="[
+                  isCollapsedNavigation && 'admin-nav-section-collapsed-toggle',
+                  isSectionHighlighted(section) && 'is-active',
+                ]"
+                :title="isCollapsedNavigation ? section.label : undefined"
                 :aria-expanded="isSectionOpen(section.key)"
-                :aria-controls="`admin-nav-section-${section.key}`"
+                :aria-controls="getSectionPanelId(section.key)"
                 @click="emit('toggle-section', section.key)"
               >
                 <span
@@ -71,25 +72,37 @@
                 </span>
                 <span class="admin-nav-label">{{ section.label }}</span>
                 <span
-                  class="admin-nav-section-arrow admin-nav-section-collapsed-arrow"
-                  :class="{ 'is-open': isSectionOpen(section.key) }"
+                  class="admin-nav-section-arrow"
+                  :class="[
+                    isCollapsedNavigation ? 'admin-nav-section-collapsed-arrow' : 'ml-auto',
+                    { 'is-open': isSectionOpen(section.key) },
+                  ]"
                   aria-hidden="true"
                 />
               </button>
 
               <div
                 v-show="isSectionOpen(section.key)"
-                :id="`admin-nav-section-${section.key}`"
-                class="admin-nav-collapsed-panel mt-2"
-                :class="{ 'is-active-block': isSectionItemActive(section.items) }"
+                :id="getSectionPanelId(section.key)"
+                :class="[
+                  isCollapsedNavigation
+                    ? 'admin-nav-collapsed-panel mt-2'
+                    : 'admin-nav-submenu mt-1',
+                  {
+                    'is-active-block': isCollapsedNavigation && isSectionItemActive(section.items),
+                  },
+                ]"
               >
                 <ul class="space-y-1">
-                  <li v-for="item in section.items" :key="`collapsed-${section.key}-${item.key}`">
+                  <li v-for="item in section.items" :key="`${section.key}-${item.key}`">
                     <NuxtLink
                       :to="item.to"
-                      class="admin-nav-link admin-nav-collapsed-item group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
-                      :class="isActive(item.to) && 'is-active'"
-                      :title="item.label"
+                      class="admin-nav-link group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                      :class="[
+                        isCollapsedNavigation ? 'admin-nav-collapsed-item' : 'admin-nav-sub-link',
+                        isActive(item.to) && 'is-active',
+                      ]"
+                      :title="isCollapsedNavigation ? item.label : undefined"
                     >
                       <span
                         class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
@@ -102,53 +115,6 @@
                 </ul>
               </div>
             </div>
-
-            <button
-              v-else
-              type="button"
-              class="admin-nav-link admin-nav-section-toggle group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
-              :class="
-                (isSectionItemActive(section.items) || isSectionOpen(section.key)) && 'is-active'
-              "
-              :title="isCollapsedNavigation ? section.label : undefined"
-              :aria-expanded="isSectionOpen(section.key)"
-              :aria-controls="`admin-nav-section-${section.key}`"
-              @click="emit('toggle-section', section.key)"
-            >
-              <span
-                class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
-              >
-                <AdminNavIcon :name="section.icon" />
-              </span>
-              <span class="admin-nav-label">{{ section.label }}</span>
-              <span
-                class="admin-nav-section-arrow ml-auto"
-                :class="{ 'is-open': isSectionOpen(section.key) }"
-                aria-hidden="true"
-              />
-            </button>
-
-            <ul
-              v-if="!isCollapsedNavigation"
-              v-show="!isCollapsedNavigation && isSectionOpen(section.key)"
-              :id="`admin-nav-section-${section.key}`"
-              class="admin-nav-submenu mt-1 space-y-1"
-            >
-              <li v-for="item in section.items" :key="item.to">
-                <NuxtLink
-                  :to="item.to"
-                  class="admin-nav-link admin-nav-sub-link group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
-                  :class="isActive(item.to) && 'is-active'"
-                >
-                  <span
-                    class="admin-nav-icon inline-flex h-7 w-7 items-center justify-center rounded-md text-xs"
-                  >
-                    <AdminNavIcon :name="item.icon" />
-                  </span>
-                  <span class="admin-nav-label">{{ item.label }}</span>
-                </NuxtLink>
-              </li>
-            </ul>
           </li>
         </ul>
       </nav>
@@ -252,6 +218,11 @@ const {
   userEmail,
   userAvatarUrl,
 } = toRefs(props);
+
+const isSectionHighlighted = (section: AdminNavigationSectionView): boolean =>
+  isSectionItemActive.value(section.items) || isSectionOpen.value(section.key);
+
+const getSectionPanelId = (sectionKey: string): string => `admin-nav-section-${sectionKey}`;
 </script>
 
 <style lang="scss" src="./AdminSidebar.scss"></style>

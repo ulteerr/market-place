@@ -1,6 +1,6 @@
 <template>
   <div class="admin-layout min-h-screen">
-    <div class="flex min-h-screen">
+    <div class="admin-layout__shell flex min-h-screen">
       <AdminSidebar
         :t="t"
         :is-sidebar-open="isSidebarOpen"
@@ -45,11 +45,12 @@
       <button
         v-if="isSidebarOpen"
         type="button"
-        class="fixed inset-0 z-30 bg-black/50 lg:hidden"
+        class="admin-layout__sidebar-backdrop"
+        :aria-label="t('admin.layout.closeSidebar')"
         @click="isSidebarOpen = false"
       />
 
-      <div class="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-0">
+      <div class="admin-layout__content flex min-h-screen min-w-0 flex-1 flex-col lg:ml-0">
         <AdminTopbar
           :t="t"
           :locale="locale"
@@ -60,7 +61,7 @@
           @toggle-theme="toggleTheme"
         />
 
-        <main class="flex-1 min-w-0 px-4 py-6 lg:px-8 lg:py-8">
+        <main class="admin-layout__main flex-1 min-w-0 px-4 py-6 lg:px-8 lg:py-8">
           <AdminBreadcrumbs />
           <slot />
         </main>
@@ -136,8 +137,21 @@ const userInitials = computed(() => {
   return initials || user.value?.email?.[0]?.toUpperCase() || 'AD';
 });
 
+const onGlobalEscape = (event: KeyboardEvent) => {
+  if (event.key !== 'Escape' || !isSidebarOpen.value) {
+    return;
+  }
+
+  isSidebarOpen.value = false;
+};
+
 onMounted(() => {
   isThemeUiMounted.value = true;
+  document.addEventListener('keydown', onGlobalEscape);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onGlobalEscape);
 });
 </script>
 

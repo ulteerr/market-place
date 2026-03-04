@@ -6,8 +6,23 @@
   overflow-x: hidden;
 }
 
-.admin-layout .flex.min-h-screen {
+.admin-layout__shell {
   min-width: 0;
+}
+
+.admin-layout__content {
+  min-width: 0;
+}
+
+.admin-layout__main {
+  min-width: 0;
+}
+
+.admin-layout__sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgb(0 0 0 / 50%);
 }
 
 .admin-sidebar-toggle {
@@ -23,7 +38,7 @@
   justify-content: center;
   border: 1px solid var(--border);
   border-left: 0;
-  border-radius: 0 0.7rem 0.7rem 0;
+  border-radius: 0 shared.$admin-toggle-radius shared.$admin-toggle-radius 0;
   background: shared.$admin-surface-toggle;
   color: var(--muted);
   transition:
@@ -34,6 +49,10 @@
   &:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+
+  &:focus-visible {
+    @include shared.admin-focus-ring;
   }
 }
 
@@ -48,6 +67,10 @@
 }
 
 @media (min-width: 1024px) {
+  .admin-layout__sidebar-backdrop {
+    display: none;
+  }
+
   .admin-sidebar-toggle {
     display: inline-flex;
   }

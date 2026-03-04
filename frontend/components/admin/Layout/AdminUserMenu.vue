@@ -4,7 +4,12 @@
       type="button"
       class="admin-user-trigger"
       :title="compact ? fullName : undefined"
+      aria-haspopup="menu"
+      :aria-expanded="isOpen"
+      :aria-controls="resolvedMenuId"
       @click="toggleMenu"
+      @keydown.down.prevent="openMenu"
+      @keydown.esc.prevent="closeMenu"
     >
       <span class="admin-avatar">
         <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="admin-avatar-image" />
@@ -16,15 +21,20 @@
       </span>
     </button>
 
-    <div v-if="isOpen" class="admin-user-dropdown">
-      <button type="button" class="admin-user-item" @click="onSelect('profile')">
+    <div v-if="isOpen" :id="resolvedMenuId" class="admin-user-dropdown" role="menu">
+      <button type="button" class="admin-user-item" role="menuitem" @click="onSelect('profile')">
         {{ t('admin.userMenu.profile') }}
       </button>
-      <button type="button" class="admin-user-item" @click="onSelect('settings')">
+      <button type="button" class="admin-user-item" role="menuitem" @click="onSelect('settings')">
         {{ t('admin.userMenu.settings') }}
       </button>
       <div class="admin-user-divider" />
-      <button type="button" class="admin-user-item is-danger" @click="onSelect('logout')">
+      <button
+        type="button"
+        class="admin-user-item is-danger"
+        role="menuitem"
+        @click="onSelect('logout')"
+      >
         {{ t('admin.userMenu.logout') }}
       </button>
     </div>
@@ -49,6 +59,12 @@ const emit = defineEmits<{
 
 const rootRef = ref<HTMLElement | null>(null);
 const isOpen = ref(false);
+const menuId = useId();
+const resolvedMenuId = computed(() => `admin-user-menu-${menuId}`);
+
+const openMenu = () => {
+  isOpen.value = true;
+};
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value;
