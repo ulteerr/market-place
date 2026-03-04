@@ -8,7 +8,7 @@ interface NavigationSettings {
 }
 
 const openMobileSidebar = async (page: import('@playwright/test').Page) => {
-  await page.locator('header .admin-icon-button').first().click();
+  await page.locator('header .admin-topbar-menu-toggle').first().click();
   await expect(page.locator('aside.admin-sidebar')).toHaveClass(/is-open/);
 };
 

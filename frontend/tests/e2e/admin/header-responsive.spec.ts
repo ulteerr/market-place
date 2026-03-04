@@ -20,8 +20,8 @@ const assertNoHorizontalOverflow = async (page: import('@playwright/test').Page)
 const assertHeaderControlsVisibleAndInsideViewport = async (
   page: import('@playwright/test').Page
 ) => {
-  const localeSelect = page.locator('.admin-topbar .admin-locale-select');
-  const themeSwitcher = page.locator('.admin-topbar .theme-switcher-btn');
+  const localeSelect = page.locator('.admin-topbar .admin-topbar-locale-select');
+  const themeSwitcher = page.locator('.admin-topbar .admin-topbar-theme-button');
 
   await expect(localeSelect).toBeVisible();
   await expect(themeSwitcher).toBeVisible();
@@ -39,7 +39,7 @@ test.describe('Admin header responsive', () => {
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
 
-    await expect(page.locator('header .admin-icon-button').first()).toBeVisible();
+    await expect(page.locator('header .admin-topbar-menu-toggle').first()).toBeVisible();
     await expect(page.locator('.admin-sidebar-toggle')).toBeHidden();
   });
 
@@ -52,7 +52,7 @@ test.describe('Admin header responsive', () => {
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
 
-    await expect(page.locator('header .admin-icon-button').first()).toBeVisible();
+    await expect(page.locator('header .admin-topbar-menu-toggle').first()).toBeVisible();
     await expect(page.locator('.admin-sidebar-toggle')).toBeHidden();
   });
 
@@ -65,7 +65,7 @@ test.describe('Admin header responsive', () => {
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
 
-    await expect(page.locator('header .admin-icon-button').first()).toBeHidden();
+    await expect(page.locator('header .admin-topbar-menu-toggle').first()).toBeHidden();
     await expect(page.locator('.admin-sidebar-toggle')).toBeVisible();
   });
 

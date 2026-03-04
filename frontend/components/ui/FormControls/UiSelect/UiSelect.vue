@@ -7,6 +7,7 @@
 
     <div
       :class="[styles.control, isOpen ? styles.controlOpen : '', error ? styles.controlError : '']"
+      data-ui-select-control
     >
       <div v-if="multiple && selectedOptions.length" :class="styles.tags">
         <button
@@ -33,6 +34,7 @@
         :required="required && !selectedValues.length"
         :name="name"
         autocomplete="off"
+        data-ui-select-input
         @input="onInput"
         @focus="open"
         @click="open"
@@ -47,7 +49,13 @@
         aria-hidden="true"
       />
 
-      <button type="button" :class="styles.toggle" :disabled="disabled" @click="toggle">
+      <button
+        type="button"
+        :class="styles.toggle"
+        :disabled="disabled"
+        data-ui-select-toggle
+        @click="toggle"
+      >
         <span :class="[styles.arrow, isOpen ? styles.arrowOpen : '']" aria-hidden="true" />
       </button>
     </div>

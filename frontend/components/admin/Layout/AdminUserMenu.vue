@@ -1,6 +1,7 @@
 <template>
   <div ref="rootRef" class="admin-user-menu" :class="{ 'is-compact': compact }">
     <button
+      :id="triggerId"
       type="button"
       class="admin-user-trigger"
       :title="compact ? fullName : undefined"
@@ -8,7 +9,8 @@
       :aria-expanded="isOpen"
       :aria-controls="resolvedMenuId"
       @click="toggleMenu"
-      @keydown.down.prevent="openMenu"
+      @keydown.down.prevent="openMenu('first')"
+      @keydown.up.prevent="openMenu('last')"
       @keydown.esc.prevent="closeMenu"
     >
       <span class="admin-avatar">
@@ -21,11 +23,29 @@
       </span>
     </button>
 
-    <div v-if="isOpen" :id="resolvedMenuId" class="admin-user-dropdown" role="menu">
-      <button type="button" class="admin-user-item" role="menuitem" @click="onSelect('profile')">
+    <div
+      v-if="isOpen"
+      :id="resolvedMenuId"
+      class="admin-user-dropdown"
+      role="menu"
+      :aria-labelledby="triggerId"
+    >
+      <button
+        type="button"
+        class="admin-user-item"
+        role="menuitem"
+        @click="onSelect('profile')"
+        @keydown="onMenuItemKeydown"
+      >
         {{ t('admin.userMenu.profile') }}
       </button>
-      <button type="button" class="admin-user-item" role="menuitem" @click="onSelect('settings')">
+      <button
+        type="button"
+        class="admin-user-item"
+        role="menuitem"
+        @click="onSelect('settings')"
+        @keydown="onMenuItemKeydown"
+      >
         {{ t('admin.userMenu.settings') }}
       </button>
       <div class="admin-user-divider" />
@@ -34,6 +54,7 @@
         class="admin-user-item is-danger"
         role="menuitem"
         @click="onSelect('logout')"
+        @keydown="onMenuItemKeydown"
       >
         {{ t('admin.userMenu.logout') }}
       </button>
@@ -61,13 +82,52 @@ const rootRef = ref<HTMLElement | null>(null);
 const isOpen = ref(false);
 const menuId = useId();
 const resolvedMenuId = computed(() => `admin-user-menu-${menuId}`);
+const triggerId = computed(() => `${resolvedMenuId.value}-trigger`);
 
-const openMenu = () => {
+const getMenuItems = (): HTMLButtonElement[] => {
+  if (!rootRef.value) {
+    return [];
+  }
+
+  return Array.from(
+    rootRef.value.querySelectorAll<HTMLButtonElement>('.admin-user-dropdown .admin-user-item')
+  );
+};
+
+const focusMenuItem = (index: number) => {
+  const items = getMenuItems();
+  if (!items.length) {
+    return;
+  }
+
+  const normalizedIndex = ((index % items.length) + items.length) % items.length;
+  items[normalizedIndex]?.focus();
+};
+
+const openMenu = (focusTarget: 'none' | 'first' | 'last' = 'none') => {
   isOpen.value = true;
+
+  if (focusTarget === 'none') {
+    return;
+  }
+
+  nextTick(() => {
+    if (focusTarget === 'first') {
+      focusMenuItem(0);
+      return;
+    }
+
+    focusMenuItem(getMenuItems().length - 1);
+  });
 };
 
 const toggleMenu = () => {
-  isOpen.value = !isOpen.value;
+  if (isOpen.value) {
+    isOpen.value = false;
+    return;
+  }
+
+  openMenu();
 };
 
 const closeMenu = () => {
@@ -79,7 +139,7 @@ const onSelect = (action: MenuAction) => {
   closeMenu();
 };
 
-const onOutsideClick = (event: MouseEvent) => {
+const onOutsidePointerDown = (event: PointerEvent) => {
   const target = event.target as Node | null;
 
   if (!target || !rootRef.value || rootRef.value.contains(target)) {
@@ -90,18 +150,67 @@ const onOutsideClick = (event: MouseEvent) => {
 };
 
 const onEscape = (event: KeyboardEvent) => {
+  if (event.key !== 'Escape') {
+    return;
+  }
+
+  closeMenu();
+};
+
+const onMenuItemKeydown = (event: KeyboardEvent) => {
+  const items = getMenuItems();
+  if (!items.length) {
+    return;
+  }
+
+  const activeIndex = items.findIndex((item) => item === document.activeElement);
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    focusMenuItem(activeIndex + 1);
+    return;
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    focusMenuItem(activeIndex - 1);
+    return;
+  }
+
+  if (event.key === 'Home') {
+    event.preventDefault();
+    focusMenuItem(0);
+    return;
+  }
+
+  if (event.key === 'End') {
+    event.preventDefault();
+    focusMenuItem(items.length - 1);
+    return;
+  }
+
   if (event.key === 'Escape') {
+    event.preventDefault();
+    closeMenu();
+    nextTick(() => {
+      const trigger = rootRef.value?.querySelector<HTMLButtonElement>('.admin-user-trigger');
+      trigger?.focus();
+    });
+    return;
+  }
+
+  if (event.key === 'Tab') {
     closeMenu();
   }
 };
 
 onMounted(() => {
-  document.addEventListener('mousedown', onOutsideClick);
+  document.addEventListener('pointerdown', onOutsidePointerDown);
   document.addEventListener('keydown', onEscape);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', onOutsideClick);
+  document.removeEventListener('pointerdown', onOutsidePointerDown);
   document.removeEventListener('keydown', onEscape);
 });
 </script>

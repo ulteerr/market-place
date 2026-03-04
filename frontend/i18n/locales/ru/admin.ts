@@ -3,6 +3,7 @@ export default {
     panelTitle: 'Admin Panel',
     shortPanelTitle: 'AP',
     closeSidebar: 'Закрыть меню',
+    openSidebar: 'Открыть меню',
     sidebarToggleExpand: 'Expand menu',
     sidebarToggleCollapse: 'Collapse menu',
     heading: 'Административная панель',

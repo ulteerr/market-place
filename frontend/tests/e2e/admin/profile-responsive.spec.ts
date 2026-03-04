@@ -36,7 +36,7 @@ test.describe('Admin profile responsive', () => {
 
       if (viewport.width === 390) {
         const sidebar = page.locator('aside.admin-sidebar');
-        const mobileMenuButton = page.locator('header .admin-icon-button').first();
+        const mobileMenuButton = page.locator('header .admin-topbar-menu-toggle').first();
 
         await expect(mobileMenuButton).toBeVisible();
         await expect(page.locator('.admin-sidebar-toggle')).toBeHidden();

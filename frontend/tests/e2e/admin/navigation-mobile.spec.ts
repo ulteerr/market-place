@@ -20,7 +20,7 @@ test.describe('Admin navigation mobile', () => {
 
     await page.goto('/admin');
 
-    await page.locator('header .admin-icon-button').first().click();
+    await page.locator('header .admin-topbar-menu-toggle').first().click();
 
     const sidebar = page.locator('aside.admin-sidebar');
     await expect(sidebar).toHaveClass(/is-open/);
