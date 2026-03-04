@@ -253,3 +253,5 @@ const {
   userAvatarUrl,
 } = toRefs(props);
 </script>
+
+<style lang="scss" src="./AdminSidebar.scss"></style>

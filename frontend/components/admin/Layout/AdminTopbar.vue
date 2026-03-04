@@ -107,3 +107,5 @@ const emit = defineEmits<{
 const { t, locale, localeSelectOptions, resolvedIsDark } = toRefs(props);
 const normalizedLocaleSelectOptions = computed(() => [...localeSelectOptions.value]);
 </script>
+
+<style lang="scss" src="./AdminTopbar.scss"></style>

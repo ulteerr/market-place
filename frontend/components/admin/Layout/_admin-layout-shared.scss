@@ -1,0 +1,42 @@
+// Shared variables and mixins for admin layout (Sidebar, Topbar, layout)
+// Use via @use './admin-layout-shared' as shared; (Sass finds _admin-layout-shared.scss)
+
+$admin-sidebar-width: 18rem;
+$admin-sidebar-collapsed-width: 6rem;
+$admin-transition-duration: 0.2s;
+$admin-transition-duration-fast: 0.18s;
+$admin-panel-radius: 0.9rem;
+$admin-nav-icon-bg: color-mix(in srgb, var(--surface) 70%, transparent);
+$admin-nav-icon-bg-active: color-mix(in srgb, var(--surface) 85%, transparent);
+$admin-nav-link-hover-bg: color-mix(in srgb, var(--surface) 85%, transparent);
+$admin-nav-link-active-bg: color-mix(in srgb, var(--surface) 75%, transparent);
+$admin-surface-soft: color-mix(in srgb, var(--surface) 96%, transparent);
+$admin-surface-muted: color-mix(in srgb, var(--surface) 82%, transparent);
+$admin-surface-toggle: color-mix(in srgb, var(--surface) 92%, transparent);
+$admin-border-subtle: color-mix(in srgb, var(--border) 75%, transparent);
+$admin-border-panel: color-mix(in srgb, var(--border) 85%, transparent);
+$admin-accent-border: color-mix(in srgb, var(--accent) 45%, var(--border));
+$admin-accent-ring: color-mix(in srgb, var(--accent) 18%, transparent);
+$admin-accent-ring-strong: color-mix(in srgb, var(--accent) 16%, transparent);
+$admin-collapsed-panel-bg: color-mix(in srgb, var(--surface) 84%, transparent);
+$admin-collapsed-active-bg: color-mix(in srgb, var(--surface) 78%, transparent);
+
+@mixin admin-arrow-icon {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.9;
+}
+
+@mixin admin-action-button {
+  border: 1px solid var(--border);
+  background: $admin-surface-muted;
+  color: var(--muted);
+  transition: color $admin-transition-duration ease, border-color $admin-transition-duration ease;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
