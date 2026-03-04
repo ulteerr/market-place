@@ -63,3 +63,34 @@ $admin-dropdown-shadow: 0 10px 25px rgb(0 0 0 / 35%);
     @include admin-focus-ring;
   }
 }
+
+@mixin admin-nav-item-base {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition:
+    background-color $admin-transition-duration ease,
+    color $admin-transition-duration ease;
+
+  &:hover {
+    background: $admin-nav-link-hover-bg;
+    color: var(--text);
+  }
+
+  &.is-active {
+    background: $admin-nav-link-active-bg;
+    color: var(--text);
+  }
+
+  &:focus-visible {
+    @include admin-focus-ring;
+    border-radius: $admin-panel-radius;
+  }
+}

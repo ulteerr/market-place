@@ -112,10 +112,10 @@
 <script setup lang="ts">
 import type { PaginationItem } from '~/composables/useAdminCrudCommon';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
-import AdminListToolbar from '~/components/admin/Listing/AdminListToolbar.vue';
-import AdminPagination from '~/components/admin/Listing/AdminPagination.vue';
-import AdminContentView from '~/components/admin/Listing/AdminContentView.vue';
-import AdminCrudSkeleton from '~/components/admin/Listing/AdminCrudSkeleton.vue';
+import AdminListToolbar from '~/components/admin/Listing/AdminListToolbar/AdminListToolbar.vue';
+import AdminPagination from '~/components/admin/Listing/AdminPagination/AdminPagination.vue';
+import AdminContentView from '~/components/admin/Listing/AdminContentView/AdminContentView.vue';
+import AdminCrudSkeleton from '~/components/admin/Listing/AdminCrudSkeleton/AdminCrudSkeleton.vue';
 const { t } = useI18n();
 
 type ContentMode = 'table' | 'table-cards' | 'cards';

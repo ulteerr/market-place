@@ -1,40 +1,36 @@
 <template>
-  <header class="admin-topbar sticky top-0 z-20">
-    <div class="admin-topbar-row flex h-16 items-center justify-between px-4 lg:px-8">
-      <div class="admin-topbar-left flex items-center gap-3">
+  <header class="admin-topbar">
+    <div class="admin-topbar-row">
+      <div class="admin-topbar-left">
         <button
           type="button"
-          class="admin-topbar-menu-toggle rounded-lg p-2 lg:hidden"
+          class="admin-topbar-menu-toggle"
           :aria-label="t('admin.layout.openSidebar')"
           @click="emit('open-sidebar')"
         >
           ☰
         </button>
-        <h1 class="admin-topbar-heading text-sm font-semibold lg:text-base">
+        <h1 class="admin-topbar-heading">
           {{ t('admin.layout.heading') }}
         </h1>
       </div>
-      <div class="admin-topbar-right flex items-center gap-2">
+      <div class="admin-topbar-right">
         <div class="admin-topbar-locale-select">
           <UiSelect
             class="admin-topbar-locale-ui-select"
             :model-value="locale"
-            :options="normalizedLocaleSelectOptions"
+            :options="localeSelectOptions"
             :searchable="false"
             :placeholder="String(locale).toUpperCase()"
-            @update:model-value="emit('locale-change', $event)"
+            @update:model-value="onLocaleChange"
           />
         </div>
 
         <button
           type="button"
-          class="admin-topbar-theme-button rounded-md px-2 py-2"
-          :title="
-            resolvedIsDark ? t('admin.layout.toggleLightMode') : t('admin.layout.toggleDarkMode')
-          "
-          :aria-label="
-            resolvedIsDark ? t('admin.layout.toggleLightMode') : t('admin.layout.toggleDarkMode')
-          "
+          class="admin-topbar-theme-button"
+          :title="themeToggleLabel"
+          :aria-label="themeToggleLabel"
           @click="emit('toggle-theme')"
         >
           <svg
@@ -76,36 +72,32 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 
-const props = defineProps({
-  t: {
-    type: Function as PropType<(key: string) => string>,
-    required: true,
-  },
-  locale: {
-    type: String,
-    required: true,
-  },
-  localeSelectOptions: {
-    type: Array as PropType<ReadonlyArray<{ value: string; label: string }>>,
-    required: true,
-  },
-  resolvedIsDark: {
-    type: Boolean,
-    required: true,
-  },
-});
+const props = defineProps<{
+  t: (key: string) => string;
+  locale: string;
+  localeSelectOptions: ReadonlyArray<{ value: string; label: string }>;
+  resolvedIsDark: boolean;
+}>();
 
 const emit = defineEmits<{
   'open-sidebar': [];
-  'locale-change': [value: string | number | (string | number)[]];
+  'locale-change': [value: string];
   'toggle-theme': [];
 }>();
 
 const { t, locale, localeSelectOptions, resolvedIsDark } = toRefs(props);
-const normalizedLocaleSelectOptions = computed(() => [...localeSelectOptions.value]);
+const themeToggleLabel = computed(() =>
+  resolvedIsDark.value
+    ? t.value('admin.layout.toggleLightMode')
+    : t.value('admin.layout.toggleDarkMode')
+);
+
+const onLocaleChange = (value: string | number | (string | number)[]) => {
+  const normalizedValue = Array.isArray(value) ? value[0] : value;
+  emit('locale-change', String(normalizedValue));
+};
 </script>
 
 <style lang="scss" src="./AdminTopbar.scss"></style>

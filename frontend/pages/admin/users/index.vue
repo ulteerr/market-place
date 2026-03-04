@@ -212,9 +212,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
-import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
-import AdminTagFilter from '~/components/admin/Listing/AdminTagFilter.vue';
+import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions/AdminCrudActions.vue';
+import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex/AdminEntityIndex.vue';
+import AdminTagFilter from '~/components/admin/Listing/AdminTagFilter/AdminTagFilter.vue';
 import UiImagePreview from '~/components/ui/ImagePreview/UiImagePreview.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';

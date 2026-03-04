@@ -150,8 +150,8 @@
 
 <script setup lang="ts">
 import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
-import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions.vue';
-import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import AdminCrudActions from '~/components/admin/Listing/AdminCrudActions/AdminCrudActions.vue';
+import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex/AdminEntityIndex.vue';
 import UiModal from '~/components/ui/Modal/UiModal.vue';
 import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 import type { AdminChild } from '~/composables/useAdminChildren';

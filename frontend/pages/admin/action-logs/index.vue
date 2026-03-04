@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex.vue';
+import AdminEntityIndex from '~/components/admin/Listing/AdminEntityIndex/AdminEntityIndex.vue';
 import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';

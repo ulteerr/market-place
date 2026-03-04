@@ -73,9 +73,9 @@ test.describe('Admin metro stations form pages', () => {
     await page.getByLabel('Широта').fill('55.766');
     await page.getByLabel('Долгота').fill('37.605');
     await page.getByLabel('Линия метро').fill('Соколь');
-    await page.getByRole('button', { name: /Сокольническая/ }).click();
+    await page.getByRole('option', { name: /Сокольническая/ }).click();
     await page.getByLabel('ID города').fill('msk');
-    await page.getByRole('button', { name: /^msk$/ }).click();
+    await page.getByRole('option', { name: /^msk$/ }).click();
     await page.getByLabel('Источник').fill(' manual ');
     await page.getByRole('button', { name: 'Создать' }).click();
 
@@ -116,9 +116,9 @@ test.describe('Admin metro stations form pages', () => {
     await page.getByLabel('Долгота').fill('37.594');
     await page.getByRole('switch', { name: 'Станция закрыта' }).click();
     await page.getByLabel('Линия метро').fill('Соколь');
-    await page.getByRole('button', { name: /Сокольническая/ }).click();
+    await page.getByRole('option', { name: /Сокольническая/ }).click();
     await page.getByLabel('ID города').fill('msk');
-    await page.getByRole('button', { name: /^msk$/ }).click();
+    await page.getByRole('option', { name: /^msk$/ }).click();
     await page.getByLabel('Источник').fill(' parsed ');
     await page.getByRole('button', { name: 'Сохранить' }).click();
 

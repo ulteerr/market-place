@@ -1,6 +1,9 @@
-@use './admin-layout-shared' as shared;
+@use '../_admin-layout-shared' as shared;
 
 .admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface-soft) 88%, transparent);
   backdrop-filter: blur(8px);
@@ -8,28 +11,56 @@
 }
 
 .admin-topbar-row {
+  display: flex;
+  height: 4rem;
+  align-items: center;
+  justify-content: space-between;
   min-width: 0;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .admin-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   min-width: 0;
   flex: 1 1 auto;
 }
 
 .admin-topbar-heading {
   min-width: 0;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .admin-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   flex: 0 0 auto;
 }
 
 .admin-topbar-menu-toggle,
 .admin-topbar-theme-button {
   @include shared.admin-action-button;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.admin-topbar-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-topbar-menu-toggle,
+.admin-topbar-theme-button {
+  line-height: 1;
 }
 
 .admin-topbar-theme-button {
@@ -37,6 +68,8 @@
   align-items: center;
   justify-content: center;
   min-width: 2.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .admin-topbar-theme-icon {
@@ -98,5 +131,20 @@
   .admin-topbar-theme-button {
     min-width: 2rem;
     padding: 0.45rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-topbar-row {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .admin-topbar-menu-toggle {
+    display: none;
+  }
+
+  .admin-topbar-heading {
+    font-size: 1rem;
   }
 }

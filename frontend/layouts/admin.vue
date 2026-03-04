@@ -71,9 +71,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminBreadcrumbs from '~/components/admin/Layout/AdminBreadcrumbs.vue';
-import AdminSidebar from '~/components/admin/Layout/AdminSidebar.vue';
-import AdminTopbar from '~/components/admin/Layout/AdminTopbar.vue';
+import AdminBreadcrumbs from '~/components/admin/Layout/AdminBreadcrumbs/AdminBreadcrumbs.vue';
+import AdminSidebar from '~/components/admin/Layout/AdminSidebar/AdminSidebar.vue';
+import AdminTopbar from '~/components/admin/Layout/AdminTopbar/AdminTopbar.vue';
 
 const { t, locale, setLocale } = useI18n();
 const route = useRoute();

@@ -33,12 +33,19 @@
         :readonly="!searchable"
         :required="required && !selectedValues.length"
         :name="name"
+        role="combobox"
+        :aria-expanded="isOpen"
+        :aria-controls="listboxId"
+        :aria-activedescendant="activeDescendantId"
+        :aria-autocomplete="searchable ? 'list' : 'none'"
+        :aria-haspopup="'listbox'"
         autocomplete="off"
         data-ui-select-input
         @input="onInput"
         @focus="open"
         @click="open"
-        @keydown.down.prevent="open"
+        @keydown.down.prevent="onArrowDown"
+        @keydown.up.prevent="onArrowUp"
         @keydown.esc="close"
         @keydown.enter.prevent="onEnter"
       />
@@ -60,13 +67,23 @@
       </button>
     </div>
 
-    <div v-if="isOpen && !disabled" :class="styles.menu" role="listbox">
+    <div
+      v-if="isOpen && !disabled"
+      :id="listboxId"
+      :class="styles.menu"
+      role="listbox"
+      :aria-multiselectable="multiple || undefined"
+    >
       <button
-        v-for="option in filteredOptions"
+        v-for="(option, index) in filteredOptions"
         :key="String(option.value)"
+        :id="getOptionId(option.value)"
         type="button"
         :class="[styles.option, isSelected(option.value) ? styles.optionSelected : '']"
+        role="option"
+        :aria-selected="isSelected(option.value)"
         :disabled="option.disabled"
+        @mousemove="setActiveIndex(index)"
         @click="selectOption(option.value)"
       >
         <span
@@ -149,8 +166,10 @@ const emit = defineEmits<{
 
 const uid = useId();
 const resolvedId = computed(() => props.id || `ui-select-${uid}`);
+const listboxId = computed(() => `${resolvedId.value}-listbox`);
 const rootRef = ref<HTMLElement | null>(null);
 const isOpen = ref(false);
+const activeIndex = ref(-1);
 const query = ref('');
 const createdOptions = ref<SelectOption[]>([]);
 
@@ -168,8 +187,10 @@ const selectedValues = computed<SelectValue[]>(() => {
   return [props.modelValue];
 });
 
+const selectedSet = computed(() => new Set(selectedValues.value));
+const lockedSet = computed(() => new Set(props.lockedValues));
 const selectedOptions = computed(() => {
-  return allOptions.value.filter((option) => selectedValues.value.includes(option.value));
+  return allOptions.value.filter((option) => selectedSet.value.has(option.value));
 });
 const singleSelectedOption = computed(() => {
   if (props.multiple) {
@@ -213,7 +234,7 @@ const filteredOptions = computed(() => {
     .filter((token) => token.length > 0);
 
   return allOptions.value.filter((option) => {
-    if (props.multiple && selectedValues.value.includes(option.value)) {
+    if (props.multiple && selectedSet.value.has(option.value)) {
       return false;
     }
 
@@ -235,8 +256,74 @@ const canCreateTag = computed(() => {
   return !allOptions.value.some((option) => option.label.toLowerCase() === queryLower);
 });
 
-const isSelected = (value: SelectValue) => selectedValues.value.includes(value);
-const isLockedValue = (value: SelectValue) => props.lockedValues.includes(value);
+const activeDescendantId = computed(() => {
+  if (!isOpen.value || activeIndex.value < 0) {
+    return undefined;
+  }
+
+  const option = filteredOptions.value[activeIndex.value];
+  return option ? getOptionId(option.value) : undefined;
+});
+
+const getOptionId = (value: SelectValue): string => {
+  const normalizedValue = String(value)
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-_]/gi, '')
+    .toLowerCase();
+  return `${resolvedId.value}-option-${normalizedValue || 'value'}`;
+};
+
+const findFirstEnabledIndex = (): number =>
+  filteredOptions.value.findIndex((option) => !option.disabled);
+
+const findLastEnabledIndex = (): number => {
+  for (let index = filteredOptions.value.length - 1; index >= 0; index -= 1) {
+    if (!filteredOptions.value[index]?.disabled) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+const findNearestEnabledIndex = (start: number, direction: 1 | -1): number => {
+  const optionsCount = filteredOptions.value.length;
+  if (!optionsCount) {
+    return -1;
+  }
+
+  let index = start;
+  for (let i = 0; i < optionsCount; i += 1) {
+    index = (index + direction + optionsCount) % optionsCount;
+    if (!filteredOptions.value[index]?.disabled) {
+      return index;
+    }
+  }
+
+  return -1;
+};
+
+const getDefaultActiveIndex = (): number => {
+  const selectedIndex = filteredOptions.value.findIndex(
+    (option) => selectedSet.value.has(option.value) && !option.disabled
+  );
+  return selectedIndex >= 0 ? selectedIndex : findFirstEnabledIndex();
+};
+
+const setActiveIndex = (index: number): void => {
+  if (index < 0 || index >= filteredOptions.value.length) {
+    return;
+  }
+
+  if (filteredOptions.value[index]?.disabled) {
+    return;
+  }
+
+  activeIndex.value = index;
+};
+
+const isSelected = (value: SelectValue) => selectedSet.value.has(value);
+const isLockedValue = (value: SelectValue) => lockedSet.value.has(value);
 
 const onInput = (event: Event) => {
   if (!props.searchable) {
@@ -254,11 +341,13 @@ const open = () => {
   }
 
   isOpen.value = true;
+  activeIndex.value = getDefaultActiveIndex();
   emit('search', query.value);
 };
 
 const close = () => {
   isOpen.value = false;
+  activeIndex.value = -1;
 
   if (!props.multiple && selectedOptions.value[0] && !query.value.trim()) {
     query.value = '';
@@ -284,7 +373,7 @@ const emitMultipleValue = (values: SelectValue[]) => {
 
 const selectOption = (value: SelectValue) => {
   if (props.multiple) {
-    if (!selectedValues.value.includes(value)) {
+    if (!selectedSet.value.has(value)) {
       emitMultipleValue([...selectedValues.value, value]);
     }
 
@@ -331,9 +420,51 @@ const onEnter = () => {
     return;
   }
 
-  if (filteredOptions.value[0]) {
+  if (activeIndex.value >= 0 && filteredOptions.value[activeIndex.value]) {
+    selectOption(filteredOptions.value[activeIndex.value].value);
+    return;
+  }
+
+  if (filteredOptions.value[0] && !filteredOptions.value[0].disabled) {
     selectOption(filteredOptions.value[0].value);
   }
+};
+
+const onArrowDown = () => {
+  if (!isOpen.value) {
+    open();
+    return;
+  }
+
+  if (!filteredOptions.value.length) {
+    return;
+  }
+
+  if (activeIndex.value < 0) {
+    activeIndex.value = findFirstEnabledIndex();
+    return;
+  }
+
+  activeIndex.value = findNearestEnabledIndex(activeIndex.value, 1);
+};
+
+const onArrowUp = () => {
+  if (!isOpen.value) {
+    open();
+    activeIndex.value = findLastEnabledIndex();
+    return;
+  }
+
+  if (!filteredOptions.value.length) {
+    return;
+  }
+
+  if (activeIndex.value < 0) {
+    activeIndex.value = findLastEnabledIndex();
+    return;
+  }
+
+  activeIndex.value = findNearestEnabledIndex(activeIndex.value, -1);
 };
 
 const onClickOutside = (event: MouseEvent) => {
@@ -353,6 +484,21 @@ watch(
     }
   }
 );
+
+watch(filteredOptions, () => {
+  if (!isOpen.value) {
+    return;
+  }
+
+  if (activeIndex.value < 0 || activeIndex.value >= filteredOptions.value.length) {
+    activeIndex.value = getDefaultActiveIndex();
+    return;
+  }
+
+  if (filteredOptions.value[activeIndex.value]?.disabled) {
+    activeIndex.value = findNearestEnabledIndex(activeIndex.value, 1);
+  }
+});
 
 onMounted(() => {
   document.addEventListener('mousedown', onClickOutside);

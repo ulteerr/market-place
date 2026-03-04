@@ -101,8 +101,8 @@ test.describe('Admin metro stations responsive pages', () => {
       await expect(form.getByRole('textbox', { name: 'Широта' })).toBeVisible();
       await expect(form.getByRole('textbox', { name: 'Долгота' })).toBeVisible();
       await expect(form.getByRole('switch', { name: 'Станция закрыта' })).toBeVisible();
-      await expect(form.getByRole('textbox', { name: 'Линия метро' })).toBeVisible();
-      await expect(form.getByRole('textbox', { name: 'ID города' })).toBeVisible();
+      await expect(form.getByRole('combobox', { name: 'Линия метро' })).toBeVisible();
+      await expect(form.getByRole('combobox', { name: 'ID города' })).toBeVisible();
       await expect(form.getByRole('textbox', { name: 'Источник' })).toBeVisible();
       await expect(form.getByRole('button', { name: 'Создать' })).toBeVisible();
 

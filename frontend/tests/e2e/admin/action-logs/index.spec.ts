@@ -142,7 +142,7 @@ test.describe('Admin action logs page', () => {
     });
 
     await page.getByLabel('Событие').click();
-    await page.getByRole('listbox').getByRole('button', { name: 'Обновление' }).click();
+    await page.getByRole('listbox').getByRole('option', { name: 'Обновление' }).click();
 
     await filteredResponsePromise;
     await expect(page).toHaveURL(/event=update/);

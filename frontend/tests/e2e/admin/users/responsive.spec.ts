@@ -69,7 +69,7 @@ const setupUserShowApi = async (page: Page) => {
 const setTableCardsMode = async (page: Page) => {
   const modeSelectInput = page.locator('.mode-select-wrap input').first();
   await modeSelectInput.click();
-  await page.getByRole('button', { name: 'Таблица + карточки' }).click();
+  await page.getByRole('option', { name: 'Таблица + карточки' }).click();
 };
 
 test.describe('Admin users responsive pages', () => {

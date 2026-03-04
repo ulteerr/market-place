@@ -1,0 +1,6 @@
+@use '../_admin-layout-shared' as shared;
+
+.admin-nav-link {
+  @include shared.admin-nav-item-base;
+  text-decoration: none;
+}

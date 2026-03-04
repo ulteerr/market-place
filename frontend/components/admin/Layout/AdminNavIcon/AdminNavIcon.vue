@@ -126,9 +126,4 @@ const iconPathMap: Record<AdminNavIcon, string[]> = {
 const iconPaths = computed(() => iconPathMap[props.name]);
 </script>
 
-<style scoped lang="scss">
-.admin-nav-svg-icon {
-  width: 1rem;
-  height: 1rem;
-}
-</style>
+<style scoped lang="scss" src="./AdminNavIcon.scss"></style>
