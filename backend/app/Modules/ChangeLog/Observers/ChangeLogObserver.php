@@ -167,10 +167,35 @@ final class ChangeLogObserver
                 continue;
             }
 
-            $normalized[$key] = $this->normalizeValue($value);
+            $normalized[$key] = $this->normalizeAttributeValue($model, (string) $key, $value);
         }
 
         return $normalized;
+    }
+
+    private function normalizeAttributeValue(Model $model, string $key, mixed $value): mixed
+    {
+        $castType = $this->resolveCastType($model, $key);
+
+        if (
+            $model->hasCast($key, ["date", "immutable_date"]) ||
+            in_array($castType, ["date", "immutable_date"], true)
+        ) {
+            $date = $this->toDateTime($value);
+            return $date ? $date->format("Y-m-d") : $this->normalizeValue($value);
+        }
+
+        if (
+            $model->hasCast($key, ["datetime", "immutable_datetime"]) ||
+            in_array($castType, ["datetime", "immutable_datetime", "custom_datetime"], true)
+        ) {
+            $dateTime = $this->toDateTime($value);
+            return $dateTime
+                ? $dateTime->format(\DateTimeInterface::ATOM)
+                : $this->normalizeValue($value);
+        }
+
+        return $this->normalizeValue($value);
     }
 
     private function normalizeValue(mixed $value): mixed
@@ -220,6 +245,35 @@ final class ChangeLogObserver
     private function isAssocArray(array $value): bool
     {
         return !array_is_list($value);
+    }
+
+    private function toDateTime(mixed $value): ?\DateTimeInterface
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value;
+        }
+
+        if (!is_string($value) || trim($value) === "") {
+            return null;
+        }
+
+        try {
+            return new \DateTimeImmutable($value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function resolveCastType(Model $model, string $key): ?string
+    {
+        $casts = $model->getCasts();
+        $cast = $casts[$key] ?? null;
+        if (!is_string($cast) || $cast === "") {
+            return null;
+        }
+
+        $parts = explode(":", $cast, 2);
+        return $parts[0] ?? null;
     }
 
     private function diffFields(array $before, array $after): array

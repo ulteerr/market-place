@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Users\Validation;
 
+use App\Shared\Validation\BirthDateRules;
+
 final class UserProfileRules
 {
     public static function base(): array
@@ -14,6 +16,7 @@ final class UserProfileRules
             "middle_name" => ["nullable", "string", "max:255"],
             "gender" => ["nullable", "string", "in:male,female"],
             "phone" => ["nullable", "string", "max:20"],
+            "birth_date" => BirthDateRules::forUsers(),
         ];
     }
 

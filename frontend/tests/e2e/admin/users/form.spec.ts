@@ -10,7 +10,9 @@ const existingUser = {
   first_name: 'Иван',
   last_name: 'Иванов',
   middle_name: 'Иванович',
+  gender: 'male',
   phone: '+79990001122',
+  birth_date: '1990-01-15',
   roles: ['admin'],
   permissions: ['admin.panel.access'],
   avatar: {
@@ -36,6 +38,7 @@ test.describe('Admin users form pages', () => {
     await expect(page.getByLabel('Фамилия')).toBeVisible();
     await expect(page.getByLabel('Email')).toBeVisible();
     await expect(page.getByLabel('Телефон')).toBeVisible();
+    await expect(page.getByLabel('Дата рождения')).toBeVisible();
     await expect(page.locator('label:has-text("Пароль") input').first()).toBeVisible();
     await expect(
       page.locator('label:has-text("Подтверждение пароля") input').first()
@@ -103,6 +106,8 @@ test.describe('Admin users form pages', () => {
     expect(capturedUpdatePayload).toContain('\r\nivan.petrov@example.com\r\n');
     expect(capturedUpdatePayload).toContain('name="phone"');
     expect(capturedUpdatePayload).toContain('\r\n+79990002233\r\n');
+    expect(capturedUpdatePayload).toContain('name="birth_date"');
+    expect(capturedUpdatePayload).toContain('\r\n1990-01-15\r\n');
     expect(capturedUpdatePayload).toContain('name="roles[]"');
     expect(capturedUpdatePayload).toContain('\r\nadmin\r\n');
   });

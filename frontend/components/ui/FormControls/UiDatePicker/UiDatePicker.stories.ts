@@ -103,3 +103,18 @@ export const InteractionOpenPicker: Story = {
     await expect(nextMonthBtn).toBeInTheDocument();
   },
 };
+
+export const InteractionQuickYearSwitch: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /Дата создания|Creation date/i });
+    await userEvent.click(trigger);
+
+    await expect(canvas.getByText(/2026/)).toBeInTheDocument();
+
+    const nextYearBtn = canvas.getByRole('button', { name: '»' });
+    await userEvent.click(nextYearBtn);
+
+    await expect(canvas.getByText(/2027/)).toBeInTheDocument();
+  },
+};

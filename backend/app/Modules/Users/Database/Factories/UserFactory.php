@@ -24,6 +24,7 @@ final class UserFactory extends Factory
             "email" => $this->faker->unique()->safeEmail(),
             "password" => "password123",
             "phone" => $this->faker->optional()->phoneNumber(),
+            "birth_date" => $this->faker->optional()->date(),
             "remember_token" => Str::random(10),
         ];
     }

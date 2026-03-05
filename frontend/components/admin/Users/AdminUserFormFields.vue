@@ -28,6 +28,13 @@
     :disabled="saving"
     :error="fieldErrors.gender"
   />
+  <UiDatePicker
+    v-model="form.birth_date"
+    mode="single"
+    :label="t(`admin.users.${modeI18nKey}.fields.birthDate`)"
+    :disabled="saving"
+    :error="fieldErrors.birth_date"
+  />
   <UiInput
     v-model="form.email"
     preset="email"
@@ -158,6 +165,7 @@
 
 <script setup lang="ts">
 import UiCheckbox from '~/components/ui/FormControls/UiCheckbox/UiCheckbox.vue';
+import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';

@@ -54,6 +54,29 @@
           :disabled="saving"
           :error="fieldErrors.middle_name"
         />
+        <UiSelect
+          v-model="form.gender"
+          :label="t('admin.profile.fields.gender')"
+          :options="genderOptions"
+          :placeholder="t('admin.profile.genderPlaceholder')"
+          clearable
+          :disabled="saving"
+          :error="fieldErrors.gender"
+        />
+        <UiInput
+          v-model="form.phone"
+          preset="phone"
+          :label="t('admin.profile.fields.phone')"
+          :disabled="saving"
+          :error="fieldErrors.phone"
+        />
+        <UiDatePicker
+          v-model="form.birth_date"
+          mode="single"
+          :label="t('admin.profile.fields.birthDate')"
+          :disabled="saving"
+          :error="fieldErrors.birth_date"
+        />
         <UiInput
           v-model="form.email"
           preset="email"
@@ -91,7 +114,9 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
+import UiDatePicker from '~/components/ui/FormControls/UiDatePicker/UiDatePicker.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
+import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import UiImageBlock from '~/components/ui/ImageBlock/UiImageBlock/UiImageBlock.vue';
 import UiImageDropzone from '~/components/ui/ImageBlock/UiImageDropzone/UiImageDropzone.vue';
 import {
@@ -119,6 +144,9 @@ const form = reactive({
   first_name: user.value?.first_name ?? '',
   last_name: user.value?.last_name ?? '',
   middle_name: user.value?.middle_name ?? '',
+  gender: (user.value?.gender ?? '') as 'male' | 'female' | '',
+  phone: user.value?.phone ?? '',
+  birth_date: null as string | null,
   email: user.value?.email ?? '',
 });
 
@@ -126,8 +154,34 @@ const fieldErrors = reactive<Record<string, string>>({
   first_name: '',
   last_name: '',
   middle_name: '',
+  gender: '',
+  phone: '',
+  birth_date: '',
   email: '',
 });
+
+const genderOptions = computed(() => [
+  { value: 'male', label: t('admin.genders.male') },
+  { value: 'female', label: t('admin.genders.female') },
+]);
+
+const normalizeIsoDate = (value: string | null | undefined): string | null => {
+  if (!value || typeof value !== 'string') {
+    return null;
+  }
+
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (match) {
+    return match[1] ?? null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString().slice(0, 10);
+};
 
 const avatarUrl = computed(() => user.value?.avatar?.url ?? null);
 const avatarImages = computed(() =>
@@ -152,8 +206,13 @@ const syncFormFromUser = () => {
   form.first_name = user.value?.first_name ?? '';
   form.last_name = user.value?.last_name ?? '';
   form.middle_name = user.value?.middle_name ?? '';
+  form.gender = (user.value?.gender ?? '') as 'male' | 'female' | '';
+  form.phone = user.value?.phone ?? '';
+  form.birth_date = normalizeIsoDate(user.value?.birth_date);
   form.email = user.value?.email ?? '';
 };
+
+syncFormFromUser();
 
 const submitForm = async () => {
   saving.value = true;
@@ -164,6 +223,9 @@ const submitForm = async () => {
       first_name: form.first_name.trim(),
       last_name: form.last_name.trim(),
       middle_name: form.middle_name.trim() || null,
+      gender: form.gender || null,
+      phone: form.phone.trim() || null,
+      birth_date: form.birth_date || null,
       email: form.email.trim(),
     });
     changeLogRefreshToken.value += 1;

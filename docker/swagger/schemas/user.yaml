@@ -32,6 +32,11 @@ components:
           type: string
           nullable: true
           example: "+79998887766"
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1995-08-17"
         roles:
           type: array
           description: Global platform roles
@@ -84,6 +89,10 @@ components:
           type: string
           nullable: true
           maxLength: 20
+        birth_date:
+          type: string
+          format: date
+          nullable: true
         email:
           type: string
           format: email
@@ -210,6 +219,11 @@ components:
           nullable: true
           maxLength: 20
           example: "+79998887766"
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1995-08-17"
         roles:
           type: array
           items:
@@ -259,6 +273,11 @@ components:
           nullable: true
           maxLength: 20
           example: "+79998887766"
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1995-08-17"
         roles:
           type: array
           items:
@@ -324,6 +343,11 @@ components:
           type: string
           nullable: true
           example: "+79998887766"
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1995-08-17"
         roles:
           type: array
           items:

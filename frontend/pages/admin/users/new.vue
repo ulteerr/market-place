@@ -102,6 +102,7 @@ const submitForm = async () => {
       last_name: form.last_name.trim(),
       middle_name: form.middle_name.trim() || null,
       gender: form.gender || null,
+      birth_date: form.birth_date || null,
       email: form.email.trim(),
       phone: form.phone.trim() || null,
       password: form.password,

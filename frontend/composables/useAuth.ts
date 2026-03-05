@@ -14,6 +14,9 @@ interface AuthUser {
   first_name?: string;
   last_name?: string;
   middle_name?: string;
+  gender?: 'male' | 'female' | null;
+  phone?: string | null;
+  birth_date?: string | null;
   settings?: {
     locale?: 'ru' | 'en' | null;
     theme?: 'light' | 'dark';

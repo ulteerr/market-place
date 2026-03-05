@@ -15,6 +15,7 @@ export interface AdminUserFormModel {
   last_name: string;
   middle_name: string;
   gender: 'male' | 'female' | '';
+  birth_date: string | null;
   email: string;
   phone: string;
   password: string;
@@ -58,6 +59,7 @@ export const useAdminUserForm = (options: UseAdminUserFormOptions) => {
     last_name: '',
     middle_name: '',
     gender: '',
+    birth_date: null,
     email: '',
     phone: '',
     password: '',
@@ -97,6 +99,7 @@ export const useAdminUserForm = (options: UseAdminUserFormOptions) => {
     last_name: '',
     middle_name: '',
     gender: '',
+    birth_date: '',
     email: '',
     phone: '',
     password: '',

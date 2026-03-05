@@ -30,7 +30,7 @@ test.describe('Admin settings responsive', () => {
         page.getByRole('heading', { level: 2, name: 'Настройки пользователя' })
       ).toBeVisible();
 
-      const themeSwitch = page.getByRole('switch', { name: 'Тёмная тема' });
+      const themeSwitch = page.getByRole('switch', { name: /Т[её]мная тема|Dark theme/i });
       const menuSwitch = page.getByRole('switch', { name: 'Collapse menu' });
 
       await expect(themeSwitch).toHaveAttribute('aria-checked', 'false');

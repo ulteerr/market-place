@@ -45,9 +45,28 @@
 
     <div v-if="isOpen && !disabled" :class="styles.menu">
       <div :class="styles.header">
-        <button type="button" :class="styles.navBtn" @click="shiftMonth(-1)">‹</button>
+        <div :class="styles.headerNav">
+          <button type="button" :class="styles.navBtn" title="Previous year" @click="shiftYear(-1)">
+            «
+          </button>
+          <button
+            type="button"
+            :class="styles.navBtn"
+            title="Previous month"
+            @click="shiftMonth(-1)"
+          >
+            ‹
+          </button>
+        </div>
         <span :class="styles.monthLabel">{{ currentMonthLabel }}</span>
-        <button type="button" :class="styles.navBtn" @click="shiftMonth(1)">›</button>
+        <div :class="styles.headerNav">
+          <button type="button" :class="styles.navBtn" title="Next month" @click="shiftMonth(1)">
+            ›
+          </button>
+          <button type="button" :class="styles.navBtn" title="Next year" @click="shiftYear(1)">
+            »
+          </button>
+        </div>
       </div>
 
       <div :class="styles.weekdays">
@@ -287,6 +306,13 @@ const close = () => {
 const shiftMonth = (delta: number) => {
   const date = parseIso(currentMonth.value);
   date.setMonth(date.getMonth() + delta);
+  date.setDate(1);
+  currentMonth.value = toIso(date);
+};
+
+const shiftYear = (delta: number) => {
+  const date = parseIso(currentMonth.value);
+  date.setFullYear(date.getFullYear() + delta);
   date.setDate(1);
   currentMonth.value = toIso(date);
 };

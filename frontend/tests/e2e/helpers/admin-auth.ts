@@ -9,6 +9,9 @@ export interface AdminAuthUser {
   first_name?: string;
   last_name?: string;
   middle_name?: string;
+  gender?: 'male' | 'female' | null;
+  phone?: string | null;
+  birth_date?: string | null;
   avatar?: {
     id: string;
     url: string;
@@ -38,6 +41,9 @@ export const defaultAdminUser: AdminAuthUser = {
   first_name: 'Админ',
   last_name: 'Системный',
   middle_name: 'Тестовый',
+  gender: 'male',
+  phone: '+79990001122',
+  birth_date: '1990-01-15',
   roles: ['participant', 'admin'],
   permissions: [
     'admin.panel.access',

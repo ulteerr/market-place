@@ -32,9 +32,11 @@ final class MeController extends Controller
 
     public function updateProfile(UpdateMeProfileRequest $request): JsonResponse
     {
+        $payload = $request->validated();
+
         $user = $this->changeLogContext->withMeta(
             ["scope" => "profile"],
-            fn() => $this->usersService->updateUser($request->user(), $request->validated()),
+            fn() => $this->usersService->updateUser($request->user(), $payload),
         );
 
         return UserResponseFactory::success($user);

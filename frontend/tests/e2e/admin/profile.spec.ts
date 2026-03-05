@@ -20,6 +20,9 @@ test.describe('Admin profile page', () => {
     await expect(page.getByLabel('Имя')).toHaveValue(defaultAdminUser.first_name ?? '');
     await expect(page.getByLabel('Фамилия')).toHaveValue(defaultAdminUser.last_name ?? '');
     await expect(page.getByLabel('Отчество')).toHaveValue(defaultAdminUser.middle_name ?? '');
+    await expect(page.getByLabel('Пол')).toBeVisible();
+    await expect(page.getByLabel('Телефон')).toHaveValue(defaultAdminUser.phone ?? '');
+    await expect(page.getByLabel('Дата рождения')).toBeVisible();
     await expect(page.getByLabel('Email')).toHaveValue(defaultAdminUser.email);
     await expect(page.getByRole('button', { name: 'Сохранить' })).toBeVisible();
   });

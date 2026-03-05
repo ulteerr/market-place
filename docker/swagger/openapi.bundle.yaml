@@ -86,6 +86,13 @@ paths:
                   maxLength: 255
                   nullable: true
                   example: Алексеевич
+                gender:
+                  type: string
+                  nullable: true
+                  enum:
+                    - male
+                    - female
+                  example: male
                 email:
                   type: string
                   format: email
@@ -105,6 +112,11 @@ paths:
                   maxLength: 20
                   nullable: true
                   example: '+79998887766'
+                birth_date:
+                  type: string
+                  format: date
+                  nullable: true
+                  example: '1995-08-17'
       responses:
         '201':
           description: User registered
@@ -182,6 +194,10 @@ paths:
                   type: string
                   nullable: true
                   maxLength: 20
+                birth_date:
+                  type: string
+                  format: date
+                  nullable: true
                 email:
                   type: string
                   format: email
@@ -436,6 +452,7 @@ paths:
               - last_name
               - middle_name
               - gender
+              - birth_date
               - created_at
               - name
               - access
@@ -523,6 +540,11 @@ paths:
                               type: string
                               nullable: true
                               example: '+79998887766'
+                            birth_date:
+                              type: string
+                              format: date
+                              nullable: true
+                              example: '1995-08-17'
                             roles:
                               type: array
                               items:
@@ -614,6 +636,11 @@ paths:
                   nullable: true
                   maxLength: 20
                   example: '+79998887766'
+                birth_date:
+                  type: string
+                  format: date
+                  nullable: true
+                  example: '1995-08-17'
                 roles:
                   type: array
                   items:
@@ -690,6 +717,11 @@ paths:
                         type: string
                         nullable: true
                         example: '+79998887766'
+                      birth_date:
+                        type: string
+                        format: date
+                        nullable: true
+                        example: '1995-08-17'
                       roles:
                         type: array
                         description: Global platform roles
@@ -840,6 +872,11 @@ paths:
                   nullable: true
                   maxLength: 20
                   example: '+79998887766'
+                birth_date:
+                  type: string
+                  format: date
+                  nullable: true
+                  example: '1995-08-17'
                 roles:
                   type: array
                   items:
@@ -2651,20 +2688,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      required:
-                        - id
-                        - name
-                        - country_id
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                        name:
-                          type: string
-                        country_id:
-                          type: string
-                          format: uuid
+                      $ref: '#/paths/~1api~1admin~1geo~1regions~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
   /api/geo/cities:
@@ -2715,24 +2739,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      required:
-                        - id
-                        - name
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                        name:
-                          type: string
-                        country_id:
-                          type: string
-                          format: uuid
-                          nullable: true
-                        region_id:
-                          type: string
-                          format: uuid
-                          nullable: true
+                      $ref: '#/paths/~1api~1admin~1geo~1cities~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
   /api/geo/districts:
@@ -2777,20 +2784,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      required:
-                        - id
-                        - name
-                        - city_id
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                        name:
-                          type: string
-                        city_id:
-                          type: string
-                          format: uuid
+                      $ref: '#/paths/~1api~1admin~1geo~1districts~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
   /api/metro-lines:
@@ -2812,6 +2806,12 @@ paths:
           required: false
           schema:
             type: string
+        - name: entity_search
+          in: query
+          required: false
+          description: Narrow search by metro station name only
+          schema:
+            type: string
       responses:
         '200':
           description: Metro lines list
@@ -2829,32 +2829,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      required:
-                        - id
-                        - name
-                        - city_id
-                        - source
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                        name:
-                          type: string
-                        external_id:
-                          type: string
-                          nullable: true
-                        line_id:
-                          type: string
-                          nullable: true
-                        color:
-                          type: string
-                          nullable: true
-                        city_id:
-                          type: string
-                          format: uuid
-                        source:
-                          type: string
+                      $ref: '#/paths/~1api~1admin~1metro-lines~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
   /api/metro-stations:
@@ -2882,12 +2857,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: entity_search
-          in: query
-          required: false
-          description: Narrow search by metro station name only
-          schema:
-            type: string
       responses:
         '200':
           description: Metro stations list
@@ -2905,44 +2874,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      required:
-                        - id
-                        - name
-                        - metro_line_id
-                        - city_id
-                        - source
-                      properties:
-                        id:
-                          type: string
-                          format: uuid
-                        name:
-                          type: string
-                        external_id:
-                          type: string
-                          nullable: true
-                        line_id:
-                          type: string
-                          nullable: true
-                        geo_lat:
-                          type: number
-                          format: float
-                          nullable: true
-                        geo_lon:
-                          type: number
-                          format: float
-                          nullable: true
-                        is_closed:
-                          type: boolean
-                          nullable: true
-                        metro_line_id:
-                          type: string
-                          format: uuid
-                        city_id:
-                          type: string
-                          format: uuid
-                        source:
-                          type: string
+                      $ref: '#/paths/~1api~1admin~1metro-stations~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
   /api/admin/geo/countries:
@@ -3106,6 +3038,42 @@ paths:
       responses:
         '200':
           description: Paginated regions list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 3
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 56
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1geo~1regions~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3157,6 +3125,39 @@ paths:
       responses:
         '200':
           description: Region details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - name
+                      - country_id
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      country_id:
+                        type: string
+                        format: uuid
+                      country:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3239,6 +3240,42 @@ paths:
       responses:
         '200':
           description: Paginated cities list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 3
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 56
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1geo~1cities~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3294,6 +3331,50 @@ paths:
       responses:
         '200':
           description: City details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - name
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      country_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      region_id:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      country:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
+                      region:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3375,6 +3456,42 @@ paths:
       responses:
         '200':
           description: Paginated districts list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 3
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 56
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1geo~1districts~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3426,6 +3543,39 @@ paths:
       responses:
         '200':
           description: District details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - name
+                      - city_id
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      city_id:
+                        type: string
+                        format: uuid
+                      city:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3484,6 +3634,42 @@ paths:
       responses:
         '200':
           description: Paginated metro lines list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 3
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 56
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1metro-lines~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3547,6 +3733,51 @@ paths:
       responses:
         '200':
           description: Metro line details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - name
+                      - city_id
+                      - source
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      external_id:
+                        type: string
+                        nullable: true
+                      line_id:
+                        type: string
+                        nullable: true
+                      color:
+                        type: string
+                        nullable: true
+                      city_id:
+                        type: string
+                        format: uuid
+                      source:
+                        type: string
+                      city:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3640,6 +3871,42 @@ paths:
       responses:
         '200':
           description: Paginated metro stations list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 3
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 56
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/paths/~1api~1admin~1metro-stations~1%7Bid%7D/get/responses/200/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -3715,6 +3982,73 @@ paths:
       responses:
         '200':
           description: Metro station details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - id
+                      - name
+                      - metro_line_id
+                      - city_id
+                      - source
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      external_id:
+                        type: string
+                        nullable: true
+                      line_id:
+                        type: string
+                        nullable: true
+                      geo_lat:
+                        type: number
+                        format: float
+                        nullable: true
+                      geo_lon:
+                        type: number
+                        format: float
+                        nullable: true
+                      is_closed:
+                        type: boolean
+                        nullable: true
+                      metro_line_id:
+                        type: string
+                        format: uuid
+                      city_id:
+                        type: string
+                        format: uuid
+                      source:
+                        type: string
+                      metro_line:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
+                          color:
+                            type: string
+                            nullable: true
+                      city:
+                        type: object
+                        nullable: true
+                        properties:
+                          name:
+                            type: string
+                            nullable: true
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':

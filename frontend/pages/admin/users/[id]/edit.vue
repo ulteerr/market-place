@@ -117,6 +117,24 @@ const {
   initialRoles: [],
 });
 
+const normalizeIsoDate = (value: string | null | undefined): string | null => {
+  if (!value || typeof value !== 'string') {
+    return null;
+  }
+
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (match) {
+    return match[1] ?? null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString().slice(0, 10);
+};
+
 const fetchUser = async () => {
   const id = String(route.params.id || '');
 
@@ -142,6 +160,7 @@ const fetchUser = async () => {
     form.last_name = user.last_name || '';
     form.middle_name = user.middle_name || '';
     form.gender = user.gender || '';
+    form.birth_date = normalizeIsoDate(user.birth_date);
     form.email = user.email || '';
     form.phone = user.phone || '';
     form.roles = normalizeAssignableRoles(userRoleCodes);
@@ -167,6 +186,7 @@ const submitForm = async () => {
       last_name: form.last_name.trim(),
       middle_name: form.middle_name.trim() || null,
       gender: form.gender || null,
+      birth_date: form.birth_date || null,
       email: form.email.trim(),
       phone: form.phone.trim() || null,
       roles: [...safeRoles],

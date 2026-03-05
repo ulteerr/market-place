@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Modules\Children\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Shared\Validation\BirthDateRules;
 use Illuminate\Http\Request;
 use Modules\Children\Services\ChildService;
 
@@ -24,7 +25,7 @@ final class ChildController extends Controller
             "last_name" => "required|string|max:255",
             "middle_name" => "nullable|string|max:255",
             "gender" => "nullable|string|in:male,female",
-            "birth_date" => "nullable|date",
+            "birth_date" => BirthDateRules::forChildren(fn() => $request->user()?->birth_date),
         ]);
         $data["user_id"] = (string) $request->user()->id;
 
@@ -54,7 +55,7 @@ final class ChildController extends Controller
             "last_name" => "sometimes|string|max:255",
             "middle_name" => "nullable|string|max:255",
             "gender" => "nullable|string|in:male,female",
-            "birth_date" => "nullable|date",
+            "birth_date" => BirthDateRules::forChildren(fn() => $request->user()?->birth_date),
         ]);
         $updated = $this->service->updateChild($child, $data);
         return response()->json($updated);

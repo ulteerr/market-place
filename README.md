@@ -271,6 +271,32 @@ Meaning:
 
 ---
 
+## 🎂 Birth Date Validation ENV
+
+Birth date rules are centralized in `App\\Shared\\Validation\\BirthDateRules` and configured via `backend/.env`.
+
+```env
+BIRTH_DATE_USERS_DISALLOW_FUTURE=true
+BIRTH_DATE_USERS_MIN_AGE=14
+BIRTH_DATE_CHILDREN_DISALLOW_FUTURE=true
+BIRTH_DATE_CHILDREN_MIN_PARENT_GAP=12
+BIRTH_DATE_CHILDREN_REQUIRE_PARENT_BIRTH_DATE=false
+```
+
+Meaning:
+
+- `BIRTH_DATE_USERS_DISALLOW_FUTURE`: blocks future dates for user profile/admin users.
+- `BIRTH_DATE_USERS_MIN_AGE`: minimum user age in years (current default `14`).  
+  Set empty value to disable age restriction.
+- `BIRTH_DATE_CHILDREN_DISALLOW_FUTURE`: blocks future dates for children.
+- `BIRTH_DATE_CHILDREN_MIN_PARENT_GAP`: minimum age gap in years between parent and child birth dates (default `12`).  
+  Set empty value to disable this rule.
+- `BIRTH_DATE_CHILDREN_REQUIRE_PARENT_BIRTH_DATE`: if `true`, child birth date validation fails when parent birth date is missing.
+
+This allows changing policy quickly (for example `14 -> 18`) without code changes.
+
+---
+
 ## 🧰 Makefile Commands
 
 The project includes a Makefile to simplify common Docker and Laravel commands.

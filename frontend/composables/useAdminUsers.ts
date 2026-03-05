@@ -21,6 +21,7 @@ export interface AdminUser {
   middle_name?: string | null;
   gender?: 'male' | 'female' | null;
   phone?: string | null;
+  birth_date?: string | null;
   roles?: Array<string | { code?: string | null }>;
   permissions?: string[];
   permission_overrides?: {
@@ -60,6 +61,7 @@ export interface CreateUserPayload {
   middle_name?: string | null;
   gender?: 'male' | 'female' | null;
   phone?: string | null;
+  birth_date?: string | null;
   roles?: string[];
   permission_overrides?: {
     allow: string[];
@@ -77,6 +79,7 @@ export interface UpdateUserPayload {
   middle_name?: string | null;
   gender?: 'male' | 'female' | null;
   phone?: string | null;
+  birth_date?: string | null;
   roles?: string[];
   permission_overrides?: {
     allow: string[];

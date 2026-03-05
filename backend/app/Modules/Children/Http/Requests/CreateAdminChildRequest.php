@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Children\Http\Requests;
 
 use App\Shared\Http\Requests\CrudRequest;
+use App\Shared\Validation\BirthDateRules;
+use Modules\Users\Models\User;
 
 final class CreateAdminChildRequest extends CrudRequest
 {
@@ -16,7 +18,14 @@ final class CreateAdminChildRequest extends CrudRequest
             "last_name" => ["required", "string", "max:255"],
             "middle_name" => ["nullable", "string", "max:255"],
             "gender" => ["nullable", "string", "in:male,female"],
-            "birth_date" => ["nullable", "date"],
+            "birth_date" => BirthDateRules::forChildren(function () {
+                $userId = trim((string) $this->input("user_id", ""));
+                if ($userId === "") {
+                    return null;
+                }
+
+                return User::query()->whereKey($userId)->value("birth_date");
+            }),
         ];
     }
 }

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect, userEvent, within } from 'storybook/test';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiSwitch from './UiSwitch.vue';
 
 const meta = {
@@ -29,6 +30,7 @@ const meta = {
       },
     },
   },
+  render: createVModelRender(UiSwitch, 'UiSwitch'),
 } satisfies Meta<typeof UiSwitch>;
 
 export default meta;

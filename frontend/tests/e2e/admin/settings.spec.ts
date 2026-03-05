@@ -27,8 +27,8 @@ test.describe('Admin settings page', () => {
       page.getByRole('heading', { level: 2, name: 'Настройки пользователя' })
     ).toBeVisible();
 
-    const themeSwitch = page.getByRole('switch', { name: 'Тёмная тема' });
-    const menuSwitch = page.getByRole('switch', { name: 'Collapse menu' });
+    const themeSwitch = page.getByRole('switch', { name: /Т[её]мная тема|Dark theme/i });
+    const menuSwitch = page.getByRole('switch', { name: /Collapse menu/i });
 
     await expect(themeSwitch).toHaveAttribute('aria-checked', 'false');
     await expect(menuSwitch).toHaveAttribute('aria-checked', 'false');
@@ -60,7 +60,7 @@ test.describe('Admin settings page', () => {
 
     await page.goto('/admin/settings');
 
-    const themeSwitch = page.getByRole('switch', { name: 'Тёмная тема' });
+    const themeSwitch = page.getByRole('switch', { name: /Т[её]мная тема|Dark theme/i });
     await expect(themeSwitch).toHaveAttribute('aria-checked', 'false');
 
     for (let index = 0; index < 5; index += 1) {

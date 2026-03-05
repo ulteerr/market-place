@@ -96,6 +96,12 @@
   gap: 0.4rem;
 }
 
+.headerNav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .monthLabel {
   font-size: 0.86rem;
   font-weight: 600;

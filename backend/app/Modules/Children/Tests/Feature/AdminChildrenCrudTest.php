@@ -12,6 +12,7 @@ use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Config;
 
 final class AdminChildrenCrudTest extends AdminCrudTestCase
 {
@@ -263,5 +264,45 @@ final class AdminChildrenCrudTest extends AdminCrudTestCase
 
         $this->assertNotNull($deleteEntry);
         $this->assertSame("Обновленный", $deleteEntry->before["first_name"] ?? null);
+    }
+
+    #[Test]
+    public function admin_cannot_set_child_birth_date_in_future(): void
+    {
+        Config::set("birth-date.children.disallow_future", true);
+        $auth = $this->actingAsAdmin();
+        $parent = User::factory()->create([
+            "birth_date" => "1990-01-01",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->postJson($this->endpoint(), [
+                "user_id" => (string) $parent->id,
+                "first_name" => "Будущий",
+                "last_name" => "Ребенок",
+                "birth_date" => now()->addDay()->format("Y-m-d"),
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(["birth_date"]);
+    }
+
+    #[Test]
+    public function admin_cannot_set_child_birth_date_with_invalid_parent_gap(): void
+    {
+        Config::set("birth-date.children.min_parent_age_gap_years", 12);
+        $auth = $this->actingAsAdmin();
+        $parent = User::factory()->create([
+            "birth_date" => "2000-01-01",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->postJson($this->endpoint(), [
+                "user_id" => (string) $parent->id,
+                "first_name" => "Слишком",
+                "last_name" => "Рано",
+                "birth_date" => "2010-01-01",
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(["birth_date"]);
     }
 }

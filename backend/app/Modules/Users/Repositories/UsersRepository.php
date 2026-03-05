@@ -61,6 +61,7 @@ final class UsersRepository implements UsersRepositoryInterface
                 "middle_name",
                 "gender",
                 "phone",
+                "birth_date",
                 "created_at",
                 "updated_at",
             ])
@@ -99,7 +100,8 @@ final class UsersRepository implements UsersRepositoryInterface
                                     ->where("first_name", "like", $termLike)
                                     ->orWhere("last_name", "like", $termLike)
                                     ->orWhere("middle_name", "like", $termLike)
-                                    ->orWhere("gender", "like", $termLike);
+                                    ->orWhere("gender", "like", $termLike)
+                                    ->orWhere("birth_date", "like", $termLike);
                             });
                         }
                     });
@@ -126,7 +128,15 @@ final class UsersRepository implements UsersRepositoryInterface
             $sortDir = "desc";
         }
 
-        $allowedSorts = ["id", "first_name", "last_name", "middle_name", "gender", "created_at"];
+        $allowedSorts = [
+            "id",
+            "first_name",
+            "last_name",
+            "middle_name",
+            "gender",
+            "birth_date",
+            "created_at",
+        ];
 
         if ($sortBy === "name") {
             $query

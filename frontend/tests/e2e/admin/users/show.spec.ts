@@ -9,6 +9,7 @@ const shownUser = {
   last_name: 'Иванов',
   middle_name: 'Иванович',
   phone: '+79990001122',
+  birth_date: '1990-01-15',
   roles: ['admin', 'manager'],
   avatar: {
     id: 'file-u-1',
@@ -52,6 +53,7 @@ test.describe('Admin users show page', () => {
     await expect(page.locator('dd', { hasText: /^Иванович$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^ivanov@example\.com$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^\+79990001122$/ })).toBeVisible();
+    await expect(page.locator('dd', { hasText: /^1990-01-15$/ })).toBeVisible();
     await expect(page.locator('dd', { hasText: /^admin, manager$/ })).toBeVisible();
     await expect(page.locator('a[href="/admin/users/u-1/edit"]')).toBeVisible();
     await expect(page.locator('img[src="https://example.com/users/u-1-avatar.png"]')).toBeVisible();

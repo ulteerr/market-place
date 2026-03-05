@@ -49,6 +49,10 @@
             <dd>{{ user.phone || t('common.dash') }}</dd>
           </div>
           <div>
+            <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.birthDate') }}</dt>
+            <dd>{{ user.birth_date || t('common.dash') }}</dd>
+          </div>
+          <div>
             <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.roles') }}</dt>
             <dd>{{ (user.roles || []).join(', ') || t('common.dash') }}</dd>
           </div>

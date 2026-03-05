@@ -40,6 +40,12 @@ components:
           nullable: true
           example: Алексеевич
 
+        gender:
+          type: string
+          nullable: true
+          enum: [male, female]
+          example: male
+
         email:
           type: string
           format: email
@@ -62,6 +68,12 @@ components:
           maxLength: 20
           nullable: true
           example: "+79998887766"
+
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          example: "1995-08-17"
 
     AuthResponse:
       type: object
