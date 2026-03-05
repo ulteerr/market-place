@@ -1,11 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { ref } from 'vue';
+import { expect, userEvent, within } from 'storybook/test';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiDatePicker from './UiDatePicker.vue';
 
 const meta = {
   title: 'UI/Form Controls/UiDatePicker',
   component: UiDatePicker,
   tags: ['autodocs'],
+  argTypes: {
+    mode: {
+      control: 'select',
+      options: ['single', 'range'],
+    },
+  },
   args: {
     label: 'Дата создания',
     mode: 'single',
@@ -36,20 +43,13 @@ const meta = {
       },
     },
   },
-  render: (args) => ({
-    components: { UiDatePicker },
-    setup() {
-      const model = ref(args.modelValue);
-      return { args, model };
-    },
-    template: '<UiDatePicker v-bind="args" v-model="model" />',
-  }),
+  render: createVModelRender(UiDatePicker, 'UiDatePicker'),
 } satisfies Meta<typeof UiDatePicker>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Single: Story = {};
+export const Default: Story = {};
 
 export const Range: Story = {
   args: {
@@ -91,5 +91,15 @@ export const WithError: Story = {
       ru: { error: 'Дата обязательна' },
       en: { error: 'Date is required' },
     },
+  },
+};
+
+export const InteractionOpenPicker: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /Дата создания|Creation date/i });
+    await userEvent.click(trigger);
+    const nextMonthBtn = await canvas.findByRole('button', { name: '›' });
+    await expect(nextMonthBtn).toBeInTheDocument();
   },
 };

@@ -1,3 +1,5 @@
+import type { Meta, StoryObj } from '@storybook/vue3';
+import { expect, within } from 'storybook/test';
 import UiImageBlock from './UiImageBlock.vue';
 
 const demoImages = [
@@ -25,6 +27,10 @@ const meta = {
   title: 'UI/Media/UiImageBlock',
   component: UiImageBlock,
   tags: ['autodocs'],
+  argTypes: {
+    removable: { control: 'boolean' },
+    showAddButton: { control: 'boolean' },
+  },
   args: {
     title: 'Галерея',
     description: 'Изображения для карточки сущности',
@@ -36,21 +42,53 @@ const meta = {
     emptyText: 'Изображений пока нет',
     captionPrefix: 'Фото',
   },
-};
+  parameters: {
+    localeArgs: {
+      ru: {
+        title: 'Галерея',
+        description: 'Изображения для карточки сущности',
+        addButtonText: 'Добавить изображение',
+        removeButtonText: 'Удалить',
+        emptyText: 'Изображений пока нет',
+        captionPrefix: 'Фото',
+      },
+      en: {
+        title: 'Gallery',
+        description: 'Images for the entity card',
+        addButtonText: 'Add image',
+        removeButtonText: 'Remove',
+        emptyText: 'No images yet',
+        captionPrefix: 'Photo',
+      },
+    },
+  },
+} satisfies Meta<typeof UiImageBlock>;
 
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-export const Default = {};
+export const Default: Story = {};
 
-export const Empty = {
+export const Empty: Story = {
   args: {
     images: [],
   },
 };
 
-export const Readonly = {
+export const Readonly: Story = {
   args: {
     removable: false,
     showAddButton: false,
+  },
+};
+
+export const InteractionButtonsVisible: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole('button', { name: /Добавить изображение|Add image/i })
+    ).toBeInTheDocument();
+    const removeButtons = canvas.getAllByRole('button', { name: /Удалить|Remove/i });
+    await expect(removeButtons.length).toBeGreaterThan(0);
   },
 };

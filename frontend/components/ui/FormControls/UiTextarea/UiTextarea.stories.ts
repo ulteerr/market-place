@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
+import { expect, userEvent, within } from 'storybook/test';
 import UiTextarea from './UiTextarea.vue';
 
 const meta = {
@@ -55,5 +56,16 @@ export const WithError: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
+  },
+};
+
+export const InteractionTyping: Story = {
+  args: { modelValue: '' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const textarea = canvas.getByRole('textbox', { name: /Комментарий|Comment/i });
+    await userEvent.clear(textarea);
+    await userEvent.type(textarea, 'Новый комментарий');
+    await expect(textarea).toHaveValue('Новый комментарий');
   },
 };

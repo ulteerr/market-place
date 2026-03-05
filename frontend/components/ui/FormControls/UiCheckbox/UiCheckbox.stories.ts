@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect, userEvent, within } from 'storybook/test';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiCheckbox from './UiCheckbox.vue';
 
 const meta = {
   title: 'UI/Form Controls/UiCheckbox',
   component: UiCheckbox,
   tags: ['autodocs'],
+  render: createVModelRender(UiCheckbox, 'UiCheckbox'),
   args: {
     label: 'Подтвердить действие',
     description: 'Я подтверждаю, что ознакомлен с условиями.',

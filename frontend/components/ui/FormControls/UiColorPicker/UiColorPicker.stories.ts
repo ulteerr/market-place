@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect, userEvent, within } from 'storybook/test';
-import { ref, watch } from 'vue';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiColorPicker from './UiColorPicker.vue';
 
 const meta = {
@@ -10,6 +10,7 @@ const meta = {
   argTypes: {
     modelValue: { control: 'text' },
   },
+  render: createVModelRender(UiColorPicker, 'UiColorPicker'),
   args: {
     label: 'Цвет',
     modelValue: '#D6083B',
@@ -60,20 +61,6 @@ export const InteractionPaletteAndInput: Story = {
   args: {
     modelValue: '',
   },
-  render: (args) => ({
-    components: { UiColorPicker },
-    setup() {
-      const value = ref(String(args.modelValue ?? ''));
-      watch(
-        () => args.modelValue,
-        (next) => {
-          value.value = String(next ?? '');
-        }
-      );
-      return { args, value };
-    },
-    template: '<UiColorPicker v-bind="args" v-model="value" />',
-  }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const input = canvas.getByRole('textbox', { name: /Цвет|Color/i });

@@ -1,11 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { ref } from 'vue';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiCodeEditor from './UiCodeEditor.vue';
 
 const meta = {
   title: 'UI/Form Controls/UiCodeEditor',
   component: UiCodeEditor,
   tags: ['autodocs'],
+  argTypes: {
+    mode: {
+      control: 'select',
+      options: ['plain', 'json', 'wysiwyg'],
+    },
+  },
   args: {
     label: 'Шаблон уведомления',
     modelValue: '{\n  "title": "Welcome",\n  "enabled": true\n}',
@@ -35,20 +41,13 @@ const meta = {
       },
     },
   },
-  render: (args) => ({
-    components: { UiCodeEditor },
-    setup() {
-      const model = ref(args.modelValue);
-      return { args, model };
-    },
-    template: '<UiCodeEditor v-bind="args" v-model="model" />',
-  }),
+  render: createVModelRender(UiCodeEditor, 'UiCodeEditor'),
 } satisfies Meta<typeof UiCodeEditor>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const PlainText: Story = {};
+export const Default: Story = {};
 
 export const JsonMode: Story = {
   args: {

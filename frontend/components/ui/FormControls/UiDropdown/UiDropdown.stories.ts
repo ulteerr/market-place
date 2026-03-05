@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
+import { expect, userEvent, within } from 'storybook/test';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiDropdown from './UiDropdown.vue';
 
 const optionsRu = [
@@ -16,6 +18,10 @@ const meta = {
   title: 'UI/Form Controls/UiDropdown',
   component: UiDropdown,
   tags: ['autodocs'],
+  argTypes: {
+    options: { control: 'object', description: 'List of { label, value }' },
+  },
+  render: createVModelRender(UiDropdown, 'UiDropdown'),
   args: {
     label: 'Статус',
     modelValue: 'active',
@@ -70,5 +76,17 @@ export const WithError: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
+  },
+};
+
+export const InteractionSelectOption: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /Активен|Active/i });
+    await userEvent.click(trigger);
+    const listbox = canvas.getByRole('listbox');
+    const option = within(listbox).getByRole('button', { name: /Черновик|Draft/i });
+    await userEvent.click(option);
+    await expect(canvas.getByRole('button', { name: /Черновик|Draft/i })).toBeInTheDocument();
   },
 };

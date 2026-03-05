@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { ref } from 'vue';
+import { expect, userEvent, within } from 'storybook/test';
+import { createVModelRender } from '@/.storybook/vue-vmodel-render';
 import UiSelect from './UiSelect.vue';
 
 const optionsRu = [
@@ -19,6 +20,11 @@ const meta = {
   title: 'UI/Form Controls/UiSelect',
   component: UiSelect,
   tags: ['autodocs'],
+  argTypes: {
+    multiple: { control: 'boolean' },
+    searchable: { control: 'boolean' },
+    allowCreate: { control: 'boolean' },
+  },
   args: {
     label: 'Раздел',
     modelValue: 'users',
@@ -49,14 +55,7 @@ const meta = {
       },
     },
   },
-  render: (args) => ({
-    components: { UiSelect },
-    setup() {
-      const model = ref(args.modelValue);
-      return { args, model };
-    },
-    template: '<UiSelect v-bind="args" v-model="model" />',
-  }),
+  render: createVModelRender(UiSelect, 'UiSelect'),
 } satisfies Meta<typeof UiSelect>;
 
 export default meta;
@@ -104,5 +103,17 @@ export const WithError: Story = {
       ru: { error: 'Выберите хотя бы один раздел' },
       en: { error: 'Select at least one section' },
     },
+  },
+};
+
+export const InteractionOpenAndSelect: Story = {
+  args: { modelValue: null },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const combobox = canvas.getByRole('combobox', { name: /Раздел|Section/i });
+    await userEvent.click(combobox);
+    const option = await canvas.findByRole('option', { name: /Роли|Roles/i });
+    await userEvent.click(option);
+    await expect(combobox).toHaveAttribute('aria-expanded', 'false');
   },
 };

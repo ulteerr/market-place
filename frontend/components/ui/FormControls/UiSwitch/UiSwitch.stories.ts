@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
+import { expect, userEvent, within } from 'storybook/test';
 import UiSwitch from './UiSwitch.vue';
 
 const meta = {
@@ -57,5 +58,18 @@ export const WithError: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
+  },
+};
+
+export const InteractionToggle: Story = {
+  args: { modelValue: false },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const switchControl = canvas.getByRole('switch', {
+      name: /Показывать в админ-навигации|Show in admin navigation/i,
+    });
+    await expect(switchControl).toHaveAttribute('aria-checked', 'false');
+    await userEvent.click(switchControl);
+    await expect(switchControl).toHaveAttribute('aria-checked', 'true');
   },
 };
