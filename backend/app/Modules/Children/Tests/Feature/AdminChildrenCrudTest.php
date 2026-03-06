@@ -143,8 +143,12 @@ final class AdminChildrenCrudTest extends AdminCrudTestCase
             $this->markTestSkipped("Action log table is not available in this module test suite.");
         }
 
+        Config::set("birth-date.children.disallow_future", true);
+        Config::set("birth-date.children.min_parent_age_gap_years", 0);
         $auth = $this->actingAsAdmin();
-        $parent = User::factory()->create();
+        $parent = User::factory()->create([
+            "birth_date" => "1980-01-01",
+        ]);
 
         $createResponse = $this->withHeaders($auth["headers"])
             ->postJson($this->endpoint(), [

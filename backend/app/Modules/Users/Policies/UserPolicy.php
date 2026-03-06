@@ -32,4 +32,9 @@ final class UserPolicy
     {
         return $user->hasPermission("admin.users.delete");
     }
+
+    public function viewLastSeen(User $user, User $model): bool
+    {
+        return $user->id !== $model->id;
+    }
 }

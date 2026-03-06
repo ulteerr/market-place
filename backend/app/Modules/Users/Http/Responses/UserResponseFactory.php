@@ -7,8 +7,10 @@ namespace Modules\Users\Http\Responses;
 use App\Shared\Http\Responses\StatusResponseFactory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 use Modules\Users\Http\Resources\UserResource;
 use Modules\Users\Models\User;
+use Modules\Users\Services\PresenceService;
 
 final class UserResponseFactory
 {
@@ -22,7 +24,7 @@ final class UserResponseFactory
 
         $payload = [
             "status" => "ok",
-            "user" => new UserResource($user),
+            "user" => self::presentUser($user),
         ];
 
         if ($token !== null) {
@@ -42,11 +44,35 @@ final class UserResponseFactory
             ]);
         }
 
-        return StatusResponseFactory::paginated(
-            $users,
-            UserResource::collection($collection)->resolve(),
-            $status,
-        );
+        $visibilityById = [];
+        $presenceUsers = [];
+        foreach ($collection as $item) {
+            if (!$item instanceof User) {
+                continue;
+            }
+
+            $canViewPresence = self::canCurrentUserViewPresence($item);
+            $visibilityById[(string) $item->id] = $canViewPresence;
+
+            if ($canViewPresence) {
+                $presenceUsers[] = $item;
+            }
+        }
+
+        $onlineMap = self::presence()->isOnlineMap($presenceUsers);
+
+        $rows = $collection->map(function (User $item) use ($visibilityById, $onlineMap): array {
+            $id = (string) $item->id;
+            $canViewPresence = $visibilityById[$id] ?? false;
+
+            return (new UserResource(
+                $item,
+                $canViewPresence,
+                $canViewPresence ? $onlineMap[$id] ?? false : false,
+            ))->resolve();
+        });
+
+        return StatusResponseFactory::paginated($users, $rows->all(), $status);
     }
 
     public static function successWithMessage(
@@ -59,8 +85,34 @@ final class UserResponseFactory
 
         return StatusResponseFactory::successWithMessage(
             $message,
-            (new UserResource($user))->resolve(),
+            self::presentUser($user)->resolve(),
             $status,
         );
+    }
+
+    private static function presentUser(User $user): UserResource
+    {
+        $canCurrentUserViewPresence = self::canCurrentUserViewPresence($user);
+
+        return new UserResource(
+            $user,
+            $canCurrentUserViewPresence,
+            $canCurrentUserViewPresence ? self::presence()->isOnline($user) : false,
+        );
+    }
+
+    private static function canCurrentUserViewPresence(User $user): bool
+    {
+        $viewer = auth()->user();
+        if (!$viewer instanceof User) {
+            return false;
+        }
+
+        return Gate::forUser($viewer)->allows("viewLastSeen", $user);
+    }
+
+    private static function presence(): PresenceService
+    {
+        return app(PresenceService::class);
     }
 }

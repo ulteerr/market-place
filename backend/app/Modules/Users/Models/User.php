@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use App\Shared\Traits\HasActionLog;
 use App\Shared\Traits\HasChangeLog;
+use DateTimeInterface;
 use Modules\Children\Models\Child;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -48,6 +49,7 @@ final class User extends Authenticatable
     protected $casts = [
         "email_verified_at" => "datetime",
         "birth_date" => "date:Y-m-d",
+        "last_seen_at" => "datetime",
         "settings" => "array",
     ];
 
@@ -61,6 +63,12 @@ final class User extends Authenticatable
     protected function password(): Attribute
     {
         return Attribute::make(set: fn(?string $value) => $value ? Hash::make($value) : null);
+    }
+
+    public function markLastSeen(?DateTimeInterface $seenAt = null): void
+    {
+        $this->forceFill(["last_seen_at" => $seenAt ?? now()]);
+        $this->saveQuietly();
     }
 
     public function children()

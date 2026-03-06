@@ -59,6 +59,7 @@ services:
       dockerfile: docker/php/Dockerfile
     volumes:
       - ./backend:/var/www
+      - ./docker/swagger:/var/docker/swagger:ro
     networks:
       - app
 
@@ -107,6 +108,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    volumes:
+      - ./docker/data/redis:/data
     ports:
       - "${REDIS_PORT:-6381}:6379"
     networks:

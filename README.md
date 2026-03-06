@@ -101,6 +101,43 @@ make db-seed
 make db-reset-hard
 ```
 
+## 🧪 Testing Strategy
+
+Backend tests are split in two groups:
+
+- Быстрые/локальные тесты (по умолчанию), не зависящие от live Redis:
+
+```bash
+docker compose exec backend php artisan test --exclude-group=redis
+
+# or
+make test-unit
+```
+
+- Интеграционные Redis-тесты (реальный Redis, TTL/ключи presence):
+
+```bash
+docker compose exec backend php artisan test --group=redis
+
+# or
+make test-redis
+```
+
+В CI это делено на два job:
+- `backend-tests` — быстрые тесты (`--exclude-group=redis`)
+- `backend-redis-integration-tests` — только `--group=redis`
+
+Observability MVP tests (stage 1):
+
+```bash
+docker compose exec backend php artisan test --filter=Observability
+docker compose exec frontend npm run test:unit -- tests/unit/composables/useAdminObservability.spec.ts tests/unit/pages/admin/monitoring/index.spec.ts
+```
+
+В CI это вынесено в отдельные job:
+- `backend-observability-tests`
+- `frontend-observability-tests`
+
 ---
 
 ## 🔐 Admin Panel Login
@@ -361,8 +398,16 @@ make view-clear
 
 ```bash
 make test
+make test-unit
+make test-redis
 make test-auth
+make test-observability
 ```
+
+- `make test` — полный backend-прогон
+- `make test-unit` — быстрый прогон без redis-интеграционных тестов (`--exclude-group=redis`)
+- `make test-redis` — только redis-интеграционный прогон (`--group=redis`)
+- `make test-observability` — backend+frontend smoke-контур observability MVP
 
 ### Frontend E2E (Playwright)
 

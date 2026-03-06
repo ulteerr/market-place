@@ -10,6 +10,14 @@ use Modules\Files\Http\Resources\FileResource;
 
 final class UserResource extends JsonResource
 {
+    public function __construct(
+        $resource,
+        private readonly bool $showLastSeen = false,
+        private readonly bool $isOnline = false,
+    ) {
+        parent::__construct($resource);
+    }
+
     /**
      * @param Request $request
      */
@@ -60,6 +68,11 @@ final class UserResource extends JsonResource
                 ];
             }),
             "is_admin" => $this->whenLoaded("roles", fn() => $this->isAdmin()),
+            "last_seen_at" => $this->when(
+                $this->showLastSeen,
+                $this->last_seen_at?->toIso8601String(),
+            ),
+            "is_online" => $this->when($this->showLastSeen, $this->isOnline),
         ];
     }
 }

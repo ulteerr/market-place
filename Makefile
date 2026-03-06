@@ -1,6 +1,7 @@
 .PHONY: up down restart art comp migrate migrate-fresh db-seed db-reset-hard \
         cache-clear config-cache route-cache view-clear \
-        test test-auth swagger redoc openapi-validate openapi-bundle docs \
+        test test-unit test-redis test-auth test-observability test-observability-backend test-observability-frontend \
+        swagger redoc openapi-validate openapi-bundle docs \
         hooks-install \
         front front-install front-npm front-nuxi front-test front-storybook front-storybook-build
 
@@ -77,8 +78,24 @@ view-clear:
 test:
 	make art cmd="test"
 
+test-unit:
+	make art cmd="test --exclude-group=redis"
+
+test-redis:
+	make art cmd="test --group=redis"
+
 test-auth:
 	make art cmd="test app/Modules/Auth"
+
+test-observability:
+	make test-observability-backend
+	make test-observability-frontend
+
+test-observability-backend:
+	make art cmd="test --filter=Observability"
+
+test-observability-frontend:
+	docker-compose exec frontend npm run test:unit -- tests/unit/composables/useAdminObservability.spec.ts tests/unit/pages/admin/monitoring/index.spec.ts
 
 # --------------------------
 # Swagger / OpenAPI

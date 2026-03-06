@@ -29,6 +29,7 @@ return [
             "admin.metro.create" => "Создание метро-справочников в админке",
             "admin.metro.update" => "Изменение метро-справочников в админке",
             "admin.metro.delete" => "Удаление метро-справочников в админке",
+            "admin.monitoring.read" => "Просмотр мониторинга в админке",
         ],
         "org" => [
             "org.company.profile.read" => "Просмотр личного кабинета компании",
@@ -69,6 +70,7 @@ return [
             "admin.metro.create",
             "admin.metro.update",
             "admin.metro.delete",
+            "admin.monitoring.read",
             "org.company.profile.read",
             "org.company.profile.update",
             "org.company.profile.delete",
@@ -94,6 +96,7 @@ return [
             "admin.metro.create",
             "admin.metro.update",
             "admin.metro.delete",
+            "admin.monitoring.read",
             "org.members.read",
             "org.children.read",
             "user.profile.read",

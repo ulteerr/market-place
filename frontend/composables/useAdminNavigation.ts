@@ -32,6 +32,7 @@ const navigationPermissions: Record<string, string> = {
   organizations: 'org.company.profile.read',
   children: 'org.children.read',
   'action-logs': 'admin.action-log.read',
+  monitoring: 'admin.monitoring.read',
   'metro-lines': 'admin.metro.read',
   'metro-stations': 'admin.metro.read',
   'geo-countries': 'admin.geo.read',

@@ -8,27 +8,37 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Contracts\TokenServiceInterface;
 use Modules\Users\Contracts\UsersServiceInterface;
-use Modules\Users\Http\Resources\UserResource;
 use Modules\Users\Models\User;
+use Modules\Users\Services\PresenceService;
 
 final class AuthService
 {
     public function __construct(
         private readonly UsersServiceInterface $usersService,
-        private readonly TokenServiceInterface $tokenService
+        private readonly TokenServiceInterface $tokenService,
+        private readonly PresenceService $presenceService,
     ) {}
 
     public function login(array $credentials): array
     {
-        $user = $this->usersService->findByEmail($credentials['email']);
+        $user = $this->usersService->findByEmail($credentials["email"]);
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (!$user || !Hash::check($credentials["password"], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Invalid credentials'],
+                "email" => ["Invalid credentials"],
             ]);
         }
 
+        $user->markLastSeen();
+        $this->presenceService->setOnline($user);
+
         return $this->buildAuthResponse($user);
+    }
+
+    public function logout(User $user): void
+    {
+        $user->markLastSeen();
+        $this->presenceService->setOffline($user);
     }
 
     public function register(array $data): array
@@ -40,8 +50,8 @@ final class AuthService
     private function buildAuthResponse(User $user): array
     {
         return [
-            'user'  => $user,
-            'token' => $this->tokenService->createToken($user),
+            "user" => $user,
+            "token" => $this->tokenService->createToken($user),
         ];
     }
 }

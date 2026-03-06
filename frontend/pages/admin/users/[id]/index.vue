@@ -56,6 +56,10 @@
             <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.roles') }}</dt>
             <dd>{{ (user.roles || []).join(', ') || t('common.dash') }}</dd>
           </div>
+          <div>
+            <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.status') }}</dt>
+            <dd>{{ formatPresenceStatus(user.is_online, user.last_seen_at) }}</dd>
+          </div>
         </dl>
 
         <div class="mt-5 flex gap-2">
@@ -92,7 +96,9 @@ import {
   getHighestRoleLevelFromCodes,
 } from '~/composables/useAdminUsers';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
+import { useUserPresenceStatus } from '~/composables/useUserPresenceStatus';
 const { t } = useI18n();
+const { formatPresenceStatus } = useUserPresenceStatus();
 
 definePageMeta({
   layout: 'admin',

@@ -102,6 +102,30 @@ me_settings_stream:
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
 
+presence_heartbeat:
+  post:
+    tags: [Users]
+    summary: Update presence heartbeat
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Heartbeat accepted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Heartbeat accepted
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+
 me_avatar:
   post:
     tags: [Users]

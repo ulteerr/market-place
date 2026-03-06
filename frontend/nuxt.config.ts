@@ -116,6 +116,14 @@ html[data-ui-ready='1'] #app-boot-loader {
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
+      presenceHeartbeatIntervalSeconds: Number(
+        process.env.NUXT_PUBLIC_PRESENCE_HEARTBEAT_INTERVAL_SECONDS || 30
+      ),
+      presenceHeartbeatMaxBackoffSeconds: Number(
+        process.env.NUXT_PUBLIC_PRESENCE_HEARTBEAT_MAX_BACKOFF_SECONDS || 300
+      ),
+      presenceHeartbeatPauseWhenHidden:
+        process.env.NUXT_PUBLIC_PRESENCE_HEARTBEAT_PAUSE_WHEN_HIDDEN !== 'false',
     },
   },
   i18n: {

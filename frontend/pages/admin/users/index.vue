@@ -85,17 +85,18 @@
                   {{ t('admin.users.index.headers.access') }} {{ listState.sortMark('access') }}
                 </button>
               </th>
+              <th>{{ t('admin.users.index.headers.status') }}</th>
               <th class="text-right">{{ t('admin.users.index.headers.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="8" class="admin-muted py-5 text-center text-sm">
+              <td colspan="9" class="admin-muted py-5 text-center text-sm">
                 {{ t('common.loading') }}
               </td>
             </tr>
             <tr v-else-if="!users.length">
-              <td colspan="8" class="admin-muted py-5 text-center text-sm">
+              <td colspan="9" class="admin-muted py-5 text-center text-sm">
                 {{ t('admin.users.index.empty') }}
               </td>
             </tr>
@@ -121,6 +122,7 @@
               <td>
                 <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
               </td>
+              <td>{{ formatPresenceStatus(item.is_online, item.last_seen_at) }}</td>
               <td>
                 <AdminCrudActions
                   :show-to="`/admin/users/${item.id}`"
@@ -177,6 +179,13 @@
           <p class="admin-muted text-xs">
             {{ t('admin.users.index.card.gender', { value: resolveGenderLabel(item.gender) }) }}
           </p>
+          <p class="admin-muted text-xs">
+            {{
+              t('admin.users.index.card.status', {
+                value: formatPresenceStatus(item.is_online, item.last_seen_at),
+              })
+            }}
+          </p>
           <div class="mt-2">
             <span :class="['access-chip', accessClass(item)]">{{ accessLabel(item) }}</span>
           </div>
@@ -225,7 +234,11 @@ import {
   getAdminUserFullName,
   resolveAdminUserPanelAccess,
 } from '~/composables/useAdminUsers';
+import { useUserPresenceStatus } from '~/composables/useUserPresenceStatus';
+import { createPresenceStatusRefreshController } from '~/composables/presence-status-refresh/runtime';
 const { t } = useI18n();
+const { formatPresenceStatus } = useUserPresenceStatus();
+const STATUS_REFRESH_INTERVAL_MS = 30_000;
 
 definePageMeta({
   layout: 'admin',
@@ -403,6 +416,34 @@ useDebouncedSearch(
   },
   { delay: 300, skipInitial: true }
 );
+
+const presenceStatusRefresh = createPresenceStatusRefreshController({
+  intervalMs: STATUS_REFRESH_INTERVAL_MS,
+  refresh: async () => {
+    await fetchUsers(pagination.value.current_page || 1);
+  },
+  isPageVisible: () => document.visibilityState === 'visible',
+});
+
+const handlePresenceVisibility = () => {
+  void presenceStatusRefresh.handleVisibilityChange();
+};
+
+const handlePresenceWindowFocus = () => {
+  void presenceStatusRefresh.handleWindowFocus();
+};
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', handlePresenceVisibility);
+  window.addEventListener('focus', handlePresenceWindowFocus);
+  presenceStatusRefresh.start();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', handlePresenceVisibility);
+  window.removeEventListener('focus', handlePresenceWindowFocus);
+  presenceStatusRefresh.stop();
+});
 </script>
 
 <style lang="scss" scoped src="./index.scss"></style>

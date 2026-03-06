@@ -18,6 +18,7 @@ export default {
       organizations: 'Organizations',
       children: 'Children',
       actionLogs: 'Change log',
+      monitoring: 'Monitoring',
       metroLines: 'Lines',
       metroStations: 'Stations',
       geoCountries: 'Countries',
@@ -110,6 +111,9 @@ export default {
           read: 'Read action log in admin',
           update: 'Update action log in admin',
           delete: 'Delete action log in admin',
+        },
+        monitoring: {
+          read: 'Read monitoring in admin',
         },
       },
       org: {
@@ -237,6 +241,41 @@ export default {
     contentTitle: 'Content',
     contentSubtitle: 'Edit sections, configure visibility, and moderate.',
   },
+  monitoring: {
+    title: 'Monitoring',
+    subtitle: 'Observability summary and incidents by domains.',
+    filters: {
+      domain: 'Domain',
+      allDomains: 'All domains',
+      incidentsLimit: 'Incidents limit',
+      refresh: 'Refresh',
+    },
+    cards: {
+      eventsTotal: 'Events',
+      errorsTotal: 'Errors',
+      avgDuration: 'Average duration (ms)',
+      lastEventAt: 'Last event',
+    },
+    incidents: {
+      title: 'Recent incidents',
+      empty: 'No incidents found.',
+      headers: {
+        time: 'Time',
+        domain: 'Domain',
+        event: 'Event',
+        status: 'Status',
+        severity: 'Severity',
+        component: 'Component',
+      },
+    },
+    alerts: {
+      title: 'Alerts',
+      empty: 'No active alerts.',
+    },
+    errors: {
+      load: 'Failed to load monitoring data.',
+    },
+  },
   profile: {
     title: 'My profile',
     subtitle: 'Edit personal data of the current user.',
@@ -298,6 +337,7 @@ export default {
         middleName: 'Middle name',
         gender: 'Gender',
         access: 'Access',
+        status: 'Status',
         actions: 'Actions',
       },
       preview: {
@@ -310,6 +350,7 @@ export default {
         firstName: 'First name: {value}',
         middleName: 'Middle name: {value}',
         gender: 'Gender: {value}',
+        status: 'Status: {value}',
       },
       sort: {
         id: 'ID',
@@ -364,6 +405,7 @@ export default {
         phone: 'Phone',
         birthDate: 'Birth date',
         roles: 'Roles',
+        status: 'Status',
       },
       errors: {
         invalidId: 'Invalid user identifier.',
@@ -398,6 +440,10 @@ export default {
       },
     },
     confirmDelete: 'Delete user {name}?',
+    presence: {
+      online: 'Online',
+      lastSeen: 'Last seen {value}',
+    },
   },
   children: {
     index: {

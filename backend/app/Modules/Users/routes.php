@@ -2,9 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Users\Http\Controllers\AdminAccessPermissionController;
+use Modules\Users\Http\Controllers\AdminObservabilityController;
 use Modules\Users\Http\Controllers\AdminRoleController;
 use Modules\Users\Http\Controllers\AdminUserController;
 use Modules\Users\Http\Controllers\MeController;
+use Modules\Users\Http\Controllers\PresenceController;
 
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/api/me", MeController::class);
@@ -14,6 +16,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::patch("/api/me/password", [MeController::class, "updatePassword"]);
     Route::post("/api/me/avatar", [MeController::class, "uploadAvatar"]);
     Route::delete("/api/me/avatar", [MeController::class, "deleteAvatar"]);
+    Route::post("/api/presence/heartbeat", [PresenceController::class, "heartbeat"]);
 });
 
 Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
@@ -53,5 +56,9 @@ Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
 
         Route::get("/permissions", [AdminAccessPermissionController::class, "index"])->middleware(
             "can_permission:admin.roles.read,admin.users.read",
+        );
+
+        Route::get("/observability", AdminObservabilityController::class)->middleware(
+            "can_permission:admin.monitoring.read",
         );
     });

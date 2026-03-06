@@ -5,6 +5,7 @@ export type AdminNavIcon =
   | 'users'
   | 'roles'
   | 'activity'
+  | 'monitoring'
   | 'organization'
   | 'organizations'
   | 'children'
@@ -61,6 +62,12 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
         to: '/admin/action-logs',
         labelKey: 'admin.layout.menu.actionLogs',
         icon: 'activity',
+      },
+      {
+        key: 'monitoring',
+        to: '/admin/monitoring',
+        labelKey: 'admin.layout.menu.monitoring',
+        icon: 'monitoring',
       },
     ],
   },

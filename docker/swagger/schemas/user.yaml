@@ -37,6 +37,15 @@ components:
           format: date
           nullable: true
           example: "1995-08-17"
+        last_seen_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-03-06T14:20:00Z"
+        is_online:
+          type: boolean
+          description: User is currently active (online presence)
+          example: false
         roles:
           type: array
           description: Global platform roles
@@ -348,6 +357,15 @@ components:
           format: date
           nullable: true
           example: "1995-08-17"
+        last_seen_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-03-06T14:20:00Z"
+        is_online:
+          type: boolean
+          description: User is currently active (online presence)
+          example: false
         roles:
           type: array
           items:

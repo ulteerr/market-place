@@ -18,6 +18,7 @@ export default {
       organizations: 'Организации',
       children: 'Дети',
       actionLogs: 'Журнал изменений',
+      monitoring: 'Мониторинг',
       metroLines: 'Ветки',
       metroStations: 'Станции',
       geoCountries: 'Страны',
@@ -109,6 +110,9 @@ export default {
           read: 'Просмотр action log в админке',
           update: 'Изменение action log в админке',
           delete: 'Удаление action log в админке',
+        },
+        monitoring: {
+          read: 'Просмотр мониторинга в админке',
         },
       },
       org: {
@@ -236,6 +240,41 @@ export default {
     contentTitle: 'Контент',
     contentSubtitle: 'Редактирование разделов, настройка видимости и модерирование.',
   },
+  monitoring: {
+    title: 'Мониторинг',
+    subtitle: 'Сводка событий и инцидентов по доменам observability.',
+    filters: {
+      domain: 'Домен',
+      allDomains: 'Все домены',
+      incidentsLimit: 'Лимит инцидентов',
+      refresh: 'Обновить',
+    },
+    cards: {
+      eventsTotal: 'События',
+      errorsTotal: 'Ошибки',
+      avgDuration: 'Средняя длительность (ms)',
+      lastEventAt: 'Последнее событие',
+    },
+    incidents: {
+      title: 'Последние инциденты',
+      empty: 'Инциденты не найдены.',
+      headers: {
+        time: 'Время',
+        domain: 'Домен',
+        event: 'Событие',
+        status: 'Статус',
+        severity: 'Severity',
+        component: 'Компонент',
+      },
+    },
+    alerts: {
+      title: 'Алерты',
+      empty: 'Активных алертов нет.',
+    },
+    errors: {
+      load: 'Не удалось загрузить данные мониторинга.',
+    },
+  },
   profile: {
     title: 'Мой профиль',
     subtitle: 'Редактирование личных данных текущего пользователя.',
@@ -297,6 +336,7 @@ export default {
         middleName: 'Отчество',
         gender: 'Пол',
         access: 'Доступ',
+        status: 'Статус',
         actions: 'Действия',
       },
       preview: {
@@ -309,6 +349,7 @@ export default {
         firstName: 'Имя: {value}',
         middleName: 'Отчество: {value}',
         gender: 'Пол: {value}',
+        status: 'Статус: {value}',
       },
       sort: {
         id: 'ID',
@@ -363,6 +404,7 @@ export default {
         phone: 'Телефон',
         birthDate: 'Дата рождения',
         roles: 'Роли',
+        status: 'Статус',
       },
       errors: {
         invalidId: 'Некорректный идентификатор пользователя.',
@@ -398,6 +440,10 @@ export default {
       },
     },
     confirmDelete: 'Удалить пользователя {name}?',
+    presence: {
+      online: 'Онлайн',
+      lastSeen: 'Был в сети {value}',
+    },
   },
   children: {
     index: {

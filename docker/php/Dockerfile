@@ -6,7 +6,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libpq-dev \
     libzip-dev \
-    && docker-php-ext-install pdo pdo_pgsql zip
+    && docker-php-ext-install pdo pdo_pgsql zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && printf "extension=redis.so\n" > /usr/local/etc/php/conf.d/docker-php-ext-redis.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

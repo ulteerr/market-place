@@ -22,6 +22,8 @@ export interface AdminUser {
   gender?: 'male' | 'female' | null;
   phone?: string | null;
   birth_date?: string | null;
+  last_seen_at?: string | null;
+  is_online?: boolean;
   roles?: Array<string | { code?: string | null }>;
   permissions?: string[];
   permission_overrides?: {

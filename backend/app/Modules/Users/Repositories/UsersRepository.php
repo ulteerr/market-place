@@ -62,6 +62,7 @@ final class UsersRepository implements UsersRepositoryInterface
                 "gender",
                 "phone",
                 "birth_date",
+                "last_seen_at",
                 "created_at",
                 "updated_at",
             ])
