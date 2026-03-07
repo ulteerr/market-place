@@ -6,7 +6,10 @@ namespace Modules\Auth\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Redis;
+use Modules\Users\Events\UserWentOffline;
+use Modules\Users\Events\UserWentOnline;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -18,6 +21,7 @@ final class LoginLogoutPresenceTest extends TestCase
     #[Test]
     public function login_updates_last_seen_and_marks_user_online(): void
     {
+        Event::fake([UserWentOnline::class]);
         Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));
         $user = User::factory()->create([
             "email" => "test@example.com",
@@ -48,11 +52,16 @@ final class LoginLogoutPresenceTest extends TestCase
         $this->assertTrue(
             $user->last_seen_at?->equalTo(Carbon::parse("2026-03-06 12:00:00")) ?? false,
         );
+        Event::assertDispatched(
+            UserWentOnline::class,
+            fn(UserWentOnline $event): bool => (string) $event->user->id === (string) $user->id,
+        );
     }
 
     #[Test]
     public function logout_updates_last_seen_timestamp(): void
     {
+        Event::fake([UserWentOffline::class]);
         Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));
 
         $auth = $this->actingAsUser();
@@ -75,6 +84,10 @@ final class LoginLogoutPresenceTest extends TestCase
         $user->refresh();
         $this->assertTrue(
             $user->last_seen_at?->equalTo(Carbon::parse("2026-03-06 12:00:00")) ?? false,
+        );
+        Event::assertDispatched(
+            UserWentOffline::class,
+            fn(UserWentOffline $event): bool => (string) $event->user->id === (string) $user->id,
         );
     }
 

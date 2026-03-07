@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Users\Http\Controllers\AdminAccessPermissionController;
 use Modules\Users\Http\Controllers\AdminObservabilityController;
+use Modules\Users\Http\Controllers\AdminRealtimeObservabilityEventController;
 use Modules\Users\Http\Controllers\AdminRoleController;
 use Modules\Users\Http\Controllers\AdminUserController;
 use Modules\Users\Http\Controllers\MeController;
@@ -60,5 +61,9 @@ Route::middleware(["auth:sanctum", "can_permission:admin.panel.access"])
 
         Route::get("/observability", AdminObservabilityController::class)->middleware(
             "can_permission:admin.monitoring.read",
+        );
+        Route::post(
+            "/observability/realtime-event",
+            AdminRealtimeObservabilityEventController::class,
         );
     });

@@ -10,6 +10,12 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NUXT_PUBLIC_API_BASE: http://localhost:${WEB_PORT:-8080}
+      NUXT_PUBLIC_REVERB_ENABLED: ${NUXT_PUBLIC_REVERB_ENABLED:-true}
+      NUXT_PUBLIC_REVERB_APP_KEY: ${NUXT_PUBLIC_REVERB_APP_KEY:-local-app-key}
+      NUXT_PUBLIC_REVERB_HOST: ${NUXT_PUBLIC_REVERB_HOST:-localhost}
+      NUXT_PUBLIC_REVERB_PORT: ${NUXT_PUBLIC_REVERB_PORT:-8083}
+      NUXT_PUBLIC_REVERB_SCHEME: ${NUXT_PUBLIC_REVERB_SCHEME:-http}
+      NUXT_PUBLIC_REVERB_AUTH_ENDPOINT: ${NUXT_PUBLIC_REVERB_AUTH_ENDPOINT:-/broadcasting/auth}
       FRONTEND_INSTALL_OWNER: "1"
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     volumes:
@@ -63,6 +69,36 @@ services:
     networks:
       - app
 
+  reverb:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    ports:
+      - "${REVERB_PORT:-8083}:8080"
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - app
+
+  presence-watcher:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    command: ["php", "artisan", "presence:watch-offline"]
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - app
+
   web:
     image: nginx:alpine
     restart: unless-stopped
@@ -108,6 +144,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--notify-keyspace-events", "Ex"]
     volumes:
       - ./docker/data/redis:/data
     ports:

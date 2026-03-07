@@ -9,7 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Shared\Http\Responses\StatusResponseFactory;
 use App\Shared\Services\ObservabilityService;
+use Modules\Users\Events\UserLastSeenUpdated;
+use Modules\Users\Events\UserWentOnline;
 use Modules\Users\Services\PresenceService;
+use Throwable;
 
 final class PresenceController extends Controller
 {
@@ -35,7 +38,16 @@ final class PresenceController extends Controller
             return StatusResponseFactory::error("Unauthorized", 401);
         }
 
-        $this->presenceService->heartbeat($user);
+        $heartbeatResult = $this->presenceService->heartbeat($user);
+
+        if (($heartbeatResult["became_online"] ?? false) === true) {
+            $this->dispatchPresenceBroadcastEvent(new UserWentOnline($user));
+        }
+
+        if (($heartbeatResult["last_seen_updated"] ?? false) === true) {
+            $this->dispatchPresenceBroadcastEvent(new UserLastSeenUpdated($user));
+        }
+
         $this->observabilityService->recordEvent(
             "presence",
             "presence.controller",
@@ -47,5 +59,34 @@ final class PresenceController extends Controller
         );
 
         return StatusResponseFactory::ok("Heartbeat accepted");
+    }
+
+    private function dispatchPresenceBroadcastEvent(object $event): void
+    {
+        try {
+            event($event);
+            $this->observabilityService->recordEvent(
+                "realtime",
+                "realtime.broadcast",
+                "broadcast_dispatch_ok",
+                "ok",
+                "info",
+                null,
+                ["event" => get_class($event)],
+            );
+        } catch (Throwable $exception) {
+            $this->observabilityService->recordEvent(
+                "realtime",
+                "realtime.broadcast",
+                "broadcast_dispatch_error",
+                "error",
+                "warning",
+                null,
+                [
+                    "event" => get_class($event),
+                    "error" => $exception->getMessage(),
+                ],
+            );
+        }
     }
 }

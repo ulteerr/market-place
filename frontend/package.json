@@ -22,7 +22,9 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "nuxt": "^4.0.3"
+    "laravel-echo": "^2.3.0",
+    "nuxt": "^4.0.3",
+    "pusher-js": "^8.4.0"
   },
   "devDependencies": {
     "@codemirror/commands": "^6.9.1",

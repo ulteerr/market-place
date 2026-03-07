@@ -120,10 +120,19 @@ final class PresenceService
         return true;
     }
 
-    public function heartbeat(User $user): void
+    /**
+     * @return array{became_online: bool, last_seen_updated: bool}
+     */
+    public function heartbeat(User $user): array
     {
+        $wasOnline = $this->isOnline($user);
         $this->setOnline($user);
-        $this->updateLastSeen($user);
+        $lastSeenUpdated = $this->updateLastSeen($user);
+
+        return [
+            "became_online" => !$wasOnline,
+            "last_seen_updated" => $lastSeenUpdated,
+        ];
     }
 
     private function shouldRefreshLastSeen(User $user, DateTimeInterface $seenAt): bool
@@ -183,8 +192,8 @@ final class PresenceService
     private function withoutRedisFailure(
         string $method,
         callable $operation,
-        bool|int|null $default = null,
-    ): bool|int|null {
+        mixed $default = null,
+    ): mixed {
         try {
             return $operation((string) config("presence.redis_connection", "presence"));
         } catch (Throwable $exception) {

@@ -139,6 +139,43 @@ test.describe('Admin users page', () => {
     await expect(page.locator('img[src="https://example.com/users/u-1-avatar.png"]')).toBeVisible();
   });
 
+  test('shows online when is_online is true even with old last_seen_at', async ({ page }) => {
+    await setupAdminAuth(page);
+
+    await page.route('**/api/admin/users**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          data: {
+            data: [
+              {
+                id: 'u-stale',
+                email: 'stale@example.com',
+                first_name: 'Старый',
+                last_name: 'Статус',
+                middle_name: null,
+                is_online: true,
+                last_seen_at: '2026-03-07T00:00:00.000Z',
+                permissions: [],
+              },
+            ],
+            current_page: 1,
+            last_page: 1,
+            per_page: 10,
+            total: 1,
+          },
+        }),
+      });
+    });
+
+    await page.goto('/admin/users');
+
+    await expect(page.getByText('Онлайн', { exact: true })).toBeVisible();
+    await expect(page.getByText('Был в сети')).toHaveCount(0);
+  });
+
   test('filters users by search automatically', async ({ page }) => {
     await setupUsersPage(page);
     await page.goto('/admin/users');

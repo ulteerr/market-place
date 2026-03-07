@@ -1,6 +1,7 @@
 .PHONY: up down restart art comp migrate migrate-fresh db-seed db-reset-hard \
         cache-clear config-cache route-cache view-clear \
-        test test-unit test-redis test-auth test-observability test-observability-backend test-observability-frontend \
+        test test-unit test-redis test-auth test-observability test-observability-backend test-observability-frontend test-all all-test \
+        ws-check all \
         swagger redoc openapi-validate openapi-bundle docs \
         hooks-install \
         front front-install front-npm front-nuxi front-test front-storybook front-storybook-build
@@ -76,7 +77,73 @@ view-clear:
 # --------------------------
 
 test:
+	make art cmd="config:clear"
 	make art cmd="test"
+
+test-all:
+	make test
+	make front-test
+
+all-test: test-all
+
+all:
+	make test-all
+	make ws-check
+
+ws-check:
+	@set -eu; \
+	echo "==> WS check: validate Reverb container status"; \
+	docker compose ps --status running reverb | grep -q "reverb" || { \
+		echo "ERROR: reverb container is not running"; \
+		docker compose ps reverb; \
+		exit 1; \
+	}; \
+	echo "==> WS check: validate presence-watcher status"; \
+	docker compose ps --status running presence-watcher | grep -q "presence-watcher" || { \
+		echo "ERROR: presence-watcher container is not running"; \
+		docker compose ps -a presence-watcher; \
+		exit 1; \
+	}; \
+	BACKEND_KEY="$$(grep -E '^REVERB_APP_KEY=' backend/.env | head -n1 | cut -d= -f2- | tr -d '\"')"; \
+	FRONTEND_KEY="$$(grep -E '^NUXT_PUBLIC_REVERB_APP_KEY=' .env 2>/dev/null | head -n1 | cut -d= -f2- | tr -d '\"' || true)"; \
+	if [ -z "$$FRONTEND_KEY" ]; then FRONTEND_KEY="local-app-key"; fi; \
+	if [ -z "$$BACKEND_KEY" ]; then \
+		echo "ERROR: REVERB_APP_KEY is empty in backend/.env"; \
+		exit 1; \
+	fi; \
+	if [ "$$FRONTEND_KEY" != "$$BACKEND_KEY" ]; then \
+		echo "ERROR: Reverb app key mismatch"; \
+		echo "  backend/.env REVERB_APP_KEY=$$BACKEND_KEY"; \
+		echo "  .env NUXT_PUBLIC_REVERB_APP_KEY=$$FRONTEND_KEY"; \
+		echo "Set NUXT_PUBLIC_REVERB_APP_KEY in root .env to backend REVERB_APP_KEY and restart frontend."; \
+		exit 1; \
+	fi; \
+	REVERB_PUBLIC_PORT="$${REVERB_PORT:-8083}"; \
+	WS_URL="http://localhost:$$REVERB_PUBLIC_PORT/app/$$FRONTEND_KEY?protocol=7&client=js&version=8.4.0&flash=false"; \
+	echo "==> WS check: handshake $$WS_URL"; \
+	set +e; \
+	HTTP_CODE="$$(curl -sS --max-time 3 -o /tmp/ws-check.body -D /tmp/ws-check.headers -w "%{http_code}" \
+		-H "Connection: Upgrade" \
+		-H "Upgrade: websocket" \
+		-H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+		-H "Sec-WebSocket-Version: 13" \
+		"$$WS_URL" 2>/tmp/ws-check.err)"; \
+	CURL_EXIT_CODE="$$?"; \
+	set -e; \
+	if [ "$$CURL_EXIT_CODE" -ne 0 ] && [ "$$HTTP_CODE" != "101" ]; then \
+		echo "ERROR: WebSocket handshake request failed (curl exit $$CURL_EXIT_CODE)"; \
+		cat /tmp/ws-check.err || true; \
+		exit 1; \
+	fi; \
+	if [ "$$HTTP_CODE" != "101" ]; then \
+		echo "ERROR: WebSocket handshake failed (expected 101, got $$HTTP_CODE)"; \
+		echo "--- Response headers ---"; \
+		cat /tmp/ws-check.headers || true; \
+		echo "--- Response body ---"; \
+		cat /tmp/ws-check.body || true; \
+		exit 1; \
+	fi; \
+	echo "OK: WebSocket handshake is healthy (101 Switching Protocols)."
 
 test-unit:
 	make art cmd="test --exclude-group=redis"

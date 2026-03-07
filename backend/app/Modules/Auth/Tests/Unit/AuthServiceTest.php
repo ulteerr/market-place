@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Tests\Unit;
 
+use App\Shared\Services\ObservabilityService;
 use Tests\TestCase;
 use Modules\Auth\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,8 +51,14 @@ class AuthServiceTest extends TestCase
         Redis::shouldReceive("connection")->never();
 
         $presenceService = app(PresenceService::class);
+        $observabilityService = app(ObservabilityService::class);
 
-        $authService = new AuthService($usersService, $tokenService, $presenceService);
+        $authService = new AuthService(
+            $usersService,
+            $tokenService,
+            $presenceService,
+            $observabilityService,
+        );
 
         $result = $authService->register($data);
 
@@ -97,8 +104,14 @@ class AuthServiceTest extends TestCase
         Redis::shouldReceive("setex")->once()->with($key, 90, 1)->andReturn(1);
 
         $presenceService = app(PresenceService::class);
+        $observabilityService = app(ObservabilityService::class);
 
-        $authService = new AuthService($usersService, $tokenService, $presenceService);
+        $authService = new AuthService(
+            $usersService,
+            $tokenService,
+            $presenceService,
+            $observabilityService,
+        );
 
         $result = $authService->login($credentials);
 

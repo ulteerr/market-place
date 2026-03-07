@@ -58,7 +58,9 @@ final class AdminChildrenCrudTest extends AdminCrudTestCase
 
     protected function createPayload(): array
     {
-        $parent = User::factory()->create();
+        $parent = User::factory()->create([
+            "birth_date" => "1990-01-01",
+        ]);
 
         return [
             "user_id" => (string) $parent->id,
@@ -208,7 +210,9 @@ final class AdminChildrenCrudTest extends AdminCrudTestCase
     public function admin_actions_are_written_to_changelog_for_child_crud(): void
     {
         $auth = $this->actingAsAdmin();
-        $parent = User::factory()->create();
+        $parent = User::factory()->create([
+            "birth_date" => "1990-01-01",
+        ]);
 
         $createResponse = $this->withHeaders($auth["headers"])
             ->postJson($this->endpoint(), [

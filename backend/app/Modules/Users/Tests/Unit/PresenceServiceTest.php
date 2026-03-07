@@ -19,8 +19,11 @@ final class PresenceServiceTest extends TestCase
     #[Test]
     public function is_online_map_reads_presence_in_single_batch_call(): void
     {
+        Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));
         $onlineUser = User::factory()->create();
         $offlineUser = User::factory()->create();
+        $onlineUser->markLastSeen(Carbon::parse("2026-03-06 11:40:00"));
+        $offlineUser->markLastSeen(Carbon::parse("2026-03-06 11:59:30"));
 
         $keyPrefix = (string) config("presence.redis_connection", "presence");
 
@@ -55,8 +58,8 @@ final class PresenceServiceTest extends TestCase
 
         $this->assertArrayHasKey((string) $onlineUser->id, $result);
         $this->assertArrayHasKey((string) $offlineUser->id, $result);
-        $this->assertIsBool($result[(string) $onlineUser->id]);
-        $this->assertIsBool($result[(string) $offlineUser->id]);
+        $this->assertSame(true, $result[(string) $onlineUser->id]);
+        $this->assertSame(false, $result[(string) $offlineUser->id]);
     }
 
     #[Test]

@@ -96,9 +96,20 @@ import {
   getHighestRoleLevelFromCodes,
 } from '~/composables/useAdminUsers';
 import { getApiErrorMessage } from '~/composables/useAdminCrudCommon';
+import { useRealtimeEcho } from '~/composables/realtime-echo/useRealtimeEcho';
+import {
+  applyPresencePatchToUser,
+  subscribeToUsersPresence,
+} from '~/composables/realtime-presence/runtime';
+import { useRealtimeEchoState } from '~/composables/realtime-echo/useRealtimeEchoState';
+import { createPresenceStatusRefreshController } from '~/composables/presence-status-refresh/runtime';
+import { useRealtimeObservability } from '~/composables/useRealtimeObservability';
 import { useUserPresenceStatus } from '~/composables/useUserPresenceStatus';
 const { t } = useI18n();
 const { formatPresenceStatus } = useUserPresenceStatus();
+const { reportRealtimeEvent } = useRealtimeObservability();
+const realtimeEchoState = useRealtimeEchoState();
+const STATUS_REFRESH_INTERVAL_MS = 30_000;
 
 definePageMeta({
   layout: 'admin',
@@ -108,7 +119,7 @@ definePageMeta({
 
 const route = useRoute();
 const usersApi = useAdminUsers();
-const { user: authUser } = useAuth();
+const { user: authUser, isAuthenticated, token } = useAuth();
 const { hasPermission } = usePermissions();
 const canUpdateUsers = computed(() => hasPermission('admin.users.update'));
 const canReadChangeLog = computed(() => hasPermission('admin.changelog.read'));
@@ -119,8 +130,9 @@ const actorMaxRoleLevel = computed(() =>
 const user = ref<AdminUser | null>(null);
 const loading = ref(false);
 const loadError = ref('');
+let stopRealtimePresenceSubscription: (() => void) | null = null;
 
-const fetchUser = async () => {
+const fetchUser = async (options?: { silent?: boolean }) => {
   const id = String(route.params.id || '');
 
   if (!id) {
@@ -128,7 +140,10 @@ const fetchUser = async () => {
     return;
   }
 
-  loading.value = true;
+  const shouldShowLoading = options?.silent !== true;
+  if (shouldShowLoading) {
+    loading.value = true;
+  }
   loadError.value = '';
 
   try {
@@ -136,8 +151,106 @@ const fetchUser = async () => {
   } catch (error) {
     loadError.value = getApiErrorMessage(error, t('admin.users.show.errors.load'));
   } finally {
-    loading.value = false;
+    if (shouldShowLoading) {
+      loading.value = false;
+    }
   }
+};
+
+const presenceStatusRefresh = createPresenceStatusRefreshController({
+  intervalMs: STATUS_REFRESH_INTERVAL_MS,
+  refresh: () => fetchUser({ silent: true }),
+  isPageVisible: () => document.visibilityState === 'visible',
+});
+let realtimePresenceRetryTimer: ReturnType<typeof setTimeout> | null = null;
+const pollingEnabled = ref(false);
+
+const setPollingEnabled = (enabled: boolean) => {
+  if (pollingEnabled.value === enabled) {
+    return;
+  }
+
+  pollingEnabled.value = enabled;
+  if (enabled) {
+    presenceStatusRefresh.start();
+    return;
+  }
+
+  presenceStatusRefresh.stop();
+};
+
+const clearRealtimeRetryTimer = () => {
+  if (realtimePresenceRetryTimer === null) {
+    return;
+  }
+
+  clearTimeout(realtimePresenceRetryTimer);
+  realtimePresenceRetryTimer = null;
+};
+
+const scheduleRealtimeRetry = () => {
+  if (realtimePresenceRetryTimer !== null || stopRealtimePresenceSubscription) {
+    return;
+  }
+
+  realtimePresenceRetryTimer = setTimeout(() => {
+    realtimePresenceRetryTimer = null;
+    void connectRealtimePresence();
+  }, 2_000);
+};
+
+const connectRealtimePresence = async () => {
+  if (!isAuthenticated.value || !token.value || stopRealtimePresenceSubscription) {
+    return;
+  }
+
+  const realtimeEcho = useRealtimeEcho();
+  if (!realtimeEcho) {
+    return;
+  }
+
+  const echo = await realtimeEcho.connect();
+  if (!echo) {
+    setPollingEnabled(true);
+    void reportRealtimeEvent('websocket_subscribe_error', 'error', 'warning', {
+      channel: 'users.presence',
+    });
+    scheduleRealtimeRetry();
+    return;
+  }
+
+  clearRealtimeRetryTimer();
+  stopRealtimePresenceSubscription = subscribeToUsersPresence(
+    echo,
+    (payload) => {
+      user.value = applyPresencePatchToUser(user.value, payload);
+    },
+    {
+      onSubscribed: () => {
+        setPollingEnabled(false);
+        void reportRealtimeEvent('websocket_subscribe_ok', 'ok', 'info', {
+          channel: 'users.presence',
+        });
+      },
+      onError: () => {
+        stopRealtimePresenceSubscription?.();
+        stopRealtimePresenceSubscription = null;
+        setPollingEnabled(true);
+        void reportRealtimeEvent('websocket_subscribe_error', 'error', 'warning', {
+          channel: 'users.presence',
+        });
+        scheduleRealtimeRetry();
+      },
+    }
+  );
+};
+
+const handlePresenceVisibility = () => {
+  void presenceStatusRefresh.handleVisibilityChange();
+};
+
+const handlePresenceWindowFocus = () => {
+  void presenceStatusRefresh.handleWindowFocus();
 };
 
 const userInitials = computed(() => {
@@ -172,7 +285,66 @@ const canEditViewedUser = computed(() => {
   return getHighestRoleLevelForUser(user.value) <= actorMaxRoleLevel.value;
 });
 
-onMounted(fetchUser);
+onMounted(() => {
+  void fetchUser();
+});
+onMounted(() => {
+  document.addEventListener('visibilitychange', handlePresenceVisibility);
+  window.addEventListener('focus', handlePresenceWindowFocus);
+  setPollingEnabled(false);
+  void connectRealtimePresence();
+});
+
+watch([isAuthenticated, token], ([authenticated, tokenValue]) => {
+  if (!authenticated || !tokenValue) {
+    setPollingEnabled(false);
+    clearRealtimeRetryTimer();
+    stopRealtimePresenceSubscription?.();
+    stopRealtimePresenceSubscription = null;
+    return;
+  }
+
+  if (!stopRealtimePresenceSubscription) {
+    setPollingEnabled(true);
+    void connectRealtimePresence();
+  }
+});
+
+if (realtimeEchoState) {
+  watch(
+    realtimeEchoState,
+    (state) => {
+      if (state === 'connected') {
+        if (!stopRealtimePresenceSubscription) {
+          void connectRealtimePresence();
+        }
+        return;
+      }
+
+      if (state === 'connecting') {
+        return;
+      }
+
+      stopRealtimePresenceSubscription?.();
+      stopRealtimePresenceSubscription = null;
+
+      if (isAuthenticated.value && token.value) {
+        setPollingEnabled(true);
+        scheduleRealtimeRetry();
+      }
+    },
+    { immediate: true }
+  );
+}
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', handlePresenceVisibility);
+  window.removeEventListener('focus', handlePresenceWindowFocus);
+  setPollingEnabled(false);
+  clearRealtimeRetryTimer();
+  stopRealtimePresenceSubscription?.();
+  stopRealtimePresenceSubscription = null;
+});
 
 const onUserRolledBack = async () => {
   await fetchUser();

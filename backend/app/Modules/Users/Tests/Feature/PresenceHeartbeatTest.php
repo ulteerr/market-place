@@ -6,8 +6,11 @@ namespace Modules\Users\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Modules\Users\Events\UserLastSeenUpdated;
+use Modules\Users\Events\UserWentOnline;
 use Modules\Users\Models\User;
 use Modules\Users\Services\PresenceService;
 use PHPUnit\Framework\Attributes\Test;
@@ -90,8 +93,27 @@ final class PresenceHeartbeatTest extends TestCase
     }
 
     #[Test]
+    public function heartbeat_broadcasts_online_event_only_once_while_user_remains_online(): void
+    {
+        Event::fake([UserWentOnline::class, UserLastSeenUpdated::class]);
+        Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));
+        $auth = $this->actingAsUser();
+        /** @var User $user */
+        $user = $auth["user"];
+        $user->markLastSeen(Carbon::parse("2026-03-06 11:50:00"));
+        $this->mockRedisPresenceForUser($user);
+
+        $this->withHeaders($auth["headers"])->postJson("/api/presence/heartbeat")->assertOk();
+        $this->withHeaders($auth["headers"])->postJson("/api/presence/heartbeat")->assertOk();
+
+        Event::assertDispatchedTimes(UserWentOnline::class, 1);
+        Event::assertDispatchedTimes(UserLastSeenUpdated::class, 1);
+    }
+
+    #[Test]
     public function heartbeat_does_not_fail_when_redis_is_unavailable(): void
     {
+        Event::fake([UserWentOnline::class, UserLastSeenUpdated::class]);
         Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));
         $auth = $this->actingAsUser();
         /** @var User $user */
@@ -100,16 +122,20 @@ final class PresenceHeartbeatTest extends TestCase
 
         $keyPrefix = (string) config("presence.redis_connection", "presence");
         Redis::shouldReceive("connection")
-            ->once()
+            ->twice()
             ->with($keyPrefix)
             ->andThrow(new RuntimeException("redis unavailable"));
 
         Log::shouldReceive("warning")
-            ->once()
+            ->twice()
             ->with(
                 "PresenceService redis operation failed",
                 \Mockery::on(
-                    fn(array $context): bool => ($context["method"] ?? null) === "setOnline" &&
+                    fn(array $context): bool => in_array(
+                        $context["method"] ?? null,
+                        ["isOnline", "setOnline"],
+                        true,
+                    ) &&
                         ($context["connection"] ?? null) === $keyPrefix &&
                         str_contains((string) ($context["error"] ?? ""), "redis unavailable"),
                 ),

@@ -9,25 +9,20 @@ use Modules\Users\Repositories\UsersRepositoryInterface;
 use Modules\Users\Repositories\UsersRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Users\Contracts\UsersServiceInterface;
+use Modules\Users\Console\Commands\WatchPresenceExpiryCommand;
 use Modules\Users\Repositories\RolesRepository;
 use Modules\Users\Repositories\RolesRepositoryInterface;
 use Modules\Users\Services\UsersService;
 
 final class UsersServiceProvider extends ModuleServiceProvider
 {
-    protected string $moduleName = 'Users';
+    protected string $moduleName = "Users";
 
     public function register(): void
     {
         $this->app->bind(UsersRepositoryInterface::class, UsersRepository::class);
-        $this->app->bind(
-            UsersServiceInterface::class,
-            UsersService::class
-        );
-        $this->app->bind(
-            RolesRepositoryInterface::class,
-            RolesRepository::class
-        );
+        $this->app->bind(UsersServiceInterface::class, UsersService::class);
+        $this->app->bind(RolesRepositoryInterface::class, RolesRepository::class);
     }
 
     public function boot(): void
@@ -35,10 +30,12 @@ final class UsersServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         if ($this->app->runningInConsole()) {
+            $this->commands([WatchPresenceExpiryCommand::class]);
+
             Factory::guessFactoryNamesUsing(
-                fn(string $modelName) =>
-                'Modules\\Users\\Database\\Factories\\' .
-                    class_basename($modelName) . 'Factory'
+                fn(string $modelName) => "Modules\\Users\\Database\\Factories\\" .
+                    class_basename($modelName) .
+                    "Factory",
             );
         }
     }

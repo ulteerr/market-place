@@ -234,10 +234,19 @@ import {
   getAdminUserFullName,
   resolveAdminUserPanelAccess,
 } from '~/composables/useAdminUsers';
+import { useRealtimeEcho } from '~/composables/realtime-echo/useRealtimeEcho';
+import {
+  applyPresencePatchToUsers,
+  subscribeToUsersPresence,
+} from '~/composables/realtime-presence/runtime';
+import { useRealtimeEchoState } from '~/composables/realtime-echo/useRealtimeEchoState';
+import { useRealtimeObservability } from '~/composables/useRealtimeObservability';
 import { useUserPresenceStatus } from '~/composables/useUserPresenceStatus';
 import { createPresenceStatusRefreshController } from '~/composables/presence-status-refresh/runtime';
 const { t } = useI18n();
 const { formatPresenceStatus } = useUserPresenceStatus();
+const { reportRealtimeEvent } = useRealtimeObservability();
+const realtimeEchoState = useRealtimeEchoState();
 const STATUS_REFRESH_INTERVAL_MS = 30_000;
 
 definePageMeta({
@@ -249,7 +258,7 @@ definePageMeta({
 const usersApi = useAdminUsers();
 const route = useRoute();
 const router = useRouter();
-const { user: authUser } = useAuth();
+const { user: authUser, isAuthenticated, token } = useAuth();
 const { hasPermission } = usePermissions();
 const canReadUsers = computed(() => hasPermission('admin.users.read'));
 const canCreateUsers = computed(() => hasPermission('admin.users.create'));
@@ -420,10 +429,93 @@ useDebouncedSearch(
 const presenceStatusRefresh = createPresenceStatusRefreshController({
   intervalMs: STATUS_REFRESH_INTERVAL_MS,
   refresh: async () => {
-    await fetchUsers(pagination.value.current_page || 1);
+    await fetchUsers(pagination.current_page || 1);
   },
   isPageVisible: () => document.visibilityState === 'visible',
 });
+let stopRealtimePresenceSubscription: (() => void) | null = null;
+let realtimePresenceRetryTimer: ReturnType<typeof setTimeout> | null = null;
+const pollingEnabled = ref(false);
+
+const setPollingEnabled = (enabled: boolean) => {
+  if (pollingEnabled.value === enabled) {
+    return;
+  }
+
+  pollingEnabled.value = enabled;
+  if (enabled) {
+    presenceStatusRefresh.start();
+    return;
+  }
+
+  presenceStatusRefresh.stop();
+};
+
+const clearRealtimeRetryTimer = () => {
+  if (realtimePresenceRetryTimer === null) {
+    return;
+  }
+
+  clearTimeout(realtimePresenceRetryTimer);
+  realtimePresenceRetryTimer = null;
+};
+
+const scheduleRealtimeRetry = () => {
+  if (realtimePresenceRetryTimer !== null || stopRealtimePresenceSubscription) {
+    return;
+  }
+
+  realtimePresenceRetryTimer = setTimeout(() => {
+    realtimePresenceRetryTimer = null;
+    void connectRealtimePresence();
+  }, 2_000);
+};
+
+const connectRealtimePresence = async () => {
+  if (!isAuthenticated.value || !token.value || stopRealtimePresenceSubscription) {
+    return;
+  }
+
+  const realtimeEcho = useRealtimeEcho();
+  if (!realtimeEcho) {
+    return;
+  }
+
+  const echo = await realtimeEcho.connect();
+  if (!echo) {
+    setPollingEnabled(true);
+    void reportRealtimeEvent('websocket_subscribe_error', 'error', 'warning', {
+      channel: 'users.presence',
+    });
+    scheduleRealtimeRetry();
+    return;
+  }
+
+  clearRealtimeRetryTimer();
+  stopRealtimePresenceSubscription = subscribeToUsersPresence(
+    echo,
+    (payload) => {
+      users.value = applyPresencePatchToUsers(users.value, payload);
+    },
+    {
+      onSubscribed: () => {
+        setPollingEnabled(false);
+        void reportRealtimeEvent('websocket_subscribe_ok', 'ok', 'info', {
+          channel: 'users.presence',
+        });
+      },
+      onError: () => {
+        stopRealtimePresenceSubscription?.();
+        stopRealtimePresenceSubscription = null;
+        setPollingEnabled(true);
+        void reportRealtimeEvent('websocket_subscribe_error', 'error', 'warning', {
+          channel: 'users.presence',
+        });
+        scheduleRealtimeRetry();
+      },
+    }
+  );
+};
 
 const handlePresenceVisibility = () => {
   void presenceStatusRefresh.handleVisibilityChange();
@@ -436,13 +528,59 @@ const handlePresenceWindowFocus = () => {
 onMounted(() => {
   document.addEventListener('visibilitychange', handlePresenceVisibility);
   window.addEventListener('focus', handlePresenceWindowFocus);
-  presenceStatusRefresh.start();
+  setPollingEnabled(true);
+  void connectRealtimePresence();
 });
+
+watch([isAuthenticated, token], ([authenticated, tokenValue]) => {
+  if (!authenticated || !tokenValue) {
+    setPollingEnabled(false);
+    clearRealtimeRetryTimer();
+    stopRealtimePresenceSubscription?.();
+    stopRealtimePresenceSubscription = null;
+    return;
+  }
+
+  if (!stopRealtimePresenceSubscription) {
+    setPollingEnabled(true);
+    void connectRealtimePresence();
+  }
+});
+
+if (realtimeEchoState) {
+  watch(
+    realtimeEchoState,
+    (state) => {
+      if (state === 'connected') {
+        if (!stopRealtimePresenceSubscription) {
+          void connectRealtimePresence();
+        }
+        return;
+      }
+
+      if (state === 'connecting') {
+        return;
+      }
+
+      stopRealtimePresenceSubscription?.();
+      stopRealtimePresenceSubscription = null;
+
+      if (isAuthenticated.value && token.value) {
+        setPollingEnabled(true);
+        scheduleRealtimeRetry();
+      }
+    },
+    { immediate: true }
+  );
+}
 
 onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', handlePresenceVisibility);
   window.removeEventListener('focus', handlePresenceWindowFocus);
-  presenceStatusRefresh.stop();
+  setPollingEnabled(false);
+  clearRealtimeRetryTimer();
+  stopRealtimePresenceSubscription?.();
+  stopRealtimePresenceSubscription = null;
 });
 </script>
 

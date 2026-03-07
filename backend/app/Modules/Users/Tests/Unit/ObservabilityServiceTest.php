@@ -129,4 +129,28 @@ final class ObservabilityServiceTest extends TestCase
         $this->assertSame(3, $alerts[0]["events_total"] ?? null);
         $this->assertSame(2, $alerts[0]["errors_total"] ?? null);
     }
+
+    #[Test]
+    public function it_records_realtime_event_with_masked_meta_and_stable_shape(): void
+    {
+        $payload = app(ObservabilityService::class)->recordEvent(
+            "realtime",
+            "realtime.client",
+            "websocket_connect_error",
+            "error",
+            "warning",
+            12,
+            [
+                "channel" => "users.presence",
+                "authorization" => "Bearer secret",
+            ],
+        );
+
+        $this->assertSame("realtime", $payload["domain"] ?? null);
+        $this->assertSame("realtime.client", $payload["component"] ?? null);
+        $this->assertSame("websocket_connect_error", $payload["event"] ?? null);
+        $this->assertSame("error", $payload["status"] ?? null);
+        $this->assertSame("[masked]", $payload["meta"]["authorization"] ?? null);
+        $this->assertSame("users.presence", $payload["meta"]["channel"] ?? null);
+    }
 }

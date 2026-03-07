@@ -59,6 +59,32 @@ test.describe('Admin users show page', () => {
     await expect(page.locator('img[src="https://example.com/users/u-1-avatar.png"]')).toBeVisible();
   });
 
+  test('shows online on profile when is_online is true even with old last_seen_at', async ({
+    page,
+  }) => {
+    await setupAdminAuth(page);
+
+    await page.route('**/api/admin/users/u-1', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'ok',
+          user: {
+            ...shownUser,
+            is_online: true,
+            last_seen_at: '2026-03-07T00:00:00.000Z',
+          },
+        }),
+      });
+    });
+
+    await page.goto('/admin/users/u-1');
+
+    await expect(page.getByText('Онлайн', { exact: true })).toBeVisible();
+    await expect(page.getByText('Был в сети')).toHaveCount(0);
+  });
+
   test('applies rollback and refreshes shown user data', async ({ page }) => {
     await setupAdminAuth(page);
 

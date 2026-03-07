@@ -2,8 +2,8 @@
 
 # 🛒 Marketplace Platform
 
-Frontend + backend for Marketplace built with **Nuxt 4**, **Laravel**, **PostgreSQL**, **Redis**, and **Docker**.  
-Frontend handles public and admin pages; backend is focused on API and authentication.
+Frontend + backend for Marketplace built with **Nuxt 4**, **Laravel 12**, **PostgreSQL**, **Redis**, **Reverb (WebSocket)**, and **Docker**.  
+Frontend handles public and admin pages; backend provides API/auth plus realtime presence and observability services.
 
 ---
 
@@ -14,6 +14,8 @@ Frontend handles public and admin pages; backend is focused on API and authentic
 - Tailwind CSS
 - PostgreSQL 15
 - Redis
+- Laravel Reverb / WebSocket (Echo)
+- Presence watcher (Redis key-expire listener)
 - Nginx
 - Docker & Docker Compose
 - OpenAPI 3.0
@@ -26,9 +28,10 @@ Frontend handles public and admin pages; backend is focused on API and authentic
 ```text
 project-root/
 ├─ frontend/              # Nuxt 4 frontend (public + admin pages)
-├─ backend/              # Laravel application
+├─ backend/               # Laravel API, auth, modules, realtime events
 ├─ docker/
 │  ├─ nginx/             # Nginx config
+│  ├─ php/               # PHP-FPM image + entrypoint
 │  └─ swagger/           # OpenAPI documentation (source of truth)
 │     ├─ openapi.yaml
 │     ├─ modules/
@@ -37,6 +40,7 @@ project-root/
 │     │  ├─ auth.yaml
 │     │  └─ user.yaml
 │     └─ errors.yaml
+├─ backend/storage/logs/system/ # Daily system logs (DD-MM-YYYY.log, retention 14 days)
 ├─ docker-compose.yml
 ├─ Makefile
 └─ README.md
@@ -126,6 +130,33 @@ make test-redis
 В CI это делено на два job:
 - `backend-tests` — быстрые тесты (`--exclude-group=redis`)
 - `backend-redis-integration-tests` — только `--group=redis`
+
+Полный локальный прогон backend + frontend:
+
+```bash
+make test-all
+# alias:
+make all-test
+```
+
+Команда запускает:
+- backend: `make test`
+- frontend: `make front-test` (unit + e2e)
+
+Проверка WebSocket (Reverb) и конфигурации ключей frontend/backend:
+
+```bash
+make ws-check
+```
+
+Команда `make all` теперь запускает:
+- `make test-all`
+- `make ws-check`
+
+`make ws-check` проверяет:
+- что контейнеры `reverb` и `presence-watcher` запущены;
+- что `REVERB_APP_KEY` в `backend/.env` совпадает с `NUXT_PUBLIC_REVERB_APP_KEY` в корневом `.env`;
+- что WebSocket handshake отвечает `101 Switching Protocols`.
 
 Observability MVP tests (stage 1):
 
@@ -218,11 +249,89 @@ make db-seed
 | Backend API    | http://localhost:8080 |
 | Swagger UI     | http://localhost:8081 |
 | ReDoc CE       | http://localhost:8082 |
+| Reverb WS      | ws://localhost:8083   |
 | PostgreSQL     | localhost:5433        |
 | pgAdmin        | http://localhost:5050 |
 | Redis          | localhost:6381        |
 
 Порты можно изменить в корневом `.env`.
+
+---
+
+## 🔌 Realtime (WebSocket / Reverb) Runbook
+
+### 1. Что должно быть поднято
+
+```bash
+docker compose up -d backend reverb redis presence-watcher frontend
+docker compose ps
+```
+
+Проверьте, что сервисы `reverb` и `presence-watcher` в состоянии `Up`.
+
+`presence-watcher` слушает Redis key-expire события и отправляет `users.offline`, когда presence-ключ истекает по TTL.
+
+### 2. Backend env (Reverb/Broadcast)
+
+В `backend/.env`:
+
+```env
+BROADCAST_CONNECTION=reverb
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=8080
+REVERB_HOST=reverb
+REVERB_PORT=8080
+REVERB_SCHEME=http
+REVERB_APP_ID=local-app-id
+REVERB_APP_KEY=local-app-key
+REVERB_APP_SECRET=local-app-secret
+```
+
+### 3. Frontend env (Echo client)
+
+В корневом `.env` или `frontend/.env`:
+
+```env
+NUXT_PUBLIC_REVERB_ENABLED=true
+NUXT_PUBLIC_REVERB_APP_KEY=local-app-key
+NUXT_PUBLIC_REVERB_HOST=localhost
+NUXT_PUBLIC_REVERB_PORT=8083
+NUXT_PUBLIC_REVERB_SCHEME=http
+NUXT_PUBLIC_REVERB_AUTH_ENDPOINT=/broadcasting/auth
+```
+
+### 4. Быстрая проверка realtime
+
+1. Войти в админку в двух браузерных сессиях под разными пользователями.
+2. Открыть `/admin/users`.
+3. Выполнить logout/login или оставить активный heartbeat.
+4. Проверить, что статус пользователя (`online / был в сети ...`) обновляется без ручного refresh.
+
+### 5. Диагностика проблем
+
+- Порт занят (`8083`): измените `REVERB_PORT` и `NUXT_PUBLIC_REVERB_PORT` в `.env`, затем `docker compose up -d`.
+- Redis недоступен: проверьте `docker compose ps redis` и логи `docker compose logs redis`.
+- Reverb не стартует: `docker compose logs reverb` и убедитесь, что в PHP-образе включен `pcntl`.
+- `users.offline` не приходит по TTL: проверьте `docker compose logs presence-watcher`.
+- `403` на channel auth (`/broadcasting/auth`):
+  - пользователь должен быть авторизован (`auth:sanctum`);
+  - Bearer токен должен передаваться в Echo auth headers;
+  - канал должен быть разрешен в модульном `channels.php` (например `backend/app/Modules/Users/channels.php`).
+
+### 6. Проверка observability realtime-домена
+
+- Клиент отправляет события:
+  - `websocket_connect_ok/error`
+  - `websocket_subscribe_ok/error`
+- Backend отправляет:
+  - `broadcast_dispatch_ok/error`
+
+Проверка:
+
+```bash
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:8080/api/admin/observability?domain=realtime"
+```
 
 ---
 

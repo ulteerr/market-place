@@ -116,6 +116,12 @@ html[data-ui-ready='1'] #app-boot-loader {
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
+      reverbEnabled: process.env.NUXT_PUBLIC_REVERB_ENABLED !== 'false',
+      reverbAppKey: process.env.NUXT_PUBLIC_REVERB_APP_KEY || '',
+      reverbHost: process.env.NUXT_PUBLIC_REVERB_HOST || 'localhost',
+      reverbPort: Number(process.env.NUXT_PUBLIC_REVERB_PORT || 8083),
+      reverbScheme: process.env.NUXT_PUBLIC_REVERB_SCHEME || 'http',
+      reverbAuthEndpoint: process.env.NUXT_PUBLIC_REVERB_AUTH_ENDPOINT || '/broadcasting/auth',
       presenceHeartbeatIntervalSeconds: Number(
         process.env.NUXT_PUBLIC_PRESENCE_HEARTBEAT_INTERVAL_SECONDS || 30
       ),
