@@ -83,6 +83,7 @@ final class WatchPresenceExpiryCommand extends Command
         $host = (string) ($redisConfig["host"] ?? "127.0.0.1");
         $port = (int) ($redisConfig["port"] ?? 6379);
         $timeout = (float) ($redisConfig["timeout"] ?? 0.0);
+        $readTimeout = (float) ($redisConfig["read_timeout"] ?? -1);
         $password = $redisConfig["password"] ?? null;
         $username = $redisConfig["username"] ?? null;
 
@@ -98,6 +99,8 @@ final class WatchPresenceExpiryCommand extends Command
         }
 
         $client->setOption(PhpRedis::OPT_PREFIX, "");
+        // Keep Pub/Sub socket open and avoid periodic reconnect noise on idle channels.
+        $client->setOption(PhpRedis::OPT_READ_TIMEOUT, $readTimeout);
         $client->select($database);
 
         return $client;

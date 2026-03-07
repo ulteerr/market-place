@@ -2,19 +2,20 @@
 import { mount } from '@vue/test-utils';
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import MetricDashboardSection from '~/components/admin/Metrics/MetricDashboardSection/MetricDashboardSection.vue';
 import MonitoringPage from '~/pages/admin/monitoring/index.vue';
 
-describe('admin monitoring page', () => {
+describe('admin monitoring metrics layout', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubGlobal('ref', ref);
     vi.stubGlobal('computed', computed);
     vi.stubGlobal('watch', watch);
     vi.stubGlobal('onMounted', onMounted);
-    vi.stubGlobal('useId', () => 'test-monitoring');
+    vi.stubGlobal('useId', () => 'test-monitoring-layout');
   });
 
-  it('renders aggregated metrics and incidents from observability payload', async () => {
+  it('renders metrics dashboard section and passes data to child metrics', async () => {
     const getDashboard = vi.fn().mockResolvedValue({
       summary: {
         updated_at: '2026-03-06T12:00:00.000Z',
@@ -37,19 +38,7 @@ describe('admin monitoring page', () => {
           },
         },
       },
-      incidents: [
-        {
-          timestamp: '2026-03-06T12:00:00.000Z',
-          domain: 'presence',
-          component: 'presence.service',
-          event: 'redis_operation',
-          severity: 'warning',
-          status: 'error',
-          duration_ms: null,
-          request_id: null,
-          meta: {},
-        },
-      ],
+      incidents: [],
       alerts: [],
     });
 
@@ -58,9 +47,7 @@ describe('admin monitoring page', () => {
       t: (key: string) => key,
       locale: ref('en'),
     }));
-    vi.stubGlobal('useAdminObservability', () => ({
-      getDashboard,
-    }));
+    vi.stubGlobal('useAdminObservability', () => ({ getDashboard }));
 
     const wrapper = mount(MonitoringPage, {
       global: {
@@ -82,11 +69,16 @@ describe('admin monitoring page', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(getDashboard).toHaveBeenCalledTimes(1);
-    expect(wrapper.text()).toContain('3');
-    expect(wrapper.text()).toContain('1');
-    expect(wrapper.text()).toContain('33');
-    expect(wrapper.text()).toContain('presence.service');
-    expect(wrapper.text()).toContain('redis_operation');
+    const metricsSection = wrapper.findComponent(MetricDashboardSection);
+    expect(metricsSection.exists()).toBeTruthy();
+
+    const props = metricsSection.props();
+    expect(props.donutData.totalValue).toBe(3);
+    expect(props.lineData.series).toHaveLength(3);
+    expect(props.kpiItems).toHaveLength(3);
+
+    expect(wrapper.find('[data-test="metric-donut-card"]').exists()).toBeTruthy();
+    expect(wrapper.find('[data-test="metric-line-card"]').exists()).toBeTruthy();
+    expect(wrapper.find('[data-test="metric-kpi-grid"]').exists()).toBeTruthy();
   });
 });

@@ -105,6 +105,19 @@ make db-seed
 make db-reset-hard
 ```
 
+### Очистка Laravel кэшей одной командой
+
+```bash
+make app-clear
+```
+
+Команда выполняет:
+- `php artisan optimize:clear`
+- `php artisan cache:clear`
+- `php artisan config:clear`
+- `php artisan route:clear`
+- `php artisan view:clear`
+
 ## 🧪 Testing Strategy
 
 Backend tests are split in two groups:

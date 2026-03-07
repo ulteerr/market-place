@@ -5,11 +5,52 @@ export default defineNuxtPlugin(() => {
   const { isAuthenticated, token } = useAuth();
   const { reportRealtimeEvent } = useRealtimeObservability();
   const connectionState = ref('disconnected');
+  const CONNECT_ERROR_STABILITY_MS = 5_000;
 
   const reverbPort = Math.max(1, Number(config.public.reverbPort ?? 8083));
   const reverbScheme = String(config.public.reverbScheme ?? 'http').toLowerCase();
   const forceTls = reverbScheme === 'https';
   let lastConnectionState = '';
+  let pendingConnectErrorState: string | null = null;
+  let pendingConnectErrorTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const clearPendingConnectError = () => {
+    if (pendingConnectErrorTimer !== null) {
+      clearTimeout(pendingConnectErrorTimer);
+      pendingConnectErrorTimer = null;
+    }
+    pendingConnectErrorState = null;
+  };
+
+  const scheduleConnectErrorReport = (state: string) => {
+    if (!isAuthenticated.value) {
+      return;
+    }
+
+    pendingConnectErrorState = state;
+    if (pendingConnectErrorTimer !== null) {
+      return;
+    }
+
+    pendingConnectErrorTimer = setTimeout(() => {
+      pendingConnectErrorTimer = null;
+      if (!isAuthenticated.value) {
+        pendingConnectErrorState = null;
+        return;
+      }
+
+      if (connectionState.value === 'connected' || connectionState.value === 'connecting') {
+        pendingConnectErrorState = null;
+        return;
+      }
+
+      void reportRealtimeEvent('websocket_connect_error', 'error', 'warning', {
+        state: pendingConnectErrorState ?? connectionState.value,
+      });
+      pendingConnectErrorState = null;
+    }, CONNECT_ERROR_STABILITY_MS);
+  };
+
   const runtime = createRealtimeEchoRuntime({
     config: {
       enabled: Boolean(config.public.reverbEnabled) && Boolean(config.public.reverbAppKey),
@@ -30,16 +71,17 @@ export default defineNuxtPlugin(() => {
 
       lastConnectionState = state;
       if (state === 'connected') {
+        clearPendingConnectError();
         void reportRealtimeEvent('websocket_connect_ok', 'ok', 'info');
         return;
       }
 
       if (state === 'error' || state === 'unavailable' || state === 'disconnected') {
-        void reportRealtimeEvent('websocket_connect_error', 'error', 'warning', { state });
+        scheduleConnectErrorReport(state);
       }
     },
     onError: () => {
-      void reportRealtimeEvent('websocket_connect_error', 'error', 'warning');
+      scheduleConnectErrorReport('error');
     },
   });
 
@@ -47,6 +89,7 @@ export default defineNuxtPlugin(() => {
     [isAuthenticated, token],
     async ([authenticated]) => {
       if (!authenticated) {
+        clearPendingConnectError();
         runtime.disconnect();
         return;
       }
@@ -60,6 +103,7 @@ export default defineNuxtPlugin(() => {
     window.addEventListener(
       'beforeunload',
       () => {
+        clearPendingConnectError();
         stopWatcher();
         runtime.disconnect();
       },

@@ -240,6 +240,12 @@ export default {
     usersSubtitle: 'Manage roles, accesses, and admin profiles.',
     contentTitle: 'Content',
     contentSubtitle: 'Edit sections, configure visibility, and moderate.',
+    stats: {
+      totalUsers: 'Total users',
+      onlineUsers: 'Online now',
+      onlineHint: 'Updated in real time',
+      loadError: 'Failed to load users statistics.',
+    },
   },
   monitoring: {
     title: 'Monitoring',
@@ -255,6 +261,19 @@ export default {
       errorsTotal: 'Errors',
       avgDuration: 'Average duration (ms)',
       lastEventAt: 'Last event',
+    },
+    kpi: {
+      ok: 'OK',
+      total: 'Total',
+      chartTitle: 'Events by domain',
+      chartYLabel: 'Value',
+      seriesEvents: 'Events',
+      seriesErrors: 'Errors',
+      seriesAvgDuration: 'Average duration',
+      errorRate: 'Error rate: {value}%',
+      domainsCount: 'Domains: {count}',
+      lastEvent: 'Last event: {value}',
+      msValue: '{value} ms',
     },
     incidents: {
       title: 'Recent incidents',

@@ -1,0 +1,162 @@
+.metric-donut-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+}
+
+.metric-donut-card__title {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+.metric-donut-card__body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.metric-donut-card__chart-wrap {
+  position: relative;
+  width: min(100%, 430px);
+  aspect-ratio: 1 / 1;
+}
+
+.metric-donut-card__chart {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.metric-donut-card__track,
+.metric-donut-card__segment {
+  fill: none;
+}
+
+.metric-donut-card__track {
+  stroke: color-mix(in srgb, var(--border) 85%, transparent);
+}
+
+.metric-donut-card__segment {
+  stroke-linecap: butt;
+  cursor: pointer;
+  transition:
+    filter 0.18s ease,
+    stroke-width 0.18s ease;
+}
+
+.metric-donut-card__segment:focus-visible,
+.metric-donut-card__legend-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.metric-donut-card__segment.is-active {
+  filter: brightness(1.1);
+  stroke-width: 18;
+}
+
+.metric-donut-card__center {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.metric-donut-card__total-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  transition: color 0.18s ease;
+}
+
+.metric-donut-card__total-value {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.5rem, 2.1vw, 2.25rem);
+  line-height: 1;
+  transition: color 0.18s ease;
+}
+
+.metric-donut-card__tooltip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 0.55rem;
+  padding: 0.45rem 0.8rem;
+  color: #fff;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--surface) 25%, transparent);
+  font-size: 1.05rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.metric-donut-card__legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.metric-donut-card__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.metric-donut-card__legend-item.is-active {
+  color: var(--text);
+}
+
+.metric-donut-card__legend-color {
+  width: 0.82rem;
+  height: 0.82rem;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+.metric-donut-card__legend-empty {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 1279px) {
+  .metric-donut-card {
+    min-height: 460px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .metric-donut-card {
+    min-height: 380px !important;
+  }
+
+  .metric-donut-card__title {
+    font-size: 1.4rem;
+  }
+
+  .metric-donut-card__legend-item {
+    font-size: 0.95rem;
+  }
+
+  .metric-donut-card__tooltip {
+    font-size: 0.92rem;
+  }
+}

@@ -239,6 +239,12 @@ export default {
     usersSubtitle: 'Управление ролями, доступами и профилями администраторов.',
     contentTitle: 'Контент',
     contentSubtitle: 'Редактирование разделов, настройка видимости и модерирование.',
+    stats: {
+      totalUsers: 'Всего пользователей',
+      onlineUsers: 'Сейчас онлайн',
+      onlineHint: 'Обновляется в реальном времени',
+      loadError: 'Не удалось загрузить статистику пользователей.',
+    },
   },
   monitoring: {
     title: 'Мониторинг',
@@ -254,6 +260,19 @@ export default {
       errorsTotal: 'Ошибки',
       avgDuration: 'Средняя длительность (ms)',
       lastEventAt: 'Последнее событие',
+    },
+    kpi: {
+      ok: 'OK',
+      total: 'Итого',
+      chartTitle: 'События по доменам',
+      chartYLabel: 'Значение',
+      seriesEvents: 'События',
+      seriesErrors: 'Ошибки',
+      seriesAvgDuration: 'Средняя длительность',
+      errorRate: 'Доля ошибок: {value}%',
+      domainsCount: 'Доменов: {count}',
+      lastEvent: 'Последнее событие: {value}',
+      msValue: '{value} ms',
     },
     incidents: {
       title: 'Последние инциденты',

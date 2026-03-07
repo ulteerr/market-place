@@ -1,5 +1,5 @@
 .PHONY: up down restart art comp migrate migrate-fresh db-seed db-reset-hard \
-        cache-clear config-cache route-cache view-clear \
+        cache-clear config-cache route-cache view-clear app-clear \
         test test-unit test-redis test-auth test-observability test-observability-backend test-observability-frontend test-all all-test \
         ws-check all \
         swagger redoc openapi-validate openapi-bundle docs \
@@ -70,6 +70,13 @@ route-cache:
 	make art cmd="route:cache"
 
 view-clear:
+	make art cmd="view:clear"
+
+app-clear:
+	make art cmd="optimize:clear"
+	make art cmd="cache:clear"
+	make art cmd="config:clear"
+	make art cmd="route:clear"
 	make art cmd="view:clear"
 
 # --------------------------

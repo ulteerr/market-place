@@ -46,6 +46,9 @@ paths:
   /api/admin/users:
     $ref: ./modules/users.yaml#/admin_users
 
+  /api/admin/users/stats:
+    $ref: ./modules/users.yaml#/admin_users_stats
+
   /api/admin/users/{id}:
     $ref: ./modules/users.yaml#/admin_users_by_id
 

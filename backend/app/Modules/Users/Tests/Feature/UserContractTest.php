@@ -101,6 +101,33 @@ final class UserContractTest extends TestCase
     }
 
     #[Test]
+    public function admin_users_stats_endpoint_returns_total_and_online_counts(): void
+    {
+        Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));
+        $admin = $this->actingAsUser();
+        $adminRole = Role::factory()->admin()->create();
+        $admin["user"]->roles()->sync([$adminRole->id]);
+
+        $onlineA = User::factory()->create(["first_name" => "StatsOnlineA"]);
+        $onlineB = User::factory()->create(["first_name" => "StatsOnlineB"]);
+        $offline = User::factory()->create(["first_name" => "StatsOffline"]);
+
+        $this->mockRedisPresenceBatch([
+            (string) $onlineA->id => true,
+            (string) $onlineB->id => true,
+            (string) $offline->id => false,
+            (string) $admin["user"]->id => false,
+        ]);
+
+        $this->withHeaders($admin["headers"])
+            ->getJson("/api/admin/users/stats")
+            ->assertOk()
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.total_users", 4)
+            ->assertJsonPath("data.online_users", 2);
+    }
+
+    #[Test]
     public function admin_user_show_uses_last_seen_fallback_when_redis_is_unavailable(): void
     {
         Carbon::setTestNow(Carbon::parse("2026-03-06 12:00:00"));

@@ -261,6 +261,46 @@ admin_users:
       '422':
         $ref: ../errors.yaml#/ValidationError
 
+admin_users_stats:
+  get:
+    tags: [Admin Users]
+    summary: Users statistics (admin)
+    description: Returns total users count and current online users count.
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Users statistics
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  type: object
+                  required: [total_users, online_users, updated_at]
+                  properties:
+                    total_users:
+                      type: integer
+                      minimum: 0
+                      example: 53
+                    online_users:
+                      type: integer
+                      minimum: 0
+                      example: 2
+                    updated_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+                      example: 2026-03-07T19:20:00+00:00
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
 
 admin_users_by_id:
   parameters:

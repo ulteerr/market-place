@@ -1,0 +1,31 @@
+.home-users-stats__card {
+  display: grid;
+  gap: 0.45rem;
+  min-height: 130px;
+}
+
+.home-users-stats__label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.home-users-stats__value {
+  margin: 0;
+  font-size: clamp(1.6rem, 2vw, 2.1rem);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-users-stats__hint {
+  margin: 0;
+  color: color-mix(in srgb, #22c55e 68%, var(--text));
+  font-size: 0.9rem;
+}
+
+.home-users-stats__error {
+  margin: 0;
+  color: #ef4444;
+  font-size: 0.9rem;
+}

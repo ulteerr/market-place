@@ -24,6 +24,12 @@
       </div>
     </div>
 
+    <MetricDashboardSection
+      :donut-data="monitoringDonutData"
+      :line-data="monitoringLineData"
+      :kpi-items="monitoringKpiItems"
+    />
+
     <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div class="grid gap-3 md:grid-cols-[1fr_180px_auto]">
         <UiSelect
@@ -123,6 +129,7 @@
 
 <script setup lang="ts">
 import type { ObservabilityDashboardPayload } from '~/composables/useAdminObservability';
+import MetricDashboardSection from '~/components/admin/Metrics/MetricDashboardSection/MetricDashboardSection.vue';
 import UiInput from '~/components/ui/FormControls/UiInput/UiInput.vue';
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 
@@ -141,7 +148,8 @@ const loadError = ref('');
 const selectedDomain = ref('');
 const incidentsLimit = ref(50);
 
-const availableDomains = computed(() => Object.keys(dashboard.value?.summary.domains ?? {}));
+const domainSummaries = computed(() => Object.entries(dashboard.value?.summary.domains ?? {}));
+const availableDomains = computed(() => domainSummaries.value.map(([domain]) => domain));
 const domainOptions = computed(() =>
   availableDomains.value.map((domain) => ({
     value: domain,
@@ -163,6 +171,30 @@ const totalErrors = computed(() => {
   return Object.values(domains).reduce((sum, domain) => sum + (domain.errors_total || 0), 0);
 });
 
+const monitoringDonutSegments = computed(() => {
+  const errors = totalErrors.value;
+  const nonErrorEvents = Math.max(totalEvents.value - errors, 0);
+
+  return [
+    { label: t('admin.monitoring.cards.errorsTotal'), value: errors, color: '#ef4444' },
+    { label: t('admin.monitoring.kpi.ok'), value: nonErrorEvents, color: '#11d498' },
+  ];
+});
+
+const formatInteger = (value: number): string => {
+  return new Intl.NumberFormat(locale.value).format(value);
+};
+
+const monitoringDonutData = computed(() => ({
+  title: t('admin.monitoring.cards.eventsTotal'),
+  totalLabel: t('admin.monitoring.kpi.total'),
+  totalValue: totalEvents.value,
+  segments: monitoringDonutSegments.value,
+  height: 420,
+}));
+
+const monitoringXLabels = computed(() => domainSummaries.value.map(([domain]) => domain));
+
 const averageDurationMs = computed(() => {
   const domains = dashboard.value?.summary.domains ?? {};
 
@@ -180,6 +212,95 @@ const averageDurationMs = computed(() => {
   }
 
   return Math.round(totals.total / totals.count);
+});
+
+const monitoringLineSeries = computed(() => {
+  const labels = monitoringXLabels.value;
+  if (!labels.length) {
+    return [];
+  }
+
+  const eventsSeries = domainSummaries.value.map(([domain, summary]) => ({
+    x: domain,
+    y: summary.events_total || 0,
+  }));
+  const errorsSeries = domainSummaries.value.map(([domain, summary]) => ({
+    x: domain,
+    y: summary.errors_total || 0,
+  }));
+  const durationSeries = domainSummaries.value.map(([domain, summary]) => ({
+    x: domain,
+    y:
+      summary.duration_count > 0
+        ? Math.round((summary.duration_total_ms || 0) / summary.duration_count)
+        : 0,
+  }));
+
+  return [
+    {
+      name: t('admin.monitoring.kpi.seriesEvents'),
+      color: '#1f90ea',
+      points: eventsSeries,
+    },
+    {
+      name: t('admin.monitoring.kpi.seriesErrors'),
+      color: '#ef4444',
+      points: errorsSeries,
+    },
+    {
+      name: t('admin.monitoring.kpi.seriesAvgDuration'),
+      color: '#11d498',
+      points: durationSeries,
+    },
+  ];
+});
+
+const monitoringLineData = computed(() => ({
+  title: t('admin.monitoring.kpi.chartTitle'),
+  yLabel: t('admin.monitoring.kpi.chartYLabel'),
+  xLabels: monitoringXLabels.value,
+  series: monitoringLineSeries.value,
+  gridSteps: 4,
+}));
+
+const monitoringKpiItems = computed(() => {
+  const domainsCount = domainSummaries.value.length;
+  const errorRate =
+    totalEvents.value > 0 ? ((totalErrors.value / totalEvents.value) * 100).toFixed(1) : '0.0';
+
+  const eventsTrend = monitoringLineSeries.value[0]?.points ?? [];
+  const errorsTrend = monitoringLineSeries.value[1]?.points ?? [];
+  const avgDurationTrend = monitoringLineSeries.value[2]?.points ?? [];
+
+  return [
+    {
+      title: t('admin.monitoring.cards.eventsTotal'),
+      value: formatInteger(totalEvents.value),
+      deltaText: t('admin.monitoring.kpi.domainsCount', { count: domainsCount }),
+      trendType: 'neutral' as const,
+      accentColor: '#1f90ea',
+      icon: '•',
+      trend: eventsTrend,
+    },
+    {
+      title: t('admin.monitoring.cards.errorsTotal'),
+      value: formatInteger(totalErrors.value),
+      deltaText: t('admin.monitoring.kpi.errorRate', { value: errorRate }),
+      trendType: 'neutral' as const,
+      accentColor: '#ef4444',
+      icon: '•',
+      trend: errorsTrend,
+    },
+    {
+      title: t('admin.monitoring.cards.avgDuration'),
+      value: t('admin.monitoring.kpi.msValue', { value: formatInteger(averageDurationMs.value) }),
+      deltaText: t('admin.monitoring.kpi.lastEvent', { value: lastEventAtLabel.value }),
+      trendType: 'neutral' as const,
+      accentColor: '#11d498',
+      icon: '•',
+      trend: avgDurationTrend,
+    },
+  ];
 });
 
 const lastEventAtLabel = computed(() => {
