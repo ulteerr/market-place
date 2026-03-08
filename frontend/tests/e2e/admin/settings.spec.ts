@@ -7,6 +7,7 @@ const installMockRealtimeEcho = async (page: Page, subscribeFailsInitially = fal
       subscribeFail: initialSubscribeFail,
       channels: new Map(),
       connectionBindings: new Map(),
+      subscribedChannels: new Set<string>(),
     };
 
     const ensureChannel = (channelName: string) => {
@@ -59,6 +60,10 @@ const installMockRealtimeEcho = async (page: Page, subscribeFailsInitially = fal
       emitConnection(stateName);
     };
 
+    (window as unknown as Record<string, unknown>).__isMeSettingsSubscribed = (userId: string) => {
+      return state.subscribedChannels.has(`me-settings.${userId}`);
+    };
+
     (window as unknown as Record<string, unknown>).__E2E_CREATE_ECHO__ = async () => {
       const echo = {
         private: (channelName: string) => {
@@ -81,6 +86,7 @@ const installMockRealtimeEcho = async (page: Page, subscribeFailsInitially = fal
               channelState.subscribedHandlers.add(callback);
               queueMicrotask(() => {
                 if (!state.subscribeFail) {
+                  state.subscribedChannels.add(channelName);
                   callback();
                 }
               });
@@ -99,8 +105,12 @@ const installMockRealtimeEcho = async (page: Page, subscribeFailsInitially = fal
 
           return channelApi;
         },
-        leave: () => undefined,
-        leaveAllChannels: () => undefined,
+        leave: (channelName: string) => {
+          state.subscribedChannels.delete(channelName);
+        },
+        leaveAllChannels: () => {
+          state.subscribedChannels.clear();
+        },
         disconnect: () => undefined,
         connector: {
           pusher: {
@@ -326,6 +336,15 @@ test.describe('Admin settings page', () => {
 
       await expect(sessionASwitch).toHaveAttribute('aria-checked', 'false');
       await expect(sessionBSwitch).toHaveAttribute('aria-checked', 'false');
+      await expect
+        .poll(async () => {
+          return secondSessionPage.evaluate(() => {
+            return Boolean(
+              (window as unknown as Record<string, any>).__isMeSettingsSubscribed?.('1')
+            );
+          });
+        })
+        .toBe(true);
 
       await sessionASwitch.click();
 
@@ -395,7 +414,18 @@ test.describe('Admin settings page', () => {
     await page.evaluate(() => {
       (window as unknown as Record<string, any>).__setMeSettingsSubscribeFail?.(false);
     });
-    await page.waitForTimeout(2_500);
+    await expect
+      .poll(
+        async () => {
+          return page.evaluate(() => {
+            return Boolean(
+              (window as unknown as Record<string, any>).__isMeSettingsSubscribed?.('1')
+            );
+          });
+        },
+        { timeout: 20_000 }
+      )
+      .toBe(true);
 
     const meRequestsAfterRecovery = meRequests;
     await page.evaluate(() => {
