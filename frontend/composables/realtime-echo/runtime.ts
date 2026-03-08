@@ -111,7 +111,15 @@ export const createRealtimeEchoRuntime = (
   };
 
   const connect = async (): Promise<EchoLike | null> => {
-    if (!config.enabled) {
+    const hasE2ECreateEcho = Boolean(
+      (
+        globalThis as {
+          __E2E_CREATE_ECHO__?: ((opts: Record<string, unknown>) => Promise<EchoLike>) | null;
+        }
+      ).__E2E_CREATE_ECHO__
+    );
+
+    if (!config.enabled && !hasE2ECreateEcho) {
       return null;
     }
 

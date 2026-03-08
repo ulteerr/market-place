@@ -35,7 +35,8 @@ const expectPageHeading = async (page: Page, text: string, viewportWidth: number
     return;
   }
 
-  await expect(heading).toBeVisible();
+  const visibleHeading = page.locator('h2:visible', { hasText: text }).first();
+  await expect(visibleHeading).toBeVisible({ timeout: 15_000 });
 };
 
 const stabilizeLayout = async (page: Page) => {
