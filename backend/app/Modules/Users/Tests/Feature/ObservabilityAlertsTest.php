@@ -7,6 +7,7 @@ namespace Modules\Users\Tests\Feature;
 use App\Shared\Services\ObservabilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -28,6 +29,11 @@ final class ObservabilityAlertsTest extends TestCase
             "observability.alerts_error_rate_threshold" => 0.5,
         ]);
         Cache::store("array")->flush();
+
+        $redisConnection = \Mockery::mock();
+        $redisConnection->shouldReceive("exists")->andReturn(0);
+        $redisConnection->shouldReceive("setex")->andReturnTrue();
+        Redis::shouldReceive("connection")->andReturn($redisConnection);
     }
 
     #[Test]
