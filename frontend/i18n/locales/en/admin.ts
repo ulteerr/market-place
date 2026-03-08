@@ -344,7 +344,7 @@ export default {
   users: {
     index: {
       title: 'Users',
-      subtitle: 'Search, sorting, limit and server pagination.',
+      subtitle: 'View, search, and edit all system users.',
       createLabel: 'New user',
       searchPlaceholder: 'Search: ID, last name, first name, middle name, email, phone, role',
       empty: 'No users found.',

@@ -1,12 +1,5 @@
 <template>
-  <section class="mx-auto w-full max-w-6xl space-y-6 admin-dashboard">
-    <div class="admin-panel rounded-2xl p-6 lg:p-8">
-      <h2 class="text-2xl font-semibold">{{ t('admin.dashboard.title') }}</h2>
-      <p class="mt-2 text-sm admin-muted-text">
-        {{ t('admin.dashboard.subtitle') }}
-      </p>
-    </div>
-
+  <section class="mx-auto w-full max-w-6xl admin-dashboard">
     <HomeUsersStats
       :total-users="usersStats.state.value.totalUsers"
       :online-users="usersStats.state.value.onlineUsers"
@@ -18,22 +11,6 @@
       :loading-text="t('common.loading')"
       :error-text="t('admin.dashboard.stats.loadError')"
     />
-
-    <div class="grid gap-4 md:grid-cols-2">
-      <article class="admin-panel rounded-2xl p-5">
-        <h3 class="text-base font-semibold">{{ t('admin.dashboard.usersTitle') }}</h3>
-        <p class="mt-2 text-sm admin-muted-text">
-          {{ t('admin.dashboard.usersSubtitle') }}
-        </p>
-      </article>
-
-      <article class="admin-panel rounded-2xl p-5">
-        <h3 class="text-base font-semibold">{{ t('admin.dashboard.contentTitle') }}</h3>
-        <p class="mt-2 text-sm admin-muted-text">
-          {{ t('admin.dashboard.contentSubtitle') }}
-        </p>
-      </article>
-    </div>
   </section>
 </template>
 

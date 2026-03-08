@@ -62,7 +62,7 @@
         />
 
         <main class="admin-layout__main flex-1 min-w-0 px-4 py-6 lg:px-8 lg:py-8">
-          <AdminBreadcrumbs />
+          <AdminBreadcrumbs v-if="showBreadcrumbs" />
           <slot />
         </main>
       </div>
@@ -82,6 +82,7 @@ const { isDark, toggleTheme, settings, toggleCollapseMenu, updateSettings } = us
 const { onUserMenuSelect } = useAdminUserMenuActions({ logout });
 
 const isThemeUiMounted = ref(false);
+const showBreadcrumbs = computed(() => route.path !== '/admin');
 const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 const isMenuCollapsed = computed(() => settings.value.collapse_menu);
 

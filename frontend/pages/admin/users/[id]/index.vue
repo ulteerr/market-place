@@ -54,7 +54,21 @@
           </div>
           <div>
             <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.roles') }}</dt>
-            <dd>{{ (user.roles || []).join(', ') || t('common.dash') }}</dd>
+            <dd>
+              <template v-if="resolvedRoles.length">
+                <template
+                  v-for="(role, index) in resolvedRoles"
+                  :key="`${role.code}-${role.id || index}`"
+                >
+                  <AdminLink v-if="role.id" :to="`/admin/roles/${role.id}`">{{
+                    role.label
+                  }}</AdminLink>
+                  <span v-else>{{ role.label }}</span>
+                  <span v-if="index < resolvedRoles.length - 1">, </span>
+                </template>
+              </template>
+              <template v-else>{{ t('common.dash') }}</template>
+            </dd>
           </div>
           <div>
             <dt class="admin-muted text-xs">{{ t('admin.users.show.labels.status') }}</dt>
@@ -89,6 +103,8 @@
 
 <script setup lang="ts">
 import AdminChangeLogPanel from '~/components/admin/ChangeLog/AdminChangeLogPanel.vue';
+import AdminLink from '~/components/admin/AdminLink/AdminLink.vue';
+import type { AdminRole } from '~/composables/useAdminRoles';
 import type { AdminUser } from '~/composables/useAdminUsers';
 import {
   getAdminUserFullName,
@@ -119,6 +135,7 @@ definePageMeta({
 
 const route = useRoute();
 const usersApi = useAdminUsers();
+const rolesApi = useAdminRoles();
 const { user: authUser, isAuthenticated, token } = useAuth();
 const { hasPermission } = usePermissions();
 const canUpdateUsers = computed(() => hasPermission('admin.users.update'));
@@ -128,9 +145,68 @@ const actorMaxRoleLevel = computed(() =>
 );
 
 const user = ref<AdminUser | null>(null);
+const rolesByCode = ref<Record<string, AdminRole>>({});
 const loading = ref(false);
 const loadError = ref('');
 let stopRealtimePresenceSubscription: (() => void) | null = null;
+
+const normalizeRoleView = (
+  role: string | { id?: string | null; code?: string | null; label?: string | null }
+): { id: string | null; code: string; label: string } | null => {
+  if (typeof role === 'string') {
+    const roleMeta = rolesByCode.value[role];
+
+    return {
+      id: roleMeta?.id ?? null,
+      code: role,
+      label: roleMeta?.label || role,
+    };
+  }
+
+  const code = role?.code?.trim() ?? '';
+  if (!code) {
+    return null;
+  }
+
+  const roleMeta = rolesByCode.value[code];
+
+  return {
+    id: role?.id ?? roleMeta?.id ?? null,
+    code,
+    label: role?.label?.trim() || roleMeta?.label || code,
+  };
+};
+
+const resolvedRoles = computed<Array<{ id: string | null; code: string; label: string }>>(() => {
+  if (!user.value?.roles?.length) {
+    return [];
+  }
+
+  return user.value.roles
+    .map((role) => normalizeRoleView(role))
+    .filter((role): role is { id: string | null; code: string; label: string } => role !== null);
+});
+
+const fetchRolesMeta = async () => {
+  try {
+    const response = await rolesApi.list({
+      page: 1,
+      per_page: 200,
+      sort_by: 'code',
+      sort_dir: 'asc',
+    });
+
+    rolesByCode.value = response.data.reduce<Record<string, AdminRole>>((accumulator, role) => {
+      if (typeof role.code === 'string' && role.code.length > 0) {
+        accumulator[role.code] = role;
+      }
+
+      return accumulator;
+    }, {});
+  } catch {
+    rolesByCode.value = {};
+  }
+};
 
 const fetchUser = async (options?: { silent?: boolean }) => {
   const id = String(route.params.id || '');
@@ -286,6 +362,7 @@ const canEditViewedUser = computed(() => {
 });
 
 onMounted(() => {
+  void fetchRolesMeta();
   void fetchUser();
 });
 onMounted(() => {

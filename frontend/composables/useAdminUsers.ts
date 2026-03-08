@@ -24,7 +24,7 @@ export interface AdminUser {
   birth_date?: string | null;
   last_seen_at?: string | null;
   is_online?: boolean;
-  roles?: Array<string | { code?: string | null }>;
+  roles?: Array<string | { id?: string | null; code?: string | null; label?: string | null }>;
   permissions?: string[];
   permission_overrides?: {
     allow: string[];
