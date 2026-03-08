@@ -1,6 +1,7 @@
 <?php
 
 use App\Shared\Http\Middleware\CanPermission;
+use App\Shared\Http\Middleware\EnsureOwnMeSettingsChannel;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             "can_permission" => CanPermission::class,
+            "ensure_own_settings_channel" => EnsureOwnMeSettingsChannel::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

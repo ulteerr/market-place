@@ -276,7 +276,7 @@ make db-seed
 ### 1. Что должно быть поднято
 
 ```bash
-docker compose up -d backend reverb redis presence-watcher frontend
+docker compose up -d web backend reverb redis presence-watcher frontend
 docker compose ps
 ```
 
@@ -336,6 +336,7 @@ NUXT_PUBLIC_REVERB_AUTH_ENDPOINT=/broadcasting/auth
 - Клиент отправляет события:
   - `websocket_connect_ok/error`
   - `websocket_subscribe_ok/error`
+  - `settings_realtime_fallback_enabled/disabled`
 - Backend отправляет:
   - `broadcast_dispatch_ok/error`
 
@@ -345,6 +346,34 @@ NUXT_PUBLIC_REVERB_AUTH_ENDPOINT=/broadcasting/auth
 curl -H "Authorization: Bearer <token>" \
   "http://localhost:8080/api/admin/observability?domain=realtime"
 ```
+
+### 7. Контракт realtime settings (WS)
+
+- Канал: `private-me-settings.{id}`
+- Событие: `.me.settings.updated`
+- Payload:
+  - `user_id: string`
+  - `settings: object`
+  - `updated_at?: string|null`
+  - `version?: number|string`
+- Авторизация канала: только владелец (`{id}` должен совпадать с текущим пользователем)
+- Legacy SSE endpoint `GET /api/me/settings/stream` удален из backend и OpenAPI
+
+### 8. Settings realtime fallback/recovery checklist
+
+Fallback (WS недоступен):
+1. Заблокировать или сломать `/broadcasting/auth` (например вернуть `403`).
+2. Открыть `/admin/settings`.
+3. Убедиться, что settings продолжают синхронизироваться через polling (`GET /api/me`) при `focus`/`visibilitychange`.
+4. Проверить observability события:
+   - `websocket_subscribe_error`
+   - `settings_realtime_fallback_enabled`
+
+Recovery (WS восстановлен):
+1. Восстановить `/broadcasting/auth` и websocket connectivity.
+2. Перезагрузить страницу и дождаться нормальной подписки.
+3. Проверить, что fallback выключился и пришло событие:
+   - `settings_realtime_fallback_disabled`
 
 ---
 
@@ -539,9 +568,10 @@ make front-install
 make front-test
 ```
 
-`front-test` прогоняет unit-тесты (`vitest`), затем обязательный e2e-сценарий `/admin`
+`front-test` прогоняет unit-тесты (`vitest`), затем полный e2e набор `tests/e2e`
 в `chrome`, `mozilla-firefox` и `safari-webkit`.
-Браузеры и системные зависимости устанавливаются автоматически при первом e2e запуске.
+Перед e2e запускается установка браузеров и системных зависимостей Playwright
+(обычно быстро при наличии кэша).
 
 Для UI-режима:
 
@@ -627,8 +657,7 @@ Route::middleware(['auth:sanctum', 'can_permission:admin.users.read'])->group(fu
 ## 📌 Roadmap
 
 - API versioning (/v1)
-- OpenAPI validation in CI
+- Observability dashboards/alerts tuning (realtime fallback frequency and thresholds)
 - Additional domain modules
-- Production-ready Docker setup
 
 ---

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Users\Tests\Feature;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ActionLog\Models\ActionLog;
 use Modules\ChangeLog\Models\ChangeLog;
+use Modules\Users\Events\MeSettingsUpdated;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -151,6 +153,36 @@ final class UpdateMeSettingsTest extends TestCase
                 "theme" => "dark",
             ],
         ])->assertUnauthorized();
+    }
+
+    #[Test]
+    public function settings_update_dispatches_me_settings_updated_event(): void
+    {
+        Event::fake([MeSettingsUpdated::class]);
+        $auth = $this->actingAsUser();
+        $userId = (string) $auth["user"]->id;
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "theme" => "dark",
+            ],
+        ]);
+
+        $response->assertNoContent();
+
+        Event::assertDispatched(MeSettingsUpdated::class, function (MeSettingsUpdated $event) use (
+            $userId,
+        ): bool {
+            $channelName = $event->broadcastOn()->name;
+            $payload = $event->broadcastWith();
+
+            return $event->broadcastAs() === "me.settings.updated" &&
+                str_contains($channelName, "me-settings.{$userId}") &&
+                ($payload["user_id"] ?? null) === $userId &&
+                ($payload["settings"]["theme"] ?? null) === "dark" &&
+                is_string($payload["updated_at"] ?? null) &&
+                is_int($payload["version"] ?? null);
+        });
     }
 
     #[Test]

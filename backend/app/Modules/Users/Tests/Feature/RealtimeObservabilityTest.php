@@ -58,4 +58,42 @@ final class RealtimeObservabilityTest extends TestCase
             ->assertJsonPath("data.summary.domains.realtime.events_total", 1)
             ->assertJsonPath("data.summary.domains.realtime.events.websocket_connect_ok.ok", 1);
     }
+
+    #[Test]
+    public function admin_can_report_settings_fallback_realtime_events(): void
+    {
+        $auth = $this->actingAsUser();
+        $adminRole = Role::factory()->admin()->create();
+        $auth["user"]->roles()->sync([$adminRole->id]);
+
+        $this->withHeaders($auth["headers"])
+            ->postJson("/api/admin/observability/realtime-event", [
+                "event" => "settings_realtime_fallback_enabled",
+                "meta" => [
+                    "channel" => "me-settings",
+                ],
+            ])
+            ->assertOk();
+
+        $this->withHeaders($auth["headers"])
+            ->postJson("/api/admin/observability/realtime-event", [
+                "event" => "settings_realtime_fallback_disabled",
+                "meta" => [
+                    "channel" => "me-settings",
+                ],
+            ])
+            ->assertOk();
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/observability?domain=realtime")
+            ->assertOk()
+            ->assertJsonPath(
+                "data.summary.domains.realtime.events.settings_realtime_fallback_enabled.ok",
+                1,
+            )
+            ->assertJsonPath(
+                "data.summary.domains.realtime.events.settings_realtime_fallback_disabled.ok",
+                1,
+            );
+    }
 }

@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 use App\Shared\Services\ObservabilityService;
 use Illuminate\Support\Facades\Broadcast;
+use Modules\Users\Support\ChannelAuthorization;
 
 Broadcast::channel("App.Models.User.{id}", function ($user, string $id): bool {
-    return (string) $user->id === $id;
+    return ChannelAuthorization::canAccessOwnUserChannel($user, $id);
+});
+
+Broadcast::channel("me-settings.{id}", function ($user, string $id): bool {
+    return ChannelAuthorization::canAccessOwnUserChannel($user, $id);
 });
 
 Broadcast::channel("users.presence", function ($user): bool {

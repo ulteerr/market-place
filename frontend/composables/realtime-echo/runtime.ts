@@ -46,6 +46,15 @@ const normalizePath = (value: string): string => {
 };
 
 const defaultCreateEcho = async (options: Record<string, unknown>): Promise<EchoLike> => {
+  const testCreateEcho = (
+    globalThis as {
+      __E2E_CREATE_ECHO__?: ((options: Record<string, unknown>) => Promise<EchoLike>) | null;
+    }
+  ).__E2E_CREATE_ECHO__;
+  if (typeof testCreateEcho === 'function') {
+    return testCreateEcho(options);
+  }
+
   const [{ default: Echo }, { default: Pusher }] = await Promise.all([
     import('laravel-echo'),
     import('pusher-js'),

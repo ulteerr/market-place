@@ -17,6 +17,8 @@ final class AdminRealtimeObservabilityEventController extends Controller
         "websocket_connect_error",
         "websocket_subscribe_ok",
         "websocket_subscribe_error",
+        "settings_realtime_fallback_enabled",
+        "settings_realtime_fallback_disabled",
         "broadcast_dispatch_ok",
         "broadcast_dispatch_error",
     ];

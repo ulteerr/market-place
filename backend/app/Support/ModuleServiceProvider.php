@@ -46,7 +46,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
         }
 
         if (!Route::has("broadcasting.auth")) {
-            Broadcast::routes(["middleware" => ["auth:sanctum"]]);
+            Broadcast::routes(["middleware" => ["auth:sanctum", "ensure_own_settings_channel"]]);
         }
 
         require $channelsPath;

@@ -9,8 +9,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\ChangeLog\Services\ChangeLogContext;
+use Modules\Users\Events\MeSettingsUpdated;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Modules\Users\Http\Requests\UploadMeAvatarRequest;
 use Modules\Users\Http\Requests\UpdateMeProfileRequest;
 use Modules\Users\Http\Requests\UpdateMePasswordRequest;
@@ -78,7 +78,8 @@ final class MeController extends Controller
             ];
         }
 
-        $this->usersService->updateUser($request->user(), ["settings" => $mergedSettings]);
+        $user = $this->usersService->updateUser($request->user(), ["settings" => $mergedSettings]);
+        event(new MeSettingsUpdated($user));
 
         return response()->noContent();
     }
@@ -106,58 +107,5 @@ final class MeController extends Controller
         );
 
         return UserResponseFactory::success($user->fresh());
-    }
-
-    public function streamSettings(Request $request): StreamedResponse
-    {
-        $user = $request->user();
-        $maxDuration = app()->runningUnitTests() ? 1 : 25;
-
-        return response()->stream(
-            function () use ($user, $maxDuration): void {
-                @ini_set("zlib.output_compression", "0");
-                @ini_set("output_buffering", "off");
-
-                echo "retry: 3000\n\n";
-
-                $lastHash = md5(json_encode($user->settings ?? []));
-                $stopAt = time() + $maxDuration;
-
-                while (time() < $stopAt) {
-                    if (connection_aborted()) {
-                        break;
-                    }
-
-                    $user->refresh();
-                    $settings = $user->settings ?? [];
-                    $currentHash = md5(json_encode($settings));
-
-                    if ($currentHash !== $lastHash) {
-                        $payload = json_encode(
-                            ["settings" => $settings],
-                            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
-                        );
-
-                        echo "event: settings\n";
-                        echo "data: {$payload}\n\n";
-                        $lastHash = $currentHash;
-                    } else {
-                        echo "event: ping\n";
-                        echo "data: {}\n\n";
-                    }
-
-                    @ob_flush();
-                    flush();
-                    sleep(1);
-                }
-            },
-            200,
-            [
-                "Content-Type" => "text/event-stream; charset=UTF-8",
-                "Cache-Control" => "no-cache, no-store, must-revalidate",
-                "Connection" => "keep-alive",
-                "X-Accel-Buffering" => "no",
-            ],
-        );
     }
 }

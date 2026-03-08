@@ -28,17 +28,3 @@ export const cloneSettings = (value: UserSettings): UserSettings => ({
   admin_crud_preferences: { ...value.admin_crud_preferences },
   admin_navigation_sections: { ...value.admin_navigation_sections },
 });
-
-export const sleep = (ms: number): Promise<void> => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
-
-export const buildApiUrl = (baseUrl: string, path: string): string => {
-  try {
-    return new URL(path, baseUrl).toString();
-  } catch {
-    return path;
-  }
-};
