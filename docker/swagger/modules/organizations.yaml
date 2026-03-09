@@ -651,6 +651,70 @@ organization_members_by_id:
         $ref: ../errors.yaml#/UnauthorizedError
       '403':
         $ref: ../errors.yaml#/ForbiddenError
+
+organization_clients:
+  parameters:
+    - name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  get:
+    tags: [Organizations]
+    summary: List organization clients (owner/admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: subject_type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [user, child]
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [created_at, joined_at, status, id, subject_type]
+          default: created_at
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          default: desc
+    responses:
+      '200':
+        description: Paginated clients list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/organization.yaml#/components/schemas/OrganizationClientsPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
       '422':
         $ref: ../errors.yaml#/ValidationError
   delete:

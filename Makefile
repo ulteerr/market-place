@@ -90,6 +90,7 @@ test:
 test-all:
 	make test
 	make front-test
+	make openapi-validate
 
 all-test: test-all
 

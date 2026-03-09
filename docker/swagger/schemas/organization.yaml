@@ -207,6 +207,50 @@ components:
             - $ref: '#/components/schemas/OrganizationUserShort'
           nullable: true
 
+    OrganizationClient:
+      type: object
+      required: [id, organization_id, subject_type, subject_id, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+        subject_type:
+          type: string
+          enum: [user, child]
+        subject_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, left, blocked]
+        added_by_user_id:
+          type: string
+          format: uuid
+          nullable: true
+        joined_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        subject:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationJoinRequestSubject'
+          nullable: true
+        added_by:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationUserShort'
+          nullable: true
+
     OrganizationJoinRequest:
       type: object
       required: [id, organization_id, subject_type, subject_id, status]
@@ -340,3 +384,27 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/OrganizationJoinRequest'
+
+    OrganizationClientsPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+            last_page:
+              type: integer
+            per_page:
+              type: integer
+            total:
+              type: integer
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrganizationClient'
