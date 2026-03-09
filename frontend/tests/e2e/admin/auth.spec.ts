@@ -20,7 +20,7 @@ test.describe('Admin authorization', () => {
 
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/admin$/);
-    await expect(page.getByRole('heading', { level: 2, name: 'Панель управления' })).toBeVisible();
+    await expect(page.locator('[data-test="home-users-stats"]')).toBeVisible();
   });
 
   test('allows admin login via form and redirects to /admin', async ({ page }) => {
@@ -52,7 +52,7 @@ test.describe('Admin authorization', () => {
     await page.getByRole('button', { name: 'Войти' }).click();
 
     await expect(page).toHaveURL(/\/admin$/);
-    await expect(page.getByRole('heading', { level: 2, name: 'Панель управления' })).toBeVisible();
+    await expect(page.locator('[data-test="home-users-stats"]')).toBeVisible();
     expect(loginRequestBody).toEqual({
       email: 'admin@example.com',
       password: 'password123',

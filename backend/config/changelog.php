@@ -12,6 +12,7 @@ use Modules\Geo\Models\Region;
 use Modules\Metro\Models\MetroLine;
 use Modules\Metro\Models\MetroStation;
 use Modules\Organizations\Models\Organization;
+use Modules\Organizations\Models\OrganizationJoinRequest;
 
 return [
     "models" => [
@@ -21,6 +22,8 @@ return [
         "child" => Child::class,
         "organization" => Organization::class,
         "organizations" => Organization::class,
+        "organization_join_request" => OrganizationJoinRequest::class,
+        "organization_join_requests" => OrganizationJoinRequest::class,
         "metro_line" => MetroLine::class,
         "metro_lines" => MetroLine::class,
         "metro_station" => MetroStation::class,

@@ -16,9 +16,10 @@ interface OrganizationJoinRequestsRepositoryInterface
         string $organizationId,
     ): ?OrganizationJoinRequest;
 
-    public function findPendingByOrganizationAndUser(
+    public function findPendingByOrganizationAndSubject(
         string $organizationId,
-        string $userId,
+        string $subjectType,
+        string $subjectId,
     ): ?OrganizationJoinRequest;
 
     public function paginateForOrganization(
@@ -27,9 +28,9 @@ interface OrganizationJoinRequestsRepositoryInterface
         array $filters = [],
     ): LengthAwarePaginator;
 
-    public function paginateForOrganizationAndUser(
+    public function paginateForOrganizationAndRequester(
         string $organizationId,
-        string $userId,
+        string $requestedByUserId,
         int $perPage = 20,
         array $filters = [],
     ): LengthAwarePaginator;

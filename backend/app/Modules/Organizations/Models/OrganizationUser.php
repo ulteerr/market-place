@@ -8,10 +8,10 @@ use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Organizations\Database\Factories\OrganizationMemberFactory;
+use Modules\Organizations\Database\Factories\OrganizationUserFactory;
 use Modules\Users\Models\User;
 
-final class OrganizationMember extends Model
+final class OrganizationUser extends Model
 {
     use HasFactory;
     use HasUuid;
@@ -25,8 +25,7 @@ final class OrganizationMember extends Model
     protected $fillable = [
         "organization_id",
         "user_id",
-        "role_id",
-        "role_code",
+        "position",
         "status",
         "invited_by_user_id",
         "joined_at",
@@ -51,8 +50,8 @@ final class OrganizationMember extends Model
         return $this->belongsTo(User::class, "invited_by_user_id");
     }
 
-    protected static function newFactory(): OrganizationMemberFactory
+    protected static function newFactory(): OrganizationUserFactory
     {
-        return OrganizationMemberFactory::new();
+        return OrganizationUserFactory::new();
     }
 }

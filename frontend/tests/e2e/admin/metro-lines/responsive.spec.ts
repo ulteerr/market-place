@@ -92,12 +92,13 @@ test.describe('Admin metro lines responsive pages', () => {
       await page.goto('/admin/metro-lines/new');
       await ensureMobileSidebarClosed(page);
       await expectPageHeading(page, 'Новая линия метро', viewport.width);
-      await expect(page.getByLabel('Название')).toBeVisible();
-      await expect(page.getByLabel('Внешний ID')).toBeVisible();
-      await expect(page.getByLabel('ID линии')).toBeVisible();
-      await expect(page.getByRole('textbox', { name: /^Цвет/ })).toBeVisible();
-      await expect(page.getByLabel('ID города')).toBeVisible();
-      await expect(page.getByLabel('Источник')).toBeVisible();
+      const form = page.locator('.admin-form-page form').first();
+      await expect(form.getByLabel('Название')).toBeVisible();
+      await expect(form.getByLabel('Внешний ID')).toBeVisible();
+      await expect(form.getByLabel('ID линии')).toBeVisible();
+      await expect(form.getByRole('textbox', { name: /^Цвет/ })).toBeVisible();
+      await expect(form.getByLabel('ID города')).toBeVisible();
+      await expect(form.getByLabel('Источник')).toBeVisible();
 
       await assertNoHorizontalOverflow(page);
     });
@@ -132,11 +133,12 @@ test.describe('Admin metro lines responsive pages', () => {
       await page.goto('/admin/metro-lines/ml-2/edit');
       await ensureMobileSidebarClosed(page);
       await expectPageHeading(page, 'Редактирование линии метро', viewport.width);
-      await expect(page.getByLabel('Название')).toHaveValue('Арбатско-Покровская');
-      await expect(page.getByLabel('ID линии')).toHaveValue('3');
-      await expect(page.getByRole('textbox', { name: /^Цвет/ })).toHaveValue('#2B4EA2');
-      await expect(page.getByLabel('ID города')).toHaveValue('msk');
-      await expect(page.getByRole('button', { name: 'Сохранить' })).toBeVisible();
+      const form = page.locator('.admin-form-page form').first();
+      await expect(form.getByLabel('Название')).toHaveValue('Арбатско-Покровская');
+      await expect(form.getByLabel('ID линии')).toHaveValue('3');
+      await expect(form.getByRole('textbox', { name: /^Цвет/ })).toHaveValue('#2B4EA2');
+      await expect(form.getByLabel('ID города')).toHaveValue('msk');
+      await expect(form.getByRole('button', { name: 'Сохранить' })).toBeVisible();
 
       await assertNoHorizontalOverflow(page);
     });

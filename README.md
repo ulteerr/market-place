@@ -48,6 +48,12 @@ project-root/
 
 ---
 
+## 📚 Domain Docs
+
+- Organizations Join Requests: [docs/organizations-join-requests.md](docs/organizations-join-requests.md)
+
+---
+
 ## 🚀 Getting Started
 
 ### ✅ Prerequisites
@@ -651,13 +657,5 @@ Route::middleware(['auth:sanctum', 'can_permission:admin.users.read'])->group(fu
 ```
 
 - Доступ в админ-маршруты проверяется через `can_permission:admin.panel.access`.
-
----
-
-## 📌 Roadmap
-
-- API versioning (/v1)
-- Observability dashboards/alerts tuning (realtime fallback frequency and thresholds)
-- Additional domain modules
 
 ---

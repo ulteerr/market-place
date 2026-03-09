@@ -35,7 +35,7 @@ test.describe('Admin header responsive', () => {
     await setupAdminAuth(page);
 
     await page.goto('/admin');
-    await expect(page.getByRole('heading', { level: 2, name: 'Панель управления' })).toBeVisible();
+    await expect(page.locator('[data-test="home-users-stats"]')).toBeVisible();
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
 
@@ -48,7 +48,7 @@ test.describe('Admin header responsive', () => {
     await setupAdminAuth(page);
 
     await page.goto('/admin');
-    await expect(page.getByRole('heading', { level: 2, name: 'Панель управления' })).toBeVisible();
+    await expect(page.locator('[data-test="home-users-stats"]')).toBeVisible();
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
 
@@ -61,7 +61,7 @@ test.describe('Admin header responsive', () => {
     await setupAdminAuth(page);
 
     await page.goto('/admin');
-    await expect(page.getByRole('heading', { level: 2, name: 'Панель управления' })).toBeVisible();
+    await expect(page.locator('[data-test="home-users-stats"]')).toBeVisible();
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
 
@@ -76,7 +76,7 @@ test.describe('Admin header responsive', () => {
     await setupAdminAuth(page);
 
     await page.goto('/admin');
-    await expect(page.getByRole('heading', { level: 2, name: 'Панель управления' })).toBeVisible();
+    await expect(page.locator('[data-test="home-users-stats"]')).toBeVisible();
     await assertNoHorizontalOverflow(page);
     await assertHeaderControlsVisibleAndInsideViewport(page);
   });

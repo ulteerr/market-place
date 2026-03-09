@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Modules\Organizations\Http\Controllers;
 
 use App\Shared\Http\Responses\StatusResponseFactory;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Organizations\Http\Requests\CreateOrganizationJoinRequest;
 use Modules\Organizations\Http\Requests\ReviewOrganizationJoinRequest;
+use Modules\Organizations\Http\Resources\OrganizationJoinRequestResource;
 use Modules\Organizations\Services\OrganizationJoinRequestsService;
 use Modules\Users\Models\User;
 
@@ -32,12 +34,15 @@ final class OrganizationJoinRequestController
         $joinRequest = $this->organizationJoinRequestsService->submit(
             $organizationId,
             $actor,
+            (string) $request->validated("subject_type"),
+            (string) $request->validated("subject_id"),
             $request->validated("message"),
         );
+        $joinRequest->loadMissing(["requestedBy", "subjectUser", "subjectChild", "reviewedBy"]);
 
         return StatusResponseFactory::successWithMessage(
             "Join request submitted",
-            $joinRequest,
+            new OrganizationJoinRequestResource($joinRequest),
             201,
         );
     }
@@ -64,13 +69,14 @@ final class OrganizationJoinRequestController
             $perPage,
             [
                 "status" => (string) $request->query("status", ""),
+                "subject_type" => (string) $request->query("subject_type", ""),
                 "search" => (string) $request->query("search", ""),
                 "sort_by" => $sortBy,
                 "sort_dir" => $sortDir,
             ],
         );
 
-        return StatusResponseFactory::success($items);
+        return StatusResponseFactory::success($this->transformPaginator($items));
     }
 
     public function my(Request $request, string $organizationId): JsonResponse
@@ -100,7 +106,7 @@ final class OrganizationJoinRequestController
             ],
         );
 
-        return StatusResponseFactory::success($items);
+        return StatusResponseFactory::success($this->transformPaginator($items));
     }
 
     public function approve(
@@ -119,11 +125,13 @@ final class OrganizationJoinRequestController
             $organizationId,
             $requestId,
             $actor,
-            (string) $request->validated("role_code", "member"),
             $request->validated("review_note"),
         );
 
-        return StatusResponseFactory::successWithMessage("Join request approved", $joinRequest);
+        return StatusResponseFactory::successWithMessage(
+            "Join request approved",
+            new OrganizationJoinRequestResource($joinRequest),
+        );
     }
 
     public function reject(
@@ -145,6 +153,24 @@ final class OrganizationJoinRequestController
             $request->validated("review_note"),
         );
 
-        return StatusResponseFactory::successWithMessage("Join request rejected", $joinRequest);
+        return StatusResponseFactory::successWithMessage(
+            "Join request rejected",
+            new OrganizationJoinRequestResource($joinRequest),
+        );
+    }
+
+    private function transformPaginator(LengthAwarePaginator $items): LengthAwarePaginator
+    {
+        $items->setCollection(
+            $items
+                ->getCollection()
+                ->map(
+                    static fn($joinRequest): array => (new OrganizationJoinRequestResource(
+                        $joinRequest,
+                    ))->resolve(),
+                ),
+        );
+
+        return $items;
     }
 }

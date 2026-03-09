@@ -26,13 +26,15 @@ final class OrganizationJoinRequestsRepository implements
             ->first();
     }
 
-    public function findPendingByOrganizationAndUser(
+    public function findPendingByOrganizationAndSubject(
         string $organizationId,
-        string $userId,
+        string $subjectType,
+        string $subjectId,
     ): ?OrganizationJoinRequest {
         return OrganizationJoinRequest::query()
             ->where("organization_id", $organizationId)
-            ->where("user_id", $userId)
+            ->where("subject_type", $subjectType)
+            ->where("subject_id", $subjectId)
             ->where("status", "pending")
             ->first();
     }
@@ -44,7 +46,9 @@ final class OrganizationJoinRequestsRepository implements
     ): LengthAwarePaginator {
         $query = OrganizationJoinRequest::query()
             ->with([
-                "user:id,first_name,last_name,middle_name,email",
+                "requestedBy:id,first_name,last_name,middle_name,email",
+                "subjectUser:id,first_name,last_name,middle_name,email",
+                "subjectChild:id,first_name,last_name,middle_name,user_id",
                 "reviewedBy:id,first_name,last_name,middle_name,email",
             ])
             ->where("organization_id", $organizationId);
@@ -54,6 +58,11 @@ final class OrganizationJoinRequestsRepository implements
             $query->where("status", $status);
         }
 
+        $subjectType = trim((string) ($filters["subject_type"] ?? ""));
+        if ($subjectType !== "") {
+            $query->where("subject_type", $subjectType);
+        }
+
         $search = trim((string) ($filters["search"] ?? ""));
         if ($search !== "") {
             $like = "%" . $search . "%";
@@ -61,10 +70,25 @@ final class OrganizationJoinRequestsRepository implements
                 $builder
                     ->where("id", "like", $like)
                     ->orWhere("message", "like", $like)
-                    ->orWhereHas("user", function (Builder $userBuilder) use ($like): void {
+                    ->orWhereHas("requestedBy", function (Builder $userBuilder) use ($like): void {
                         $userBuilder
                             ->where("email", "like", $like)
                             ->orWhere("first_name", "like", $like)
+                            ->orWhere("last_name", "like", $like)
+                            ->orWhere("middle_name", "like", $like);
+                    })
+                    ->orWhereHas("subjectUser", function (Builder $userBuilder) use ($like): void {
+                        $userBuilder
+                            ->where("email", "like", $like)
+                            ->orWhere("first_name", "like", $like)
+                            ->orWhere("last_name", "like", $like)
+                            ->orWhere("middle_name", "like", $like);
+                    })
+                    ->orWhereHas("subjectChild", function (Builder $childBuilder) use (
+                        $like,
+                    ): void {
+                        $childBuilder
+                            ->where("first_name", "like", $like)
                             ->orWhere("last_name", "like", $like)
                             ->orWhere("middle_name", "like", $like);
                     });
@@ -77,7 +101,7 @@ final class OrganizationJoinRequestsRepository implements
             $sortDir = "desc";
         }
 
-        $allowedSorts = ["created_at", "reviewed_at", "status", "id"];
+        $allowedSorts = ["created_at", "reviewed_at", "status", "id", "subject_type"];
         if (!in_array($sortBy, $allowedSorts, true)) {
             $sortBy = "created_at";
         }
@@ -87,16 +111,21 @@ final class OrganizationJoinRequestsRepository implements
         return $query->paginate($perPage);
     }
 
-    public function paginateForOrganizationAndUser(
+    public function paginateForOrganizationAndRequester(
         string $organizationId,
-        string $userId,
+        string $requestedByUserId,
         int $perPage = 20,
         array $filters = [],
     ): LengthAwarePaginator {
         $query = OrganizationJoinRequest::query()
-            ->with(["reviewedBy:id,first_name,last_name,middle_name,email"])
+            ->with([
+                "requestedBy:id,first_name,last_name,middle_name,email",
+                "subjectUser:id,first_name,last_name,middle_name,email",
+                "subjectChild:id,first_name,last_name,middle_name,user_id",
+                "reviewedBy:id,first_name,last_name,middle_name,email",
+            ])
             ->where("organization_id", $organizationId)
-            ->where("user_id", $userId);
+            ->where("requested_by_user_id", $requestedByUserId);
 
         $status = trim((string) ($filters["status"] ?? ""));
         if ($status !== "") {
@@ -109,7 +138,7 @@ final class OrganizationJoinRequestsRepository implements
             $sortDir = "desc";
         }
 
-        $allowedSorts = ["created_at", "reviewed_at", "status", "id"];
+        $allowedSorts = ["created_at", "reviewed_at", "status", "id", "subject_type"];
         if (!in_array($sortBy, $allowedSorts, true)) {
             $sortBy = "created_at";
         }

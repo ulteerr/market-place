@@ -9,9 +9,9 @@
       @keyup.enter="$emit('apply')"
     />
 
-    <div class="toolbar-select">
+    <div v-if="showPerPageControl" class="toolbar-select">
       <UiSelect
-        :model-value="perPage"
+        :model-value="effectivePerPage"
         :options="perPageSelectOptions"
         :placeholder="t('admin.toolbar.perPage', { count: 10 })"
         :searchable="false"
@@ -50,11 +50,14 @@ const props = withDefaults(
     searchPlaceholder?: string;
     perPage: number;
     perPageOptions: number[];
+    totalCount?: number;
+    showPerPage?: boolean;
     loading?: boolean;
     showApply?: boolean;
   }>(),
   {
     searchPlaceholder: undefined,
+    showPerPage: true,
     loading: false,
     showApply: true,
   }
@@ -73,16 +76,46 @@ const onSearchInput = (event: Event) => {
 };
 
 const perPageSelectOptions = computed(() => {
-  return props.perPageOptions.map((option) => ({
+  const rawOptions = props.perPageOptions.filter((option) => Number.isFinite(option) && option > 0);
+
+  const availableOptions =
+    typeof props.totalCount === 'number' && props.totalCount >= 0
+      ? rawOptions.filter((option) => option <= props.totalCount)
+      : rawOptions;
+
+  return availableOptions.map((option) => ({
     label: t('admin.toolbar.perPage', { count: option }),
     value: option,
   }));
 });
 
+const showPerPageControl = computed(() => {
+  return props.showPerPage && perPageSelectOptions.value.length > 0;
+});
+
+const effectivePerPage = computed(() => {
+  const values = perPageSelectOptions.value.map((option) => Number(option.value));
+  if (values.includes(props.perPage)) {
+    return props.perPage;
+  }
+
+  return values[0] ?? props.perPage;
+});
+
 const toolbarClass = computed(() => {
-  return props.showApply
-    ? 'grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]'
-    : 'grid gap-3 lg:grid-cols-[1fr_auto_auto]';
+  if (props.showApply && showPerPageControl.value) {
+    return 'grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]';
+  }
+
+  if (props.showApply && !showPerPageControl.value) {
+    return 'grid gap-3 lg:grid-cols-[1fr_auto_auto]';
+  }
+
+  if (!props.showApply && showPerPageControl.value) {
+    return 'grid gap-3 lg:grid-cols-[1fr_auto_auto]';
+  }
+
+  return 'grid gap-3 lg:grid-cols-[1fr_auto]';
 });
 
 const onPerPageChange = (value: string | number | (string | number)[]) => {

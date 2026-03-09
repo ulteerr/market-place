@@ -6,24 +6,22 @@ namespace Modules\Organizations\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Organizations\Models\Organization;
-use Modules\Organizations\Models\OrganizationMember;
-use Modules\Organizations\Models\OrganizationRole;
+use Modules\Organizations\Models\OrganizationUser;
 use Modules\Users\Models\User;
 
 /**
- * @extends Factory<OrganizationMember>
+ * @extends Factory<OrganizationUser>
  */
-final class OrganizationMemberFactory extends Factory
+final class OrganizationUserFactory extends Factory
 {
-    protected $model = OrganizationMember::class;
+    protected $model = OrganizationUser::class;
 
     public function definition(): array
     {
         return [
             "organization_id" => Organization::factory(),
             "user_id" => User::factory(),
-            "role_id" => OrganizationRole::factory(),
-            "role_code" => $this->faker->randomElement(["owner", "admin", "manager", "member"]),
+            "position" => $this->faker->randomElement(["Тренер", "Администратор", "Координатор"]),
             "status" => $this->faker->randomElement(["active", "pending", "blocked"]),
             "invited_by_user_id" => null,
             "joined_at" => $this->faker->optional()->dateTimeBetween("-2 years", "now"),

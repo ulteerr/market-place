@@ -21,14 +21,12 @@ return new class extends Migration {
             $table->string("source_type")->default("manual");
             $table->string("ownership_status")->default("unclaimed");
 
-            $table->uuid("user_id")->nullable();
             $table->uuid("owner_user_id")->nullable();
             $table->uuid("created_by_user_id")->nullable();
             $table->timestamp("claimed_at")->nullable();
 
             $table->timestamps();
 
-            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
             $table->foreign("owner_user_id")->references("id")->on("users")->nullOnDelete();
             $table->foreign("created_by_user_id")->references("id")->on("users")->nullOnDelete();
         });

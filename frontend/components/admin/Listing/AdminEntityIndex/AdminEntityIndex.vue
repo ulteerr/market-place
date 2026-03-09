@@ -24,6 +24,7 @@
         :search-placeholder="searchPlaceholder"
         :per-page="perPage"
         :per-page-options="perPageOptions"
+        :total-count="totalCount"
         :loading="loading"
         :show-apply="showApply"
         @update:search-value="(value) => $emit('update:searchValue', value)"

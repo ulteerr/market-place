@@ -6,8 +6,7 @@ namespace Modules\Organizations\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Organizations\Models\Organization;
-use Modules\Organizations\Models\OrganizationMember;
-use Modules\Organizations\Models\OrganizationRole;
+use Modules\Organizations\Models\OrganizationUser;
 use Modules\Users\Models\User;
 use Tests\TestCase;
 
@@ -40,12 +39,10 @@ final class OrganizationMyAndOwnershipTest extends TestCase
             "ownership_status" => "unclaimed",
         ]);
 
-        $memberRole = OrganizationRole::factory()->create(["code" => "member"]);
-        OrganizationMember::factory()->create([
+        OrganizationUser::factory()->create([
             "organization_id" => (string) $memberOrganization->id,
             "user_id" => (string) $owner->id,
-            "role_id" => (string) $memberRole->id,
-            "role_code" => "member",
+            "position" => "Coach",
             "status" => "active",
         ]);
 
@@ -70,12 +67,10 @@ final class OrganizationMyAndOwnershipTest extends TestCase
             "owner_user_id" => (string) $oldOwner->id,
         ]);
 
-        $memberRole = OrganizationRole::factory()->create(["code" => "member"]);
-        OrganizationMember::factory()->create([
+        OrganizationUser::factory()->create([
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $newOwner->id,
-            "role_id" => (string) $memberRole->id,
-            "role_code" => "member",
+            "position" => "Coach",
             "status" => "active",
         ]);
 
@@ -97,13 +92,13 @@ final class OrganizationMyAndOwnershipTest extends TestCase
         $this->assertDatabaseHas("organization_users", [
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $newOwner->id,
-            "role_code" => "owner",
+            "position" => "Owner",
             "status" => "active",
         ]);
         $this->assertDatabaseHas("organization_users", [
             "organization_id" => (string) $organization->id,
             "user_id" => (string) $oldOwner->id,
-            "role_code" => "admin",
+            "position" => "Administrator",
             "status" => "active",
         ]);
     }

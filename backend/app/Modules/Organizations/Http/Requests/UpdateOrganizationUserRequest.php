@@ -6,7 +6,7 @@ namespace Modules\Organizations\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-final class UpdateOrganizationMemberRequest extends FormRequest
+final class UpdateOrganizationUserRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,7 +16,7 @@ final class UpdateOrganizationMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "role_code" => ["sometimes", "string", "in:owner,admin,manager,member"],
+            "position" => ["sometimes", "nullable", "string", "max:120"],
             "status" => ["sometimes", "string", "in:active,invited,blocked"],
         ];
     }

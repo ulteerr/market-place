@@ -12,7 +12,9 @@ return new class extends Migration {
         Schema::create("organization_join_requests", function (Blueprint $table): void {
             $table->uuid("id")->primary();
             $table->foreignUuid("organization_id")->constrained("organizations")->cascadeOnDelete();
-            $table->foreignUuid("user_id")->constrained("users")->cascadeOnDelete();
+            $table->string("subject_type");
+            $table->uuid("subject_id");
+            $table->foreignUuid("requested_by_user_id")->constrained("users")->cascadeOnDelete();
             $table->string("status")->default("pending");
             $table->text("message")->nullable();
             $table->text("review_note")->nullable();
@@ -25,7 +27,8 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index(["organization_id", "status"]);
-            $table->index(["user_id", "status"]);
+            $table->index(["organization_id", "subject_type", "subject_id", "status"]);
+            $table->index(["requested_by_user_id", "status"]);
         });
     }
 

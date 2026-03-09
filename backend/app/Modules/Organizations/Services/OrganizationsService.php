@@ -15,8 +15,7 @@ use Modules\Organizations\DTOs\OrganizationMetroConnectionData;
 use Modules\Organizations\DTOs\OrganizationUpsertData;
 use Modules\Organizations\Models\OrganizationLocation;
 use Modules\Organizations\Models\OrganizationLocationMetroStation;
-use Modules\Organizations\Models\OrganizationMember;
-use Modules\Organizations\Models\OrganizationRole;
+use Modules\Organizations\Models\OrganizationUser;
 use Modules\Users\Models\User;
 use RuntimeException;
 use Modules\Organizations\Models\Organization;
@@ -163,37 +162,26 @@ final class OrganizationsService
             ]);
         }
 
-        $ownerRoleId = $this->resolveRoleId("owner");
-        $adminRoleId = $this->resolveRoleId("admin");
-
-        DB::transaction(function () use (
-            $organization,
-            $actor,
-            $targetUserId,
-            $ownerRoleId,
-            $adminRoleId,
-        ): void {
-            OrganizationMember::query()->updateOrCreate(
+        DB::transaction(function () use ($organization, $actor, $targetUserId): void {
+            OrganizationUser::query()->updateOrCreate(
                 [
                     "organization_id" => (string) $organization->id,
                     "user_id" => (string) $targetUserId,
                 ],
                 [
-                    "role_id" => $ownerRoleId,
-                    "role_code" => "owner",
+                    "position" => "Owner",
                     "status" => "active",
                     "joined_at" => now(),
                 ],
             );
 
-            OrganizationMember::query()->updateOrCreate(
+            OrganizationUser::query()->updateOrCreate(
                 [
                     "organization_id" => (string) $organization->id,
                     "user_id" => (string) $actor->id,
                 ],
                 [
-                    "role_id" => $adminRoleId,
-                    "role_code" => "admin",
+                    "position" => "Administrator",
                     "status" => "active",
                     "joined_at" => now(),
                 ],
@@ -212,13 +200,6 @@ final class OrganizationsService
     public function delete(Organization $organization): bool
     {
         return $this->repository->delete($organization);
-    }
-
-    private function resolveRoleId(string $roleCode): string
-    {
-        $role = OrganizationRole::query()->firstOrCreate(["code" => $roleCode]);
-
-        return (string) $role->id;
     }
 
     /**

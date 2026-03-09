@@ -1492,6 +1492,9 @@ paths:
                                 type: string
                                 format: email
                                 nullable: true
+                              label:
+                                type: string
+                                nullable: true
                         nullable: true
                       locations:
                         type: array
@@ -2189,6 +2192,45 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - pending
+            - approved
+            - rejected
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - created_at
+            - reviewed_at
+            - status
+            - id
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - asc
+            - desc
     post:
       tags:
         - Organizations
@@ -2196,12 +2238,23 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - subject_type
+                - subject_id
               properties:
+                subject_type:
+                  type: string
+                  enum:
+                    - user
+                    - child
+                subject_id:
+                  type: string
+                  format: uuid
                 message:
                   type: string
                   nullable: true
@@ -2228,7 +2281,8 @@ paths:
                     required:
                       - id
                       - organization_id
-                      - user_id
+                      - subject_type
+                      - subject_id
                       - status
                     properties:
                       id:
@@ -2237,16 +2291,24 @@ paths:
                       organization_id:
                         type: string
                         format: uuid
-                      user_id:
+                      subject_type:
+                        type: string
+                        enum:
+                          - user
+                          - child
+                      subject_id:
                         type: string
                         format: uuid
+                      requested_by_user_id:
+                        type: string
+                        format: uuid
+                        nullable: true
                       status:
                         type: string
                         enum:
                           - pending
                           - approved
                           - rejected
-                          - canceled
                       message:
                         type: string
                         nullable: true
@@ -2269,11 +2331,47 @@ paths:
                         type: string
                         format: date-time
                         nullable: true
-                      user:
+                      subject:
+                        allOf:
+                          - type: object
+                            required:
+                              - type
+                              - id
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - user
+                                  - child
+                              id:
+                                type: string
+                                format: uuid
+                              first_name:
+                                type: string
+                                nullable: true
+                              last_name:
+                                type: string
+                                nullable: true
+                              middle_name:
+                                type: string
+                                nullable: true
+                              email:
+                                type: string
+                                format: email
+                                nullable: true
+                              user_id:
+                                type: string
+                                format: uuid
+                                nullable: true
+                              label:
+                                type: string
+                                nullable: true
+                        nullable: true
+                      requested_by:
                         allOf:
                           - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
                         nullable: true
-                      reviewedBy:
+                      reviewed_by:
                         allOf:
                           - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
                         nullable: true
@@ -2334,6 +2432,40 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - pending
+            - approved
+            - rejected
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - created_at
+            - reviewed_at
+            - status
+            - id
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - asc
+            - desc
     get:
       tags:
         - Organizations
@@ -2378,13 +2510,6 @@ paths:
             schema:
               type: object
               properties:
-                role_code:
-                  type: string
-                  enum:
-                    - owner
-                    - admin
-                    - manager
-                    - member
                 review_note:
                   type: string
                   nullable: true
@@ -2405,7 +2530,7 @@ paths:
                     example: ok
                   message:
                     type: string
-                    example: Join request reviewed
+                    example: Join request approved
                   data:
                     $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1join-requests/post/responses/201/content/application~1json/schema/properties/data'
         '401':

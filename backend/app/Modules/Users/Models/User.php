@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Organizations\Models\Organization;
-use Modules\Organizations\Models\OrganizationMember;
+use Modules\Organizations\Models\OrganizationUser;
 use Modules\Organizations\Models\OrganizationJoinRequest;
 use Illuminate\Support\Facades\Hash;
 use Modules\Users\Enums\RoleCode;
@@ -83,17 +83,17 @@ final class User extends Authenticatable
             "organization_users",
             "user_id",
             "organization_id",
-        )->withPivot(["id", "role_id", "role_code", "status", "invited_by_user_id", "joined_at"]);
+        )->withPivot(["id", "position", "status", "invited_by_user_id", "joined_at"]);
     }
 
     public function organizationMemberships(): HasMany
     {
-        return $this->hasMany(OrganizationMember::class, "user_id");
+        return $this->hasMany(OrganizationUser::class, "user_id");
     }
 
     public function organizationJoinRequests(): HasMany
     {
-        return $this->hasMany(OrganizationJoinRequest::class, "user_id");
+        return $this->hasMany(OrganizationJoinRequest::class, "requested_by_user_id");
     }
 
     public function roles(): BelongsToMany

@@ -16,7 +16,6 @@ final class ReviewOrganizationJoinRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "role_code" => ["sometimes", "string", "in:owner,admin,manager,member"],
             "review_note" => ["nullable", "string", "max:2000"],
         ];
     }

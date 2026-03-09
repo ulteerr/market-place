@@ -9,34 +9,36 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create("organization_users", function (Blueprint $table): void {
+        Schema::create("organization_clients", function (Blueprint $table): void {
             $table->uuid("id")->primary();
 
-            $table->uuid("user_id");
             $table->uuid("organization_id");
-            $table->string("position")->nullable();
+            $table->string("subject_type");
+            $table->uuid("subject_id");
             $table->string("status")->default("active");
-            $table->uuid("invited_by_user_id")->nullable();
+            $table->uuid("added_by_user_id")->nullable();
             $table->timestamp("joined_at")->nullable();
 
             $table->timestamps();
 
-            $table->unique(["organization_id", "user_id"], "organization_users_org_user_unique");
-            $table->index("position");
+            $table->unique(
+                ["organization_id", "subject_type", "subject_id"],
+                "organization_clients_org_subject_unique",
+            );
             $table->index("status");
+            $table->index(["organization_id", "subject_type", "status"]);
 
-            $table->foreign("user_id")->references("id")->on("users")->cascadeOnDelete();
             $table
                 ->foreign("organization_id")
                 ->references("id")
                 ->on("organizations")
                 ->cascadeOnDelete();
-            $table->foreign("invited_by_user_id")->references("id")->on("users")->nullOnDelete();
+            $table->foreign("added_by_user_id")->references("id")->on("users")->nullOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists("organization_users");
+        Schema::dropIfExists("organization_clients");
     }
 };

@@ -6,16 +6,16 @@ namespace Modules\Organizations\Repositories;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\Organizations\Models\OrganizationMember;
+use Modules\Organizations\Models\OrganizationUser;
 
-final class OrganizationMembersRepository implements OrganizationMembersRepositoryInterface
+final class OrganizationUsersRepository implements OrganizationUsersRepositoryInterface
 {
     public function paginateForOrganization(
         string $organizationId,
         int $perPage = 20,
         array $filters = [],
     ): LengthAwarePaginator {
-        $query = OrganizationMember::query()
+        $query = OrganizationUser::query()
             ->with([
                 "user:id,first_name,last_name,middle_name,email",
                 "invitedBy:id,first_name,last_name,middle_name,email",
@@ -28,7 +28,7 @@ final class OrganizationMembersRepository implements OrganizationMembersReposito
             $query->where(function (Builder $builder) use ($like): void {
                 $builder
                     ->where("id", "like", $like)
-                    ->orWhere("role_code", "like", $like)
+                    ->orWhere("position", "like", $like)
                     ->orWhere("status", "like", $like)
                     ->orWhereHas("user", function (Builder $userBuilder) use ($like): void {
                         $userBuilder
@@ -51,7 +51,7 @@ final class OrganizationMembersRepository implements OrganizationMembersReposito
             $sortDir = "desc";
         }
 
-        $allowedSorts = ["created_at", "joined_at", "role_code", "status", "id"];
+        $allowedSorts = ["created_at", "joined_at", "position", "status", "id"];
         if (!in_array($sortBy, $allowedSorts, true)) {
             $sortBy = "created_at";
         }
@@ -61,27 +61,27 @@ final class OrganizationMembersRepository implements OrganizationMembersReposito
         return $query->paginate($perPage);
     }
 
-    public function findByIdAndOrganization(string $id, string $organizationId): ?OrganizationMember
+    public function findByIdAndOrganization(string $id, string $organizationId): ?OrganizationUser
     {
-        return OrganizationMember::query()
+        return OrganizationUser::query()
             ->where("id", $id)
             ->where("organization_id", $organizationId)
             ->first();
     }
 
-    public function create(array $data): OrganizationMember
+    public function create(array $data): OrganizationUser
     {
-        return OrganizationMember::query()->create($data);
+        return OrganizationUser::query()->create($data);
     }
 
-    public function update(OrganizationMember $member, array $data): OrganizationMember
+    public function update(OrganizationUser $member, array $data): OrganizationUser
     {
         $member->update($data);
 
         return $member;
     }
 
-    public function delete(OrganizationMember $member): bool
+    public function delete(OrganizationUser $member): bool
     {
         return $member->delete();
     }

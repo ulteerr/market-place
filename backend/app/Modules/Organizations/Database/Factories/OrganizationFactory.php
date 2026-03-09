@@ -6,7 +6,6 @@ namespace Modules\Organizations\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Organizations\Models\Organization;
-use Modules\Users\Models\User;
 
 /**
  * @extends Factory<Organization>
@@ -34,7 +33,6 @@ final class OrganizationFactory extends Factory
                 "pending_claim",
                 "claimed",
             ]),
-            "user_id" => User::factory(),
             "owner_user_id" => null,
             "created_by_user_id" => null,
             "claimed_at" => null,

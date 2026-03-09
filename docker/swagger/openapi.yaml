@@ -91,6 +91,9 @@ paths:
   /api/organizations/{organizationId}/members:
     $ref: ./modules/organizations.yaml#/organization_members
 
+  /api/organizations/{organizationId}/clients:
+    $ref: ./modules/organizations.yaml#/organization_clients
+
   /api/organizations/{organizationId}/members/{memberId}:
     $ref: ./modules/organizations.yaml#/organization_members_by_id
 

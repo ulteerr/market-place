@@ -7,15 +7,15 @@ namespace Modules\Organizations\Http\Controllers;
 use App\Shared\Http\Responses\StatusResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Organizations\Http\Requests\CreateOrganizationMemberRequest;
-use Modules\Organizations\Http\Requests\UpdateOrganizationMemberRequest;
-use Modules\Organizations\Services\OrganizationMembersService;
+use Modules\Organizations\Http\Requests\CreateOrganizationUserRequest;
+use Modules\Organizations\Http\Requests\UpdateOrganizationUserRequest;
+use Modules\Organizations\Services\OrganizationUsersService;
 use Modules\Users\Models\User;
 
-final class OrganizationMemberController
+final class OrganizationUserController
 {
     public function __construct(
-        private readonly OrganizationMembersService $organizationMembersService,
+        private readonly OrganizationUsersService $organizationUsersService,
     ) {}
 
     public function index(Request $request, string $organizationId): JsonResponse
@@ -33,7 +33,7 @@ final class OrganizationMemberController
             $sortDir = "desc";
         }
 
-        $items = $this->organizationMembersService->listForOrganization(
+        $items = $this->organizationUsersService->listForOrganization(
             $organizationId,
             $actor,
             $perPage,
@@ -49,7 +49,7 @@ final class OrganizationMemberController
     }
 
     public function store(
-        CreateOrganizationMemberRequest $request,
+        CreateOrganizationUserRequest $request,
         string $organizationId,
     ): JsonResponse {
         /** @var User|null $actor */
@@ -58,11 +58,11 @@ final class OrganizationMemberController
             return StatusResponseFactory::error("Unauthorized", 401);
         }
 
-        $member = $this->organizationMembersService->addMember(
+        $member = $this->organizationUsersService->addMember(
             $organizationId,
             $actor,
             (string) $request->validated("user_id"),
-            (string) $request->validated("role_code", "member"),
+            $request->validated("position"),
             (string) $request->validated("status", "active"),
         );
 
@@ -74,7 +74,7 @@ final class OrganizationMemberController
     }
 
     public function update(
-        UpdateOrganizationMemberRequest $request,
+        UpdateOrganizationUserRequest $request,
         string $organizationId,
         string $memberId,
     ): JsonResponse {
@@ -84,7 +84,7 @@ final class OrganizationMemberController
             return StatusResponseFactory::error("Unauthorized", 401);
         }
 
-        $member = $this->organizationMembersService->updateMember(
+        $member = $this->organizationUsersService->updateMember(
             $organizationId,
             $memberId,
             $actor,
@@ -105,7 +105,7 @@ final class OrganizationMemberController
             return StatusResponseFactory::error("Unauthorized", 401);
         }
 
-        $this->organizationMembersService->removeMember($organizationId, $memberId, $actor);
+        $this->organizationUsersService->removeMember($organizationId, $memberId, $actor);
 
         return StatusResponseFactory::ok("Deleted successfully");
     }

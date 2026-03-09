@@ -7,8 +7,8 @@ namespace Modules\Organizations;
 use App\Support\ModuleServiceProvider;
 use Modules\Organizations\Repositories\OrganizationJoinRequestsRepository;
 use Modules\Organizations\Repositories\OrganizationJoinRequestsRepositoryInterface;
-use Modules\Organizations\Repositories\OrganizationMembersRepository;
-use Modules\Organizations\Repositories\OrganizationMembersRepositoryInterface;
+use Modules\Organizations\Repositories\OrganizationUsersRepository;
+use Modules\Organizations\Repositories\OrganizationUsersRepositoryInterface;
 use Modules\Organizations\Repositories\OrganizationsRepository;
 use Modules\Organizations\Repositories\OrganizationsRepositoryInterface;
 
@@ -24,8 +24,8 @@ final class OrganizationsServiceProvider extends ModuleServiceProvider
             OrganizationJoinRequestsRepository::class,
         );
         $this->app->bind(
-            OrganizationMembersRepositoryInterface::class,
-            OrganizationMembersRepository::class,
+            OrganizationUsersRepositoryInterface::class,
+            OrganizationUsersRepository::class,
         );
     }
 }

@@ -6,20 +6,24 @@ namespace Modules\Organizations\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Modules\Children\Models\Child;
 use Modules\Geo\Models\City;
 use Modules\Organizations\Models\Organization;
+use Modules\Organizations\Models\OrganizationClient;
 use Modules\Organizations\Models\OrganizationJoinRequest;
 use Modules\Organizations\Models\OrganizationLocation;
-use Modules\Organizations\Models\OrganizationMember;
-use Modules\Organizations\Models\OrganizationRole;
+use Modules\Organizations\Models\OrganizationUser;
 use Modules\Users\Models\User;
 
 final class OrganizationsSeeder extends Seeder
 {
     public function run(): void
     {
-        $roles = $this->seedRoles();
         $users = User::query()->select("id")->limit(24)->get();
+        $children = Child::query()
+            ->select(["id", "user_id"])
+            ->limit(24)
+            ->get();
 
         if ($users->count() < 4) {
             return;
@@ -38,7 +42,6 @@ final class OrganizationsSeeder extends Seeder
                 "description" => sprintf("Тестовая организация %d", $i + 1),
                 "phone" => sprintf("+7999000%04d", $i + 101),
                 "email" => sprintf("org%d@example.com", $i + 1),
-                "user_id" => (string) $owner->id,
             ];
 
             if (Schema::hasColumn("organizations", "status")) {
@@ -79,14 +82,13 @@ final class OrganizationsSeeder extends Seeder
             ]);
 
             if ($claimed) {
-                OrganizationMember::query()->updateOrCreate(
+                OrganizationUser::query()->updateOrCreate(
                     [
                         "organization_id" => (string) $organization->id,
                         "user_id" => (string) $owner->id,
                     ],
                     $this->buildMemberAttributes(
-                        roleId: (string) $roles["owner"]->id,
-                        roleCode: "owner",
+                        position: "Owner",
                         status: "active",
                         invitedByUserId: (string) $createdBy->id,
                         joinedAtDaysAgo: $i + 1,
@@ -97,40 +99,72 @@ final class OrganizationsSeeder extends Seeder
             $memberA = $users[($i + 2) % $users->count()];
             $memberB = $users[($i + 3) % $users->count()];
             $pendingUser = $users[($i + 4) % $users->count()];
+            $clientUser = $users[($i + 5) % $users->count()];
 
-            OrganizationMember::query()->updateOrCreate(
+            OrganizationUser::query()->updateOrCreate(
                 [
                     "organization_id" => (string) $organization->id,
                     "user_id" => (string) $memberA->id,
                 ],
                 $this->buildMemberAttributes(
-                    roleId: (string) $roles["admin"]->id,
-                    roleCode: "admin",
+                    position: "Administrator",
                     status: "active",
                     invitedByUserId: (string) $createdBy->id,
                     joinedAtDaysAgo: max($i, 1),
                 ),
             );
 
-            OrganizationMember::query()->updateOrCreate(
+            OrganizationUser::query()->updateOrCreate(
                 [
                     "organization_id" => (string) $organization->id,
                     "user_id" => (string) $memberB->id,
                 ],
                 $this->buildMemberAttributes(
-                    roleId: (string) $roles["member"]->id,
-                    roleCode: "member",
+                    position: "Coach",
                     status: "active",
                     invitedByUserId: (string) $memberA->id,
                     joinedAtDaysAgo: max($i - 1, 1),
                 ),
             );
 
+            if (Schema::hasTable("organization_clients")) {
+                OrganizationClient::query()->updateOrCreate(
+                    [
+                        "organization_id" => (string) $organization->id,
+                        "subject_type" => OrganizationJoinRequest::SUBJECT_TYPE_USER,
+                        "subject_id" => (string) $clientUser->id,
+                    ],
+                    [
+                        "status" => "active",
+                        "added_by_user_id" => (string) $createdBy->id,
+                        "joined_at" => now()->subDays(max($i, 1)),
+                    ],
+                );
+
+                if ($children->isNotEmpty()) {
+                    $child = $children[$i % $children->count()];
+                    OrganizationClient::query()->updateOrCreate(
+                        [
+                            "organization_id" => (string) $organization->id,
+                            "subject_type" => OrganizationJoinRequest::SUBJECT_TYPE_CHILD,
+                            "subject_id" => (string) $child->id,
+                        ],
+                        [
+                            "status" => "active",
+                            "added_by_user_id" => (string) $createdBy->id,
+                            "joined_at" => now()->subDays(max($i - 1, 1)),
+                        ],
+                    );
+                }
+            }
+
             if (Schema::hasTable("organization_join_requests")) {
                 OrganizationJoinRequest::query()->updateOrCreate(
                     [
                         "organization_id" => (string) $organization->id,
-                        "user_id" => (string) $pendingUser->id,
+                        "subject_type" => OrganizationJoinRequest::SUBJECT_TYPE_USER,
+                        "subject_id" => (string) $pendingUser->id,
+                        "requested_by_user_id" => (string) $pendingUser->id,
                         "status" => "pending",
                     ],
                     [
@@ -140,39 +174,39 @@ final class OrganizationsSeeder extends Seeder
                         "reviewed_at" => null,
                     ],
                 );
+
+                if ($children->isNotEmpty()) {
+                    $child = $children[($i + 1) % $children->count()];
+                    OrganizationJoinRequest::query()->updateOrCreate(
+                        [
+                            "organization_id" => (string) $organization->id,
+                            "subject_type" => OrganizationJoinRequest::SUBJECT_TYPE_CHILD,
+                            "subject_id" => (string) $child->id,
+                            "requested_by_user_id" => (string) $child->user_id,
+                            "status" => "pending",
+                        ],
+                        [
+                            "message" => "Прошу принять ребенка в организацию",
+                            "review_note" => null,
+                            "reviewed_by_user_id" => null,
+                            "reviewed_at" => null,
+                        ],
+                    );
+                }
             }
         }
     }
 
-    /**
-     * @return array<string, OrganizationRole>
-     */
-    private function seedRoles(): array
-    {
-        $codes = ["owner", "admin", "manager", "member"];
-        $roles = [];
-
-        foreach ($codes as $code) {
-            $roles[$code] = OrganizationRole::query()->firstOrCreate(["code" => $code]);
-        }
-
-        return $roles;
-    }
-
     private function buildMemberAttributes(
-        string $roleId,
-        string $roleCode,
+        string $position,
         string $status,
         string $invitedByUserId,
         int $joinedAtDaysAgo,
     ): array {
         $attributes = [];
 
-        if (Schema::hasColumn("organization_users", "role_id")) {
-            $attributes["role_id"] = $roleId;
-        }
-        if (Schema::hasColumn("organization_users", "role_code")) {
-            $attributes["role_code"] = $roleCode;
+        if (Schema::hasColumn("organization_users", "position")) {
+            $attributes["position"] = $position;
         }
         if (Schema::hasColumn("organization_users", "status")) {
             $attributes["status"] = $status;

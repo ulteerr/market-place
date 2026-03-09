@@ -20,7 +20,11 @@ final class OrganizationJoinRequestFactory extends Factory
     {
         return [
             "organization_id" => Organization::factory(),
-            "user_id" => User::factory(),
+            "subject_type" => OrganizationJoinRequest::SUBJECT_TYPE_USER,
+            "subject_id" => User::factory(),
+            "requested_by_user_id" => static fn(array $attributes): string => (string) ($attributes[
+                "subject_id"
+            ] ?? ""),
             "status" => $this->faker->randomElement(["pending", "approved", "rejected"]),
             "message" => $this->faker->optional()->sentence(),
             "review_note" => null,

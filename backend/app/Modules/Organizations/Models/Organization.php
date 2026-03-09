@@ -36,7 +36,6 @@ final class Organization extends Model
         "status",
         "source_type",
         "ownership_status",
-        "user_id",
         "owner_user_id",
         "created_by_user_id",
         "claimed_at",
@@ -51,11 +50,6 @@ final class Organization extends Model
         return $this->belongsTo(User::class, "owner_user_id");
     }
 
-    public function legacyOwner(): BelongsTo
-    {
-        return $this->belongsTo(User::class, "user_id");
-    }
-
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, "created_by_user_id");
@@ -63,7 +57,7 @@ final class Organization extends Model
 
     public function members(): HasMany
     {
-        return $this->hasMany(OrganizationMember::class, "organization_id");
+        return $this->hasMany(OrganizationUser::class, "organization_id");
     }
 
     public function users(): BelongsToMany
@@ -73,7 +67,12 @@ final class Organization extends Model
             "organization_users",
             "organization_id",
             "user_id",
-        )->withPivot(["id", "role_id", "role_code", "status", "invited_by_user_id", "joined_at"]);
+        )->withPivot(["id", "position", "status", "invited_by_user_id", "joined_at"]);
+    }
+
+    public function clients(): HasMany
+    {
+        return $this->hasMany(OrganizationClient::class, "organization_id");
     }
 
     public function joinRequests(): HasMany

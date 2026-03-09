@@ -66,6 +66,40 @@ components:
           type: string
           format: email
           nullable: true
+        label:
+          type: string
+          nullable: true
+
+    OrganizationJoinRequestSubject:
+      type: object
+      required: [type, id]
+      properties:
+        type:
+          type: string
+          enum: [user, child]
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+          nullable: true
+        middle_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+        label:
+          type: string
+          nullable: true
 
     Organization:
       type: object
@@ -175,7 +209,7 @@ components:
 
     OrganizationJoinRequest:
       type: object
-      required: [id, organization_id, user_id, status]
+      required: [id, organization_id, subject_type, subject_id, status]
       properties:
         id:
           type: string
@@ -183,12 +217,19 @@ components:
         organization_id:
           type: string
           format: uuid
-        user_id:
+        subject_type:
+          type: string
+          enum: [user, child]
+        subject_id:
           type: string
           format: uuid
+        requested_by_user_id:
+          type: string
+          format: uuid
+          nullable: true
         status:
           type: string
-          enum: [pending, approved, rejected, canceled]
+          enum: [pending, approved, rejected]
         message:
           type: string
           nullable: true
@@ -211,11 +252,15 @@ components:
           type: string
           format: date-time
           nullable: true
-        user:
+        subject:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationJoinRequestSubject'
+          nullable: true
+        requested_by:
           allOf:
             - $ref: '#/components/schemas/OrganizationUserShort'
           nullable: true
-        reviewedBy:
+        reviewed_by:
           allOf:
             - $ref: '#/components/schemas/OrganizationUserShort'
           nullable: true

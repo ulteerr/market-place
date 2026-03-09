@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Organizations\Services;
 
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Modules\Children\Models\Child;
+use Modules\Organizations\Models\OrganizationClient;
 use Modules\Organizations\Models\Organization;
-use Modules\Organizations\Models\OrganizationMember;
-use Modules\Organizations\Models\OrganizationRole;
 use Modules\Organizations\Models\OrganizationJoinRequest;
 use Modules\Organizations\Repositories\OrganizationJoinRequestsRepositoryInterface;
 use Modules\Organizations\Repositories\OrganizationsRepositoryInterface;
@@ -27,25 +27,62 @@ final class OrganizationJoinRequestsService
     public function submit(
         string $organizationId,
         User $actor,
+        string $subjectType,
+        string $subjectId,
         ?string $message = null,
     ): OrganizationJoinRequest {
         $organization = $this->findOrganizationOrFail($organizationId);
+        $normalizedSubjectType = trim($subjectType);
+        $normalizedSubjectId = trim($subjectId);
 
-        $isActiveMember = OrganizationMember::query()
-            ->where("organization_id", (string) $organization->id)
-            ->where("user_id", (string) $actor->id)
-            ->where("status", "active")
-            ->exists();
+        if ($normalizedSubjectType === OrganizationJoinRequest::SUBJECT_TYPE_USER) {
+            if ($normalizedSubjectId !== (string) $actor->id) {
+                throw ValidationException::withMessages([
+                    "subject_id" => "User can submit request only for himself.",
+                ]);
+            }
+        } elseif ($normalizedSubjectType === OrganizationJoinRequest::SUBJECT_TYPE_CHILD) {
+            $child = Child::query()->find($normalizedSubjectId);
+            if (!$child) {
+                throw ValidationException::withMessages([
+                    "subject_id" => "Child not found.",
+                ]);
+            }
 
-        if ($isActiveMember) {
+            if ((string) $child->user_id !== (string) $actor->id) {
+                throw ValidationException::withMessages([
+                    "subject_id" => "User cannot submit request for another user's child.",
+                ]);
+            }
+        } else {
             throw ValidationException::withMessages([
-                "organization_id" => "User is already an active member of this organization.",
+                "subject_type" => "Invalid subject type.",
             ]);
         }
 
-        $pendingRequest = $this->repository->findPendingByOrganizationAndUser(
+        $isActiveClient = OrganizationClient::query()
+            ->where("organization_id", (string) $organization->id)
+            ->where("subject_type", $normalizedSubjectType)
+            ->where("subject_id", $normalizedSubjectId)
+            ->where("status", "active")
+            ->exists();
+
+        if ($isActiveClient) {
+            if ($normalizedSubjectType === OrganizationJoinRequest::SUBJECT_TYPE_CHILD) {
+                throw ValidationException::withMessages([
+                    "organization_id" => "Child is already participating in this organization.",
+                ]);
+            }
+
+            throw ValidationException::withMessages([
+                "organization_id" => "User is already participating in this organization.",
+            ]);
+        }
+
+        $pendingRequest = $this->repository->findPendingByOrganizationAndSubject(
             (string) $organization->id,
-            (string) $actor->id,
+            $normalizedSubjectType,
+            $normalizedSubjectId,
         );
 
         if ($pendingRequest) {
@@ -56,7 +93,9 @@ final class OrganizationJoinRequestsService
 
         return $this->repository->create([
             "organization_id" => (string) $organization->id,
-            "user_id" => (string) $actor->id,
+            "subject_type" => $normalizedSubjectType,
+            "subject_id" => $normalizedSubjectId,
+            "requested_by_user_id" => (string) $actor->id,
             "status" => "pending",
             "message" => $message,
         ]);
@@ -69,7 +108,7 @@ final class OrganizationJoinRequestsService
         array $filters = [],
     ): LengthAwarePaginator {
         $organization = $this->findOrganizationOrFail($organizationId);
-        $this->assertCanManageJoinRequests($organization, $actor);
+        Gate::forUser($actor)->authorize("viewJoinRequests", $organization);
 
         return $this->repository->paginateForOrganization(
             (string) $organization->id,
@@ -86,7 +125,7 @@ final class OrganizationJoinRequestsService
     ): LengthAwarePaginator {
         $organization = $this->findOrganizationOrFail($organizationId);
 
-        return $this->repository->paginateForOrganizationAndUser(
+        return $this->repository->paginateForOrganizationAndRequester(
             (string) $organization->id,
             (string) $actor->id,
             $perPage,
@@ -98,18 +137,14 @@ final class OrganizationJoinRequestsService
         string $organizationId,
         string $joinRequestId,
         User $actor,
-        string $roleCode = "member",
         ?string $reviewNote = null,
     ): OrganizationJoinRequest {
         $organization = $this->findOrganizationOrFail($organizationId);
-        $this->assertCanManageJoinRequests($organization, $actor);
+        Gate::forUser($actor)->authorize("reviewJoinRequests", $organization);
 
         $request = $this->findJoinRequestOrFail((string) $organization->id, $joinRequestId);
-        $this->assertPending($request);
 
-        $roleId = $this->resolveRoleId($roleCode);
-
-        DB::transaction(function () use ($request, $actor, $roleCode, $roleId, $reviewNote): void {
+        DB::transaction(function () use ($request, $actor, $reviewNote): void {
             $this->repository->update($request, [
                 "status" => "approved",
                 "review_note" => $reviewNote,
@@ -117,22 +152,22 @@ final class OrganizationJoinRequestsService
                 "reviewed_at" => now(),
             ]);
 
-            OrganizationMember::query()->updateOrCreate(
+            OrganizationClient::query()->updateOrCreate(
                 [
                     "organization_id" => (string) $request->organization_id,
-                    "user_id" => (string) $request->user_id,
+                    "subject_type" => (string) $request->subject_type,
+                    "subject_id" => (string) $request->subject_id,
                 ],
                 [
-                    "role_id" => $roleId,
-                    "role_code" => $roleCode,
                     "status" => "active",
-                    "invited_by_user_id" => (string) $actor->id,
+                    "added_by_user_id" => (string) $actor->id,
                     "joined_at" => now(),
                 ],
             );
         });
 
-        return $request->fresh(["user", "reviewedBy"]) ?? $request;
+        return $request->fresh(["requestedBy", "subjectUser", "subjectChild", "reviewedBy"]) ??
+            $request;
     }
 
     public function reject(
@@ -142,19 +177,26 @@ final class OrganizationJoinRequestsService
         ?string $reviewNote = null,
     ): OrganizationJoinRequest {
         $organization = $this->findOrganizationOrFail($organizationId);
-        $this->assertCanManageJoinRequests($organization, $actor);
+        Gate::forUser($actor)->authorize("reviewJoinRequests", $organization);
 
         $request = $this->findJoinRequestOrFail((string) $organization->id, $joinRequestId);
-        $this->assertPending($request);
+        DB::transaction(function () use ($request, $actor, $reviewNote): void {
+            $this->repository->update($request, [
+                "status" => "rejected",
+                "review_note" => $reviewNote,
+                "reviewed_by_user_id" => (string) $actor->id,
+                "reviewed_at" => now(),
+            ]);
 
-        $this->repository->update($request, [
-            "status" => "rejected",
-            "review_note" => $reviewNote,
-            "reviewed_by_user_id" => (string) $actor->id,
-            "reviewed_at" => now(),
-        ]);
+            OrganizationClient::query()
+                ->where("organization_id", (string) $request->organization_id)
+                ->where("subject_type", (string) $request->subject_type)
+                ->where("subject_id", (string) $request->subject_id)
+                ->delete();
+        });
 
-        return $request->fresh(["user", "reviewedBy"]) ?? $request;
+        return $request->fresh(["requestedBy", "subjectUser", "subjectChild", "reviewedBy"]) ??
+            $request;
     }
 
     private function findOrganizationOrFail(string $organizationId): Organization
@@ -177,45 +219,5 @@ final class OrganizationJoinRequestsService
         }
 
         return $request;
-    }
-
-    private function assertPending(OrganizationJoinRequest $request): void
-    {
-        if ((string) $request->status !== "pending") {
-            throw ValidationException::withMessages([
-                "status" => "Only pending join request can be reviewed.",
-            ]);
-        }
-    }
-
-    private function assertCanManageJoinRequests(Organization $organization, User $actor): void
-    {
-        if ((string) $organization->owner_user_id === (string) $actor->id) {
-            return;
-        }
-
-        $isOrgAdmin = OrganizationMember::query()
-            ->where("organization_id", (string) $organization->id)
-            ->where("user_id", (string) $actor->id)
-            ->where("status", "active")
-            ->whereIn("role_code", ["owner", "admin"])
-            ->exists();
-
-        if ($isOrgAdmin) {
-            return;
-        }
-
-        throw new AuthorizationException("Forbidden");
-    }
-
-    private function resolveRoleId(string $roleCode): string
-    {
-        $normalizedRoleCode = trim($roleCode) !== "" ? trim($roleCode) : "member";
-
-        $role = OrganizationRole::query()->firstOrCreate([
-            "code" => $normalizedRoleCode,
-        ]);
-
-        return (string) $role->id;
     }
 }

@@ -11,5 +11,8 @@ return [
         "child" => \Modules\Children\Models\Child::class,
         "organization" => \Modules\Organizations\Models\Organization::class,
         "organizations" => \Modules\Organizations\Models\Organization::class,
+        "organization_join_request" => \Modules\Organizations\Models\OrganizationJoinRequest::class,
+        "organization_join_requests" =>
+            \Modules\Organizations\Models\OrganizationJoinRequest::class,
     ],
 ];
