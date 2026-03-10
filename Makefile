@@ -4,7 +4,7 @@
         ws-check all \
         swagger redoc openapi-validate openapi-bundle docs \
         hooks-install \
-        front front-install front-npm front-nuxi front-test front-storybook front-storybook-build
+        front front-install front-npm front-nuxi front-test front-storybook front-storybook-build front-ssr-reset
 
 # --------------------------
 # Containers
@@ -226,3 +226,7 @@ front-storybook:
 
 front-storybook-build:
 	docker-compose run --rm frontend-storybook npm run build-storybook
+
+front-ssr-reset:
+	docker-compose exec frontend sh -lc "rm -rf .nuxt .output node_modules/.cache/nuxt"
+	docker-compose restart frontend

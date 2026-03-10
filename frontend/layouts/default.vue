@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="default-layout min-h-screen flex flex-col">
     <AppHeader />
 
     <main class="flex-1">
@@ -14,3 +14,5 @@
 import AppHeader from '~/components/layout/AppHeader/AppHeader.vue';
 import AppFooter from '~/components/layout/AppFooter/AppFooter.vue';
 </script>
+
+<style lang="scss" src="./default.scss"></style>

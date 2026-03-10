@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-02-06',
   devtools: { enabled: true },
   modules: ['@nuxtjs/i18n'],
-  css: ['~/assets/styles/tailwind.css', '~/assets/styles/global.scss'],
+  css: ['~/assets/styles/tailwind.css'],
   postcss: {
     plugins: {
       '@tailwindcss/postcss': {},

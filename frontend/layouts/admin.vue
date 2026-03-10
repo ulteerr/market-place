@@ -156,4 +156,5 @@ onBeforeUnmount(() => {
 });
 </script>
 
+<style lang="scss" src="../assets/styles/admin.scss"></style>
 <style lang="scss" src="./admin.scss"></style>

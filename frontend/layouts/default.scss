@@ -1,0 +1,6 @@
+@use '../assets/styles/default.scss' as *;
+
+.default-layout {
+  background: var(--page-background);
+  color: var(--text);
+}
