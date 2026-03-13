@@ -56,7 +56,6 @@ export default {
       searchAria: 'Search catalog',
       searchPlaceholder: 'Find sections, clubs, activities',
       quickActionsAria: 'Quick actions',
-      themeToggleAria: 'Toggle theme',
       themeLight: 'Light theme',
       themeDark: 'Dark theme',
       mobileMenuAria: 'Open mobile menu',
@@ -90,7 +89,8 @@ export default {
         schoolPrep: 'School prep',
         english: 'English',
       },
-      serviceZone: 'Moscow • Enrollment is open',
+      region: 'Moscow',
+      serviceStatus: 'Enrollment is open',
     },
     adminToolbar: {
       aria: 'Administrator toolbar',
@@ -609,6 +609,7 @@ export default {
     reporter: {
       selectionMode: 'Block selection mode',
       start: 'Report an issue',
+      close: 'Close report panel',
       cancel: 'Cancel',
       reset: 'Select again',
       selectionHint: 'Click the problematic block. `Esc` cancels selection mode.',

@@ -7,7 +7,30 @@
       aria-hidden="true"
     />
 
-    <aside :class="styles.panel" data-test="error-reporter-panel">
+    <button
+      v-if="!isPanelOpen"
+      type="button"
+      :class="[styles.button, styles.buttonPrimary, styles.launcher]"
+      data-test="error-reporter-launcher"
+      @click="onOpenPanel"
+    >
+      {{ t('app.debug.reporter.start') }}
+    </button>
+
+    <aside v-if="isPanelOpen" :class="styles.panel" data-test="error-reporter-panel">
+      <div :class="styles.panelHeader">
+        <strong :class="styles.panelTitle">{{ t('app.debug.reporter.start') }}</strong>
+        <button
+          type="button"
+          :class="styles.iconButton"
+          :aria-label="t('app.debug.reporter.close')"
+          data-test="error-reporter-close"
+          @click="onClosePanel"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
       <div v-if="isSelectionMode" :class="styles.selectionBadge">
         <span :class="styles.selectionBadgeDot" />
         {{ t('app.debug.reporter.selectionMode') }}
@@ -233,6 +256,7 @@ const attachments = ref<ReportAttachmentMeta[]>([]);
 const reportPayload = ref<UiErrorReportPayload | null>(null);
 const sendResult = ref<{ reportId: string; status: string } | null>(null);
 const reportState = ref<'draft' | 'sending' | 'sent' | 'error'>('draft');
+const isPanelOpen = ref(false);
 
 const attachmentAccept = ERROR_REPORT_ALLOWED_MIME_TYPES.join(',');
 const maxFileSizeMb = Math.round(ERROR_REPORT_MAX_FILE_SIZE_BYTES / (1024 * 1024));
@@ -277,7 +301,19 @@ const updateSelectedRect = () => {
   selectedRect.value = toRect(selectedElement.value);
 };
 
+const onOpenPanel = () => {
+  isPanelOpen.value = true;
+};
+
+const onClosePanel = () => {
+  isPanelOpen.value = false;
+  stopSelection();
+  hoveredElement.value = null;
+  hoveredRect.value = null;
+};
+
 const onStartSelection = () => {
+  isPanelOpen.value = true;
   startSelection();
   hoveredElement.value = null;
   hoveredRect.value = null;

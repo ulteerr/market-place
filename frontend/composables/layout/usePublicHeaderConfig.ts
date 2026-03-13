@@ -59,12 +59,14 @@ export const usePublicHeaderConfig = () => {
     },
   ]);
 
-  const serviceZoneText = computed(() => t('app.layout.header.serviceZone'));
+  const regionText = computed(() => t('app.layout.header.region'));
+  const serviceStatusText = computed(() => t('app.layout.header.serviceStatus'));
 
   return {
     quickActions,
     sectionLinks,
     catalogGroups,
-    serviceZoneText,
+    regionText,
+    serviceStatusText,
   };
 };

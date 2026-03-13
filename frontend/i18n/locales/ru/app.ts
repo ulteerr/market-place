@@ -56,7 +56,6 @@ export default {
       searchAria: 'Поиск по каталогу',
       searchPlaceholder: 'Найти секции, кружки, направления',
       quickActionsAria: 'Быстрые действия',
-      themeToggleAria: 'Переключить тему',
       themeLight: 'Светлая тема',
       themeDark: 'Тёмная тема',
       mobileMenuAria: 'Открыть мобильное меню',
@@ -90,7 +89,8 @@ export default {
         schoolPrep: 'Подготовка к школе',
         english: 'Английский',
       },
-      serviceZone: 'Москва • Набор в секции открыт',
+      region: 'Москва',
+      serviceStatus: 'Набор в секции открыт',
     },
     adminToolbar: {
       aria: 'Панель администратора',
@@ -620,6 +620,7 @@ export default {
     reporter: {
       selectionMode: 'Режим выбора блока',
       start: 'Сообщить об ошибке',
+      close: 'Закрыть панель отчета',
       cancel: 'Отменить',
       reset: 'Выбрать заново',
       selectionHint: 'Кликните по проблемному блоку. `Esc` отменяет режим выбора.',

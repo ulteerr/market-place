@@ -22,6 +22,10 @@ test.describe('Global error reporting', () => {
 
     await page.goto('/');
 
+    await expect(page.locator('[data-test="error-reporter-panel"]')).toHaveCount(0);
+    await page.locator('[data-test="error-reporter-launcher"]').click();
+    await expect(page.locator('[data-test="error-reporter-panel"]')).toBeVisible();
+
     await page.locator('[data-test="error-reporter-start"]').click();
     await page.locator('[data-test="home-public-routes"]').last().click();
 
