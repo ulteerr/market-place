@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Schema Registry" />
+
+# Schema Registry
+
+## Single extension point
+
+- Runtime registry for public schema nodes lives in `frontend/composables/schema/usePublicSchemaRegistry.ts`.
+- Section-level and page-level schema registration must go through `frontend/components/schema/PublicSchemaNode/PublicSchemaNode.vue` or `usePublicSchemaNode`.
+- Final aggregated JSON-LD is rendered only by `frontend/components/schema/PublicSchemaJsonLd/PublicSchemaJsonLd.vue` from `layouts/default.vue`.
+
+## Source of reusable schema builders
+
+- Reusable schema factories live in `frontend/composables/schema/public-schema-contract.ts`.
+- Add new schema types there first, then consume them from pages or reusable sections.
+- Do not build large schema objects inline inside page components unless the data shape is truly route-local and cannot be reused.
+
+## Adding a new schema type
+
+1. Add a typed builder/helper to `public-schema-contract.ts`.
+2. Reuse existing shared inputs (`siteUrl`, breadcrumbs, entity metadata) instead of duplicating mapping logic.
+3. Register the produced node via `PublicSchemaNode` or `usePublicSchemaNode`.
+4. Verify the node appears inside the aggregated `application/ld+json` output on the target public SSR page.
+5. Update SSR/SEO docs and tests if the new schema type becomes mandatory.
+
+## Scope rules
+
+- Public schema is allowed only for `/`, `/catalog/**`, and `/content/**`.
+- `layouts/account.vue`, `layouts/organizations.vue`, and admin routes must not render public schema.
+- Private pages do not get `schema.org` requirements.

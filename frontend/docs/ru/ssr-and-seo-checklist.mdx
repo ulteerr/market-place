@@ -1,0 +1,92 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/RU/SSR and SEO Checklist" />
+
+# Чеклист SSR и SEO
+
+## Область применения
+
+Используйте этот чеклист для публичных SSR-маршрутов:
+
+- `/`
+- `/catalog/**`
+- `/content/**`
+
+Не используйте его для приватных CSR-маршрутов:
+
+- `/account/**`
+- `/organizations/**`
+
+## Когда запускать
+
+- Перед финальной SSR-проверкой в PR.
+- После изменений `routeRules` в `nuxt.config.ts`.
+- После изменений SEO-composables или page-level meta.
+- После изменений, которые могут повлиять на SSR HTML.
+
+## Подготовка
+
+1. Сбросьте оба контура кеша:
+
+```bash
+make cache-reset-all
+```
+
+2. Пересоберите frontend:
+
+```bash
+make front-npm cmd="run build"
+```
+
+3. Откройте целевой public-маршрут в локальном окружении.
+
+## Обязательные проверки
+
+### 1. `h1` присутствует в server-rendered HTML
+
+- Откройте `View Source` или получите HTML через `curl`.
+- Убедитесь, что `h1` уже есть в начальном HTML.
+- `h1` не должен появляться только после hydration.
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<h1"
+```
+
+### 2. `title` присутствует в server-rendered HTML
+
+- Убедитесь, что начальный HTML уже содержит итоговый `<title>`.
+- Недопустима ситуация, когда title проставляется только на клиенте.
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<title>"
+```
+
+### 3. `description` присутствует в server-rendered HTML
+
+- Убедитесь, что `<meta name="description">` есть в начальном HTML.
+- Description должна соответствовать page-level SEO contract, а не только дефолтному app meta.
+
+```bash
+curl -s http://localhost:3000/catalog | rg "meta name=\"description\""
+```
+
+### 4. SEO-контент виден без hydration
+
+- Используйте `View Source`, а не только DevTools Elements после hydration.
+- Альтернатива: отключите JavaScript и перезагрузите страницу.
+- `h1` и основной SEO-контент должны остаться на странице.
+
+### 5. JSON-LD присутствует в итоговом HTML
+
+- Публичные SSR-страницы должны содержать агрегированный скрипт `application/ld+json` в итоговом HTML.
+- Проверка становится обязательной после включения schema-слоя для маршрута.
+
+```bash
+curl -s http://localhost:3000/ | rg "application/ld\\+json"
+```
+
+## Действия при падении проверки
+
+- Повторно выполните `make cache-reset-all`.
+- Повторите проверку один раз.
+- Если проблема осталась, считайте это SSR-регрессией и не закрывайте задачу/PR.

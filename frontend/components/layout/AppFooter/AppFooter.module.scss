@@ -6,6 +6,7 @@
 .container {
   margin: 0 auto;
   display: flex;
+  flex-wrap: wrap;
   width: 100%;
   max-width: 72rem;
   align-items: center;
@@ -14,4 +15,16 @@
   padding: 1rem;
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+.container p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

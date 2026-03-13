@@ -1,5 +1,5 @@
 <template>
-  <section class="roles-form-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="roles-form-page admin-form-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.roles.edit.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.roles.edit.subtitle') }}</p>

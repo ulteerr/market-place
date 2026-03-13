@@ -1,0 +1,213 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/SSR and SEO Checklist" />
+
+<div class="doc-locale-en">
+
+# SSR And SEO Checklist
+
+## Scope
+
+Use this checklist for public SSR routes:
+
+- `/`
+- `/catalog/**`
+- `/content/**`
+
+Do not use it for private CSR routes:
+
+- `/account/**`
+- `/organizations/**`
+
+## When to run
+
+Run the checklist:
+
+- before final SSR review in a PR;
+- after changes in `nuxt.config.ts` route rules;
+- after changes in SEO composables or page-level meta;
+- after changes that may affect SSR HTML output.
+
+## Preparation
+
+1. Reset both cache contours:
+
+```bash
+make cache-reset-all
+```
+
+2. Rebuild the frontend:
+
+```bash
+make front-npm cmd="run build"
+```
+
+3. Open the target public route in the local environment.
+
+## Required checks
+
+### 1. `h1` exists in server-rendered HTML
+
+- Open page source or fetch HTML with `curl`.
+- Confirm the initial HTML already contains page `h1`.
+- `h1` must not appear only after hydration.
+
+Example:
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<h1"
+```
+
+### 2. `title` exists in server-rendered HTML
+
+- Confirm the initial HTML contains the final `<title>`.
+- Do not accept client-only title injection.
+
+Example:
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<title>"
+```
+
+### 3. `description` exists in server-rendered HTML
+
+- Confirm `<meta name="description">` is present in the initial HTML.
+- Description must match page-level SEO contract, not only default app meta.
+
+Example:
+
+```bash
+curl -s http://localhost:3000/catalog | rg "meta name=\"description\""
+```
+
+### 4. SEO content is visible without hydration
+
+- Use browser `View Source`, not only DevTools Elements after hydration.
+- Alternative: disable JavaScript and reload the page.
+- `h1` and primary SEO copy must still be present.
+
+### 5. JSON-LD exists in final HTML
+
+- Public SSR pages must contain aggregated `application/ld+json` script in final HTML.
+- Check becomes mandatory once schema layer is enabled for the route.
+
+Example:
+
+```bash
+curl -s http://localhost:3000/ | rg "application/ld\\+json"
+```
+
+## Failure handling
+
+If any check fails:
+
+- run `make cache-reset-all` again;
+- repeat the check once;
+- if the issue remains, treat it as SSR regression and block completion of the task/PR.
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Чеклист SSR и SEO
+
+## Область применения
+
+Используйте этот чеклист для публичных SSR-маршрутов:
+
+- `/`
+- `/catalog/**`
+- `/content/**`
+
+Не используйте его для приватных CSR-маршрутов:
+
+- `/account/**`
+- `/organizations/**`
+
+## Когда запускать
+
+Запускайте чеклист:
+
+- перед финальной SSR-проверкой в PR;
+- после изменений `routeRules` в `nuxt.config.ts`;
+- после изменений SEO-composables или page-level meta;
+- после изменений, которые могут повлиять на SSR HTML.
+
+## Подготовка
+
+1. Сбросьте оба контура кеша:
+
+```bash
+make cache-reset-all
+```
+
+2. Пересоберите frontend:
+
+```bash
+make front-npm cmd="run build"
+```
+
+3. Откройте целевой public-маршрут в локальном окружении.
+
+## Обязательные проверки
+
+### 1. `h1` присутствует в server-rendered HTML
+
+- Откройте `View Source` или получите HTML через `curl`.
+- Убедитесь, что `h1` уже есть в начальном HTML.
+- `h1` не должен появляться только после hydration.
+
+Пример:
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<h1"
+```
+
+### 2. `title` присутствует в server-rendered HTML
+
+- Убедитесь, что начальный HTML уже содержит итоговый `<title>`.
+- Недопустима ситуация, когда title проставляется только на клиенте.
+
+Пример:
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<title>"
+```
+
+### 3. `description` присутствует в server-rendered HTML
+
+- Убедитесь, что `<meta name="description">` есть в начальном HTML.
+- Description должна соответствовать page-level SEO contract, а не только дефолтному app meta.
+
+Пример:
+
+```bash
+curl -s http://localhost:3000/catalog | rg "meta name=\"description\""
+```
+
+### 4. SEO-контент виден без hydration
+
+- Используйте `View Source`, а не только DevTools Elements после hydration.
+- Альтернатива: отключите JavaScript и перезагрузите страницу.
+- `h1` и основной SEO-контент должны остаться на странице.
+
+### 5. JSON-LD присутствует в итоговом HTML
+
+- Публичные SSR-страницы должны содержать агрегированный скрипт `application/ld+json` в итоговом HTML.
+- Проверка становится обязательной после включения schema-слоя для маршрута.
+
+Пример:
+
+```bash
+curl -s http://localhost:3000/ | rg "application/ld\\+json"
+```
+
+## Действия при падении проверки
+
+Если любой пункт не проходит:
+
+- повторно выполните `make cache-reset-all`;
+- повторите проверку один раз;
+- если проблема осталась, считайте это SSR-регрессией и не закрывайте задачу/PR.
+
+</div>

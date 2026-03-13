@@ -1,0 +1,39 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/RU/Public QA Gate" />
+
+# Public QA Gate
+
+Этот gate нужно проходить перед передачей public-страниц на следующий этап реализации.
+
+## Область
+
+- Только public-маршруты: `/`, `/catalog/**`, `/content/**`
+- Не применяется к `/account/**`, `/organizations/**` и `/admin/**`
+
+## Обязательные проверки
+
+1. Сбросить runtime-артефакты:
+   - выполнить `make cache-reset-all`
+2. Проверить политику рендера:
+   - public-маршруты остаются под SSR route rules
+   - private-маршруты остаются только CSR
+3. Пройти SSR/SEO-проверку:
+   - использовать `ssr-and-seo-checklist.mdx`
+4. Проверить schema-слой:
+   - на `/` присутствуют `WebSite` и `Organization`
+   - на внутренних public SEO-страницах присутствует `BreadcrumbList`
+   - schema агрегируется через `PublicSchemaJsonLd`
+   - schema не рендерится на private-маршрутах
+5. Проверить performance budget:
+   - использовать `performance-budget.mdx` для `/` и `/catalog/**`
+6. Финальная проверка сборкой:
+   - `make front-npm cmd="run build"`
+
+## Передавать дальше можно только если
+
+- public-страницы работают через `layouts/default.vue`
+- для индексируемых страниц присутствуют `h1`, `title`, `description`
+- в финальном SSR output присутствует JSON-LD для public-страниц
+- schema не протекает в private-layouts
+- для MVP-маршрутов не осталось незакрытых пробелов по loading/error-состояниям

@@ -1,0 +1,66 @@
+.toolbar {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-soft) 84%, var(--surface) 16%);
+  color: var(--text);
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 84rem;
+  padding: 0.4rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.link,
+.button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  padding: 0.42rem 0.78rem;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface-elevated) 90%);
+  }
+}
+
+.button {
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.status {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .container {
+    flex-wrap: wrap;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .status {
+    width: 100%;
+    margin-left: 0;
+  }
+}

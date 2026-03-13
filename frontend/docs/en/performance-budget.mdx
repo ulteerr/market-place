@@ -1,0 +1,38 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Performance Budget" />
+
+# Performance Budget
+
+## Scope
+
+This budget applies to key public SSR routes:
+
+- `/`
+- `/catalog/**`
+
+Private routes are out of scope:
+
+- `/account/**`
+- `/organizations/**`
+
+## Measurement mode
+
+- Measure production build only.
+- Use local or CI environment without dev server overhead.
+- Re-run after `make cache-reset-all` when SSR artifacts may be stale.
+
+## Target budget
+
+For `/` and `/catalog/**`:
+
+- HTML document size: up to `120 kB` before gzip
+- Initial JS per route entry: up to `250 kB` gzip
+- Initial CSS per route entry: up to `70 kB` gzip
+- Largest client chunk on route: up to `320 kB` gzip
+
+## Release rule
+
+- Going above budget is allowed only with explicit justification in PR.
+- Any regression on `/` or `/catalog/**` must be called out in review notes.
+- Budget check is mandatory in pre-release review for public SSR changes.

@@ -1,0 +1,10 @@
+@use '../assets/styles/default.scss' as *;
+
+.organizations-layout {
+  background: var(--page-background);
+  color: var(--text);
+}
+
+.organizations-layout__main {
+  min-width: 0;
+}

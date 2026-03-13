@@ -1,0 +1,10 @@
+@use '../assets/styles/default.scss' as *;
+
+.account-layout {
+  background: var(--page-background);
+  color: var(--text);
+}
+
+.account-layout__main {
+  min-width: 0;
+}

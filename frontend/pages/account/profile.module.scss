@@ -1,0 +1,139 @@
+.page {
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 78rem;
+  padding: 2rem 1rem 3rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+}
+
+.metaList,
+.preferenceStack,
+.statusList {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.metaRow,
+.preferenceRow,
+.statusItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.metaRow:last-child,
+.preferenceRow:last-child,
+.statusItem:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.metaLabel {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metaValue {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.itemTitle {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.itemText {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 32rem;
+}
+
+.actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.chip,
+.toggle {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chipActive,
+.toggleActive {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+}
+
+.metaBadge {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inlineLink {
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inlineLink:hover,
+.inlineLink:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 1.5rem 0.75rem 2.5rem;
+  }
+
+  .metaRow,
+  .preferenceRow,
+  .statusItem {
+    flex-direction: column;
+  }
+
+  .metaValue {
+    text-align: left;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+}

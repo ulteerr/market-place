@@ -2,6 +2,13 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-02-06',
   devtools: { enabled: true },
   modules: ['@nuxtjs/i18n'],
+  routeRules: {
+    '/': { ssr: true },
+    '/catalog/**': { ssr: true },
+    '/content/**': { ssr: true },
+    '/account/**': { ssr: false },
+    '/organizations/**': { ssr: false },
+  },
   css: ['~/assets/styles/tailwind.css'],
   postcss: {
     plugins: {
@@ -116,6 +123,7 @@ html[data-ui-ready='1'] #app-boot-loader {
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       reverbEnabled: process.env.NUXT_PUBLIC_REVERB_ENABLED !== 'false',
       reverbAppKey: process.env.NUXT_PUBLIC_REVERB_APP_KEY || '',
       reverbHost: process.env.NUXT_PUBLIC_REVERB_HOST || 'localhost',

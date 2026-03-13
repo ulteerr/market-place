@@ -1,11 +1,9 @@
-import type { StorybookConfig } from '@storybook/vue3-vite';
-import { fileURLToPath } from 'node:url';
-import vue from '@vitejs/plugin-vue';
-import AutoImport from 'unplugin-auto-import/vite';
+const path = require('node:path');
 
-const projectRoot = fileURLToPath(new URL('..', import.meta.url));
+const projectRoot = path.resolve(__dirname, '..');
 
-const config: StorybookConfig = {
+/** @type {import('@storybook/vue3-vite').StorybookConfig} */
+const config = {
   stories: ['../docs/*.mdx', '../components/**/*.stories.@(ts|tsx|js|jsx|mjs)'],
   addons: ['@storybook/addon-docs', '@storybook/addon-links', '@storybook/addon-a11y'],
   framework: {
@@ -16,6 +14,9 @@ const config: StorybookConfig = {
     autodocs: 'tag',
   },
   viteFinal: async (viteConfig) => {
+    const vue = (await import('@vitejs/plugin-vue')).default;
+    const AutoImport = (await import('unplugin-auto-import/vite')).default;
+
     viteConfig.resolve = viteConfig.resolve ?? {};
     viteConfig.resolve.alias = {
       ...(viteConfig.resolve.alias ?? {}),
@@ -32,8 +33,9 @@ const config: StorybookConfig = {
         vueTemplate: true,
       }),
     ];
+
     return viteConfig;
   },
 };
 
-export default config;
+module.exports = config;

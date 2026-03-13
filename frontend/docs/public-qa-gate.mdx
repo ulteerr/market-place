@@ -1,0 +1,83 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/Public QA Gate" />
+
+<div class="doc-locale-en">
+
+# Public QA Gate
+
+Use this gate before moving public pages to the next implementation stage.
+
+## Scope
+
+- Public routes only: `/`, `/catalog/**`, `/content/**`
+- Does not apply to `/account/**`, `/organizations/**`, or `/admin/**`
+
+## Mandatory checks
+
+1. Reset runtime artifacts:
+   - run `make cache-reset-all`
+2. Verify render policy:
+   - public routes stay under SSR route rules
+   - private routes stay CSR-only
+3. Run SSR/SEO verification:
+   - follow `ssr-and-seo-checklist.mdx`
+4. Verify schema layer:
+   - `WebSite` + `Organization` exist on `/`
+   - `BreadcrumbList` exists on internal public SEO pages
+   - schema is aggregated through `PublicSchemaJsonLd`
+   - schema is not rendered on private routes
+5. Review performance budget:
+   - follow `performance-budget.mdx` for `/` and `/catalog/**`
+6. Final build verification:
+   - `make front-npm cmd="run build"`
+
+## Ready to pass to next stage only if
+
+- public pages render through `layouts/default.vue`
+- `h1`, `title`, `description` are present for indexed pages
+- JSON-LD is present in final SSR output for public pages
+- no schema leaks to private layouts
+- no unresolved public loading/error state gaps remain for MVP routes
+
+</div>
+
+<div class="doc-locale-ru">
+
+# Public QA Gate
+
+Этот gate нужно проходить перед передачей public-страниц на следующий этап реализации.
+
+## Область
+
+- Только public-маршруты: `/`, `/catalog/**`, `/content/**`
+- Не применяется к `/account/**`, `/organizations/**` и `/admin/**`
+
+## Обязательные проверки
+
+1. Сбросить runtime-артефакты:
+   - выполнить `make cache-reset-all`
+2. Проверить политику рендера:
+   - public-маршруты остаются под SSR route rules
+   - private-маршруты остаются только CSR
+3. Пройти SSR/SEO-проверку:
+   - использовать `ssr-and-seo-checklist.mdx`
+4. Проверить schema-слой:
+   - на `/` присутствуют `WebSite` и `Organization`
+   - на внутренних public SEO-страницах присутствует `BreadcrumbList`
+   - schema агрегируется через `PublicSchemaJsonLd`
+   - schema не рендерится на private-маршрутах
+5. Проверить performance budget:
+   - использовать `performance-budget.mdx` для `/` и `/catalog/**`
+6. Финальная проверка сборкой:
+   - `make front-npm cmd="run build"`
+
+## Передавать дальше можно только если
+
+- public-страницы работают через `layouts/default.vue`
+- для индексируемых страниц присутствуют `h1`, `title`, `description`
+- в финальном SSR output присутствует JSON-LD для public-страниц
+- schema не протекает в private-layouts
+- для MVP-маршрутов не осталось незакрытых пробелов по loading/error-состояниям
+
+</div>

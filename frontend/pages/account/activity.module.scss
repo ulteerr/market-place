@@ -1,0 +1,88 @@
+.page {
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 78rem;
+  padding: 2rem 1rem 3rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 1rem;
+}
+
+.stack,
+.todoList {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.stackItem,
+.todoItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.stackItem:last-child,
+.todoItem:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.itemTitle {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.itemText {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.metaColumn {
+  display: grid;
+  justify-items: end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.statusBadge,
+.itemMeta {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 1.5rem 0.75rem 2.5rem;
+  }
+
+  .stackItem,
+  .todoItem {
+    flex-direction: column;
+  }
+
+  .metaColumn {
+    justify-items: start;
+  }
+}

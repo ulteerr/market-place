@@ -1,12 +1,19 @@
 <template>
-  <NuxtLayout>
-    <main>
-      <NuxtPage />
-    </main>
-  </NuxtLayout>
+  <div>
+    <NuxtLayout>
+      <main>
+        <NuxtPage />
+      </main>
+    </NuxtLayout>
+    <ClientOnly>
+      <GlobalErrorReporter />
+    </ClientOnly>
+  </div>
 </template>
 
 <script setup lang="ts">
+import GlobalErrorReporter from '~/components/debug/GlobalErrorReporter/GlobalErrorReporter.vue';
+
 const { token, refreshUser, logout } = useAuth();
 const { applyServerSettings } = useUserSettings();
 

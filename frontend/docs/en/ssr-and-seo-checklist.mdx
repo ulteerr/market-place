@@ -1,0 +1,92 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/SSR and SEO Checklist" />
+
+# SSR And SEO Checklist
+
+## Scope
+
+Use this checklist for public SSR routes:
+
+- `/`
+- `/catalog/**`
+- `/content/**`
+
+Do not use it for private CSR routes:
+
+- `/account/**`
+- `/organizations/**`
+
+## When to run
+
+- Before final SSR review in a PR.
+- After changes in `nuxt.config.ts` route rules.
+- After changes in SEO composables or page-level meta.
+- After changes that may affect SSR HTML output.
+
+## Preparation
+
+1. Reset both cache contours:
+
+```bash
+make cache-reset-all
+```
+
+2. Rebuild the frontend:
+
+```bash
+make front-npm cmd="run build"
+```
+
+3. Open the target public route in the local environment.
+
+## Required checks
+
+### 1. `h1` exists in server-rendered HTML
+
+- Open page source or fetch HTML with `curl`.
+- Confirm the initial HTML already contains page `h1`.
+- `h1` must not appear only after hydration.
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<h1"
+```
+
+### 2. `title` exists in server-rendered HTML
+
+- Confirm the initial HTML contains the final `<title>`.
+- Do not accept client-only title injection.
+
+```bash
+curl -s http://localhost:3000/catalog | rg "<title>"
+```
+
+### 3. `description` exists in server-rendered HTML
+
+- Confirm `<meta name="description">` is present in the initial HTML.
+- Description must match page-level SEO contract, not only default app meta.
+
+```bash
+curl -s http://localhost:3000/catalog | rg "meta name=\"description\""
+```
+
+### 4. SEO content is visible without hydration
+
+- Use browser `View Source`, not only DevTools Elements after hydration.
+- Alternative: disable JavaScript and reload the page.
+- `h1` and primary SEO copy must still be present.
+
+### 5. JSON-LD exists in final HTML
+
+- Public SSR pages must contain aggregated `application/ld+json` script in final HTML.
+- This check becomes mandatory once schema layer is enabled for the route.
+
+```bash
+curl -s http://localhost:3000/ | rg "application/ld\\+json"
+```
+
+## Failure handling
+
+- Run `make cache-reset-all` again.
+- Repeat the check once.
+- If the issue remains, treat it as SSR regression and block completion of the task/PR.

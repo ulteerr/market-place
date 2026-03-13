@@ -1,0 +1,211 @@
+.panel {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 120;
+  width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 12px 40px rgb(15 23 42 / 25%);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  padding: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.button {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--text);
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+.hint {
+  margin-top: 0.65rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.selected {
+  margin-top: 0.65rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  background: color-mix(in srgb, var(--surface-soft) 80%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.selectedCode {
+  margin-top: 0.2rem;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.form {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stateBadge {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.state-draft {
+  color: var(--muted);
+}
+
+.state-sending {
+  color: #0369a1;
+  border-color: color-mix(in srgb, #0369a1 40%, var(--border));
+}
+
+.state-sent {
+  color: #15803d;
+  border-color: color-mix(in srgb, #15803d 40%, var(--border));
+}
+
+.state-error {
+  color: #dc2626;
+  border-color: color-mix(in srgb, #dc2626 40%, var(--border));
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--surface-soft) 85%, transparent);
+  color: var(--text);
+  padding: 0.5rem 0.62rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.fileInput {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  padding: 0.42rem 0.5rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface-soft) 85%, transparent);
+}
+
+.attachmentList {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.attachmentItem {
+  font-size: 0.73rem;
+  color: var(--muted);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.75rem;
+}
+
+.success {
+  color: #15803d;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.preview {
+  margin-top: 0.65rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.selectionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.selectionBadgeDot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.highlighter {
+  position: fixed;
+  z-index: 110;
+  border: 2px solid var(--accent);
+  border-radius: 0.4rem;
+  box-shadow: 0 0 0 9999px rgb(2 6 23 / 35%);
+  pointer-events: none;
+}

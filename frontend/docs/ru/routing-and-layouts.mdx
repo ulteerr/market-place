@@ -6,7 +6,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Группы роутов
 
-- Public routes: общие страницы и login.
+- Public routes: `/`, `/catalog/**`, `/content/**`, `/login`.
+- Account routes: `/account/**`.
+- Organizations routes: `/organizations/**`.
 - Admin routes: страницы вида `/admin/**`.
 
 ## Layouts
@@ -14,6 +16,18 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - `layouts/admin.vue` — оболочка админских страниц.
 - Default layout оборачивает неадминские страницы.
 - Глобальная инициализация приложения происходит в `app.vue`.
+- `schema.org` JSON-LD рендерится только из `layouts/default.vue` для public SSR-маршрутов (`/`, `/catalog/**`, `/content/**`).
+- `layouts/account.vue` и `layouts/organizations.vue` не должны рендерить public schema-блоки.
+
+## Правила композиции страниц
+
+- Страницы собираются из переиспользуемых блоков, без копирования верстки между экранами.
+- Для public-страниц используется `layouts/default.vue`; шапка и футер принадлежат layout-слою.
+- Контракт `AppHeader` (`components/layout/AppHeader/*`) фиксирован и меняется только вместе с обновлением тестов/документации.
+- Для карточек используем канонический примитив `components/ui/Card/UiCard.vue`.
+- Для loading-состояний используем библиотеку `components/ui/Skeleton/*` (`card`, `table`, `list`, `hero`, `filter bar`).
+- Доменные данные/конфигурации выносим в composables (например `usePublicHeaderConfig`), UI-компоненты остаются презентационными.
+- Новые роуты в первую очередь переиспользуют существующие layout-блоки; route-local обертки допускаются только когда переиспользование невозможно.
 
 ## Модель middleware
 
@@ -23,6 +37,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Соглашения по маршрутам
 
+- Public-префиксы:
+  - страницы каталога: `/catalog/**` (`pages/catalog/*`)
+  - контентные страницы: `/content/**` (`pages/content/*`)
+  - рекомендуемый нейминг контентных страниц: `content/[slug].vue`
 - CRUD-ресурсы используют предсказуемые паттерны:
   - list: `/admin/{entity}`
   - create: `/admin/{entity}/new`

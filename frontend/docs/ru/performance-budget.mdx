@@ -1,0 +1,38 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/RU/Performance Budget" />
+
+# Performance Budget
+
+## Область применения
+
+Этот budget применяется к ключевым public SSR-маршрутам:
+
+- `/`
+- `/catalog/**`
+
+Private-маршруты не входят в этот budget:
+
+- `/account/**`
+- `/organizations/**`
+
+## Режим измерения
+
+- Измерять только production build.
+- Использовать локальное или CI-окружение без dev-server overhead.
+- При подозрении на устаревшие SSR-артефакты сначала выполнить `make cache-reset-all`.
+
+## Целевой budget
+
+Для `/` и `/catalog/**`:
+
+- размер HTML-документа: до `120 kB` до gzip
+- initial JS на route entry: до `250 kB` gzip
+- initial CSS на route entry: до `70 kB` gzip
+- largest client chunk на маршруте: до `320 kB` gzip
+
+## Правило релиза
+
+- Выход за budget допустим только с явным обоснованием в PR.
+- Любая регрессия на `/` или `/catalog/**` должна быть отдельно отмечена в review notes.
+- Проверка budget обязательна в pre-release review для изменений public SSR.

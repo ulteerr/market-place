@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/RU/Schema Registry" />
+
+# Schema Registry
+
+## Единая точка расширения
+
+- Runtime-реестр public schema-узлов находится в `frontend/composables/schema/usePublicSchemaRegistry.ts`.
+- Регистрация schema на уровне секции и страницы должна идти через `frontend/components/schema/PublicSchemaNode/PublicSchemaNode.vue` или `usePublicSchemaNode`.
+- Финальный агрегированный JSON-LD рендерится только через `frontend/components/schema/PublicSchemaJsonLd/PublicSchemaJsonLd.vue` из `layouts/default.vue`.
+
+## Источник переиспользуемых builder-ов
+
+- Переиспользуемые factory/helper для schema находятся в `frontend/composables/schema/public-schema-contract.ts`.
+- Новый schema-тип сначала добавляется туда, и только потом используется на страницах или в переиспользуемых секциях.
+- Не собираем большие schema-объекты инлайном внутри page-компонентов, если эта логика может быть переиспользована.
+
+## Как добавлять новый schema-тип
+
+1. Добавить typed builder/helper в `public-schema-contract.ts`.
+2. Переиспользовать общие входы (`siteUrl`, breadcrumbs, entity metadata), а не дублировать mapping-логику.
+3. Зарегистрировать готовый node через `PublicSchemaNode` или `usePublicSchemaNode`.
+4. Проверить, что node попадает в агрегированный `application/ld+json` на нужной public SSR-странице.
+5. Обновить SSR/SEO docs и тесты, если новый schema-тип становится обязательным.
+
+## Границы применения
+
+- Public schema допустима только для `/`, `/catalog/**` и `/content/**`.
+- `layouts/account.vue`, `layouts/organizations.vue` и admin-маршруты не должны рендерить public schema.
+- Для private-страниц `schema.org` не является требованием.

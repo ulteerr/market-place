@@ -6,7 +6,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Route groups
 
-- Public routes: general pages and login.
+- Public routes: `/`, `/catalog/**`, `/content/**`, `/login`.
+- Account routes: `/account/**`.
+- Organizations routes: `/organizations/**`.
 - Admin routes: `/admin/**` pages.
 
 ## Layouts
@@ -14,6 +16,18 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - `layouts/admin.vue` is the shell for admin pages.
 - Default layout wraps non-admin pages.
 - Global app setup happens in `app.vue`.
+- `schema.org` JSON-LD is rendered only from `layouts/default.vue` for public SSR routes (`/`, `/catalog/**`, `/content/**`).
+- `layouts/account.vue` and `layouts/organizations.vue` must not render public schema blocks.
+
+## Page composition rules
+
+- Compose pages from reusable blocks, not copied markup.
+- Use `layouts/default.vue` for public pages; keep header/footer ownership in the layout.
+- `AppHeader` contract (`components/layout/AppHeader/*`) is fixed and must be changed only together with tests/docs updates.
+- Use canonical card primitive `components/ui/Card/UiCard.vue` for new card-like blocks.
+- Use canonical skeleton set from `components/ui/Skeleton/*` for loading states (`card`, `table`, `list`, `hero`, `filter bar`).
+- Keep domain config/data in composables (for example `usePublicHeaderConfig`) and keep UI components presentation-focused.
+- New routes should reuse existing layout blocks first; route-local wrappers are allowed only when reuse is not possible.
 
 ## Middleware model
 
@@ -23,6 +37,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Routing conventions
 
+- Public route prefixes:
+  - catalog pages: `/catalog/**` (`pages/catalog/*`)
+  - content pages: `/content/**` (`pages/content/*`)
+  - recommended naming for content pages: `content/[slug].vue`
 - CRUD resources use predictable route patterns:
   - list: `/admin/{entity}`
   - create: `/admin/{entity}/new`

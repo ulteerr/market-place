@@ -38,3 +38,27 @@ register:
               $ref: ../schemas/auth.yaml#/components/schemas/AuthResponse
       '422':
         $ref: ../errors.yaml#/ValidationError
+
+logout:
+  post:
+    tags: [Auth]
+    summary: User logout
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Logout successful
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Logged out successfully
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError

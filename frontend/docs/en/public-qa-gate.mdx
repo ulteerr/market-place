@@ -1,0 +1,39 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Public QA Gate" />
+
+# Public QA Gate
+
+Use this gate before moving public pages to the next implementation stage.
+
+## Scope
+
+- Public routes only: `/`, `/catalog/**`, `/content/**`
+- Does not apply to `/account/**`, `/organizations/**`, or `/admin/**`
+
+## Mandatory checks
+
+1. Reset runtime artifacts:
+   - run `make cache-reset-all`
+2. Verify render policy:
+   - public routes stay under SSR route rules
+   - private routes stay CSR-only
+3. Run SSR/SEO verification:
+   - follow `ssr-and-seo-checklist.mdx`
+4. Verify schema layer:
+   - `WebSite` + `Organization` exist on `/`
+   - `BreadcrumbList` exists on internal public SEO pages
+   - schema is aggregated through `PublicSchemaJsonLd`
+   - schema is not rendered on private routes
+5. Review performance budget:
+   - follow `performance-budget.mdx` for `/` and `/catalog/**`
+6. Final build verification:
+   - `make front-npm cmd="run build"`
+
+## Ready to pass to next stage only if
+
+- public pages render through `layouts/default.vue`
+- `h1`, `title`, `description` are present for indexed pages
+- JSON-LD is present in final SSR output for public pages
+- no schema leaks to private layouts
+- no unresolved public loading/error state gaps remain for MVP routes

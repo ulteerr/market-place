@@ -126,6 +126,32 @@ paths:
                 $ref: '#/paths/~1api~1auth~1login/post/responses/200/content/application~1json/schema'
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: User logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Logged out successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
   /api/me:
     get:
       tags:
@@ -373,6 +399,180 @@ paths:
                     example: Heartbeat accepted
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
+  /api/reports/ui-errors:
+    post:
+      tags:
+        - Support
+      summary: Submit UI error report
+      description: 'Accepts a sanitized user-facing UI error report with page, block, context and attachment metadata.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - page
+                - block
+                - description
+                - context
+              properties:
+                page:
+                  type: object
+                  required:
+                    - url
+                    - path
+                  properties:
+                    url:
+                      type: string
+                      maxLength: 2000
+                      example: 'https://example.test/catalog/football'
+                    path:
+                      type: string
+                      maxLength: 2000
+                      example: /catalog/football
+                    routeName:
+                      type: string
+                      nullable: true
+                      maxLength: 255
+                      example: catalog-slug
+                block:
+                  type: object
+                  required:
+                    - id
+                    - strategy
+                    - queryPath
+                    - selectedAt
+                  properties:
+                    id:
+                      type: string
+                      maxLength: 255
+                      example: public-header
+                    strategy:
+                      type: string
+                      maxLength: 64
+                      example: data-test
+                    queryPath:
+                      type: string
+                      maxLength: 2000
+                      example: 'header:nth-of-type(1)'
+                    selectedAt:
+                      type: string
+                      format: date-time
+                      example: '2026-03-11T10:00:00.000Z'
+                description:
+                  type: string
+                  maxLength: 5000
+                  example: Клик по каталогу не открывает меню.
+                attachments:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - safeName
+                      - type
+                      - size
+                    properties:
+                      name:
+                        type: string
+                        maxLength: 255
+                        example: screen.png
+                      safeName:
+                        type: string
+                        maxLength: 255
+                        example: screen.png
+                      type:
+                        type: string
+                        enum:
+                          - image/png
+                          - image/jpeg
+                          - image/webp
+                          - image/gif
+                          - application/pdf
+                          - text/plain
+                        example: image/png
+                      size:
+                        type: integer
+                        minimum: 1
+                        maximum: 10485760
+                        example: 12345
+                context:
+                  type: object
+                  required:
+                    - userAgent
+                    - viewport
+                    - theme
+                    - locale
+                    - timestamp
+                  properties:
+                    userAgent:
+                      type: string
+                      maxLength: 2000
+                      example: Playwright/1.0
+                    viewport:
+                      type: object
+                      required:
+                        - width
+                        - height
+                      properties:
+                        width:
+                          type: integer
+                          minimum: 0
+                          maximum: 20000
+                          example: 1366
+                        height:
+                          type: integer
+                          minimum: 0
+                          maximum: 20000
+                          example: 900
+                    theme:
+                      type: string
+                      maxLength: 32
+                      example: dark
+                    locale:
+                      type: string
+                      maxLength: 16
+                      example: ru
+                    timestamp:
+                      type: string
+                      format: date-time
+                      example: '2026-03-11T10:01:00.000Z'
+      responses:
+        '201':
+          description: UI error report accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: UI error report accepted
+                  data:
+                    type: object
+                    required:
+                      - reportId
+                      - status
+                    properties:
+                      reportId:
+                        type: string
+                        format: uuid
+                      status:
+                        type: string
+                        example: received
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+        '429':
+          description: Too many requests
   /api/me/avatar:
     post:
       tags:
@@ -1184,6 +1384,217 @@ paths:
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/admin/cache/reset:
+    post:
+      tags:
+        - Admin Operations
+      summary: Reset frontend SSR and backend caches
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scopes
+              properties:
+                scopes:
+                  type: array
+                  minItems: 1
+                  uniqueItems: true
+                  items:
+                    type: string
+                    enum:
+                      - frontend-ssr
+                      - backend
+                  example:
+                    - frontend-ssr
+                    - backend
+      responses:
+        '200':
+          description: Admin cache reset completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Admin cache reset completed
+                  data:
+                    type: object
+                    required:
+                      - scopes
+                      - status
+                    properties:
+                      scopes:
+                        type: array
+                        items:
+                          type: string
+                          enum:
+                            - frontend-ssr
+                            - backend
+                      status:
+                        type: string
+                        example: completed
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+  /api/admin/observability:
+    get:
+      tags:
+        - Admin Operations
+      summary: Get observability dashboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+            example: auth
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            example: 50
+      responses:
+        '200':
+          description: Observability dashboard snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      summary:
+                        type: object
+                        properties:
+                          domains:
+                            type: object
+                            additionalProperties:
+                              type: object
+                              additionalProperties: true
+                          updated_at:
+                            type: string
+                            format: date-time
+                            nullable: true
+                      incidents:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: true
+                      analytics:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          additionalProperties: true
+                      alerts:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: true
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/admin/observability/realtime-event:
+    post:
+      tags:
+        - Admin Operations
+      summary: Record realtime observability event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event
+              properties:
+                event:
+                  type: string
+                  enum:
+                    - websocket_connect_ok
+                    - websocket_connect_error
+                    - websocket_subscribe_ok
+                    - websocket_subscribe_error
+                    - settings_realtime_fallback_enabled
+                    - settings_realtime_fallback_disabled
+                    - broadcast_dispatch_ok
+                    - broadcast_dispatch_error
+                status:
+                  type: string
+                  example: ok
+                severity:
+                  type: string
+                  example: info
+                meta:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Realtime observability event accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Realtime observability event accepted
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          description: Invalid realtime event
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Invalid realtime event
   '/api/admin/roles/{id}':
     parameters:
       - name: id
@@ -1297,6 +1708,208 @@ paths:
                   message:
                     type: string
                     example: Deleted successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+  /api/admin/action-logs:
+    get:
+      tags:
+        - Admin ActionLog
+      summary: List action log entries (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: event
+          in: query
+          required: false
+          schema:
+            type: string
+            example: updated
+        - name: model
+          in: query
+          required: false
+          schema:
+            type: string
+            example: organizations
+        - name: model_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: user
+          in: query
+          required: false
+          schema:
+            type: string
+            example: admin@example.com
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+            example: transfer
+        - name: date_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2026-03-01'
+        - name: date_to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2026-03-31'
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            example: created_at
+        - name: sort_dir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            example: desc
+      responses:
+        '200':
+          description: Paginated action log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            user_id:
+                              type: string
+                              format: uuid
+                              nullable: true
+                            user:
+                              type: object
+                              nullable: true
+                              properties:
+                                id:
+                                  type: string
+                                  format: uuid
+                                full_name:
+                                  type: string
+                                  nullable: true
+                                email:
+                                  type: string
+                                  format: email
+                                  nullable: true
+                            event:
+                              type: string
+                              example: updated
+                            model_type:
+                              type: string
+                              example: Modules\\Organizations\\Models\\Organization
+                            model_id:
+                              type: string
+                              format: uuid
+                              nullable: true
+                            ip_address:
+                              type: string
+                              nullable: true
+                              example: 127.0.0.1
+                            before:
+                              type: object
+                              nullable: true
+                              additionalProperties: true
+                            after:
+                              type: object
+                              nullable: true
+                              additionalProperties: true
+                            changed_fields:
+                              type: array
+                              items:
+                                type: string
+                            created_at:
+                              type: string
+                              format: date-time
+                      first_page_url:
+                        type: string
+                        nullable: true
+                      from:
+                        type: integer
+                        nullable: true
+                      last_page:
+                        type: integer
+                        example: 1
+                      last_page_url:
+                        type: string
+                        nullable: true
+                      links:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              nullable: true
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                      next_page_url:
+                        type: string
+                        nullable: true
+                      path:
+                        type: string
+                      per_page:
+                        type: integer
+                        example: 20
+                      prev_page_url:
+                        type: string
+                        nullable: true
+                      to:
+                        type: integer
+                        nullable: true
+                      total:
+                        type: integer
+                        example: 25
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -2540,6 +3153,8 @@ paths:
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
   '/api/organizations/{organizationId}/members':
+    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1users'
+  '/api/organizations/{organizationId}/users':
     parameters:
       - name: organizationId
         in: path
@@ -2587,7 +3202,7 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1members/post/responses/201/content/application~1json/schema/properties/data'
+                          $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1users/post/responses/201/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':
@@ -2698,7 +3313,190 @@ paths:
           $ref: '#/paths/~1api~1admin~1users/get/responses/403'
         '422':
           $ref: '#/paths/~1api~1me/patch/responses/422'
+  '/api/organizations/{organizationId}/clients':
+    parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Organizations
+      summary: List organization clients (owner/admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: subject_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - user
+              - child
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - created_at
+              - joined_at
+              - status
+              - id
+              - subject_type
+            default: created_at
+        - name: sort_dir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+      responses:
+        '200':
+          description: Paginated clients list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - data
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    required:
+                      - current_page
+                      - data
+                      - last_page
+                      - per_page
+                      - total
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - organization_id
+                            - subject_type
+                            - subject_id
+                            - status
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            organization_id:
+                              type: string
+                              format: uuid
+                            subject_type:
+                              type: string
+                              enum:
+                                - user
+                                - child
+                            subject_id:
+                              type: string
+                              format: uuid
+                            status:
+                              type: string
+                              enum:
+                                - active
+                                - left
+                                - blocked
+                            added_by_user_id:
+                              type: string
+                              format: uuid
+                              nullable: true
+                            joined_at:
+                              type: string
+                              format: date-time
+                              nullable: true
+                            created_at:
+                              type: string
+                              format: date-time
+                              nullable: true
+                            updated_at:
+                              type: string
+                              format: date-time
+                              nullable: true
+                            subject:
+                              allOf:
+                                - $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1join-requests/post/responses/201/content/application~1json/schema/properties/data/properties/subject/allOf/0'
+                              nullable: true
+                            added_by:
+                              allOf:
+                                - $ref: '#/paths/~1api~1admin~1organizations/post/responses/201/content/application~1json/schema/properties/data/properties/owner/allOf/0'
+                              nullable: true
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
+        '422':
+          $ref: '#/paths/~1api~1me/patch/responses/422'
+    delete:
+      tags:
+        - Organizations
+      summary: Delete organization member (owner/admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Member deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Deleted successfully
+        '401':
+          $ref: '#/paths/~1api~1me/get/responses/401'
+        '403':
+          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
   '/api/organizations/{organizationId}/members/{memberId}':
+    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1users~1%7BmemberId%7D'
+  '/api/organizations/{organizationId}/users/{memberId}':
     parameters:
       - name: organizationId
         in: path
@@ -2757,36 +3555,7 @@ paths:
                     type: string
                     example: Organization member updated
                   data:
-                    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1members/post/responses/201/content/application~1json/schema/properties/data'
-        '401':
-          $ref: '#/paths/~1api~1me/get/responses/401'
-        '403':
-          $ref: '#/paths/~1api~1admin~1users/get/responses/403'
-        '422':
-          $ref: '#/paths/~1api~1me/patch/responses/422'
-    delete:
-      tags:
-        - Organizations
-      summary: Delete organization member (owner/admin)
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Member deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - status
-                  - message
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  message:
-                    type: string
-                    example: Deleted successfully
+                    $ref: '#/paths/~1api~1organizations~1%7BorganizationId%7D~1users/post/responses/201/content/application~1json/schema/properties/data'
         '401':
           $ref: '#/paths/~1api~1me/get/responses/401'
         '403':

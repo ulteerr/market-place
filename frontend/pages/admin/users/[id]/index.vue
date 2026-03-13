@@ -1,5 +1,5 @@
 <template>
-  <section class="users-show-page mx-auto w-full max-w-3xl space-y-6">
+  <section class="users-show-page admin-show-page mx-auto w-full max-w-3xl space-y-6">
     <div class="admin-card rounded-2xl p-6 lg:p-8">
       <h2 class="text-2xl font-semibold">{{ t('admin.users.show.title') }}</h2>
       <p class="admin-muted mt-2 text-sm">{{ t('admin.users.show.subtitle') }}</p>

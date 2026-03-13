@@ -4,7 +4,7 @@ import { createI18n } from 'vue-i18n';
 import en from '../i18n/locales/en';
 import ru from '../i18n/locales/ru';
 import '../assets/styles/tailwind.css';
-import '../assets/styles/global.scss';
+import '../assets/styles/default.scss';
 import './docs-locale.css';
 import './docs-locale-sync';
 
@@ -17,6 +17,25 @@ const i18n = createI18n({
 
 setup((app) => {
   app.use(i18n);
+  app.component('NuxtLink', {
+    props: {
+      to: {
+        type: [String, Object],
+        required: false,
+        default: '#',
+      },
+    },
+    computed: {
+      href(): string {
+        if (typeof this.to === 'string') {
+          return this.to;
+        }
+
+        return '#';
+      },
+    },
+    template: '<a :href="href"><slot /></a>',
+  });
 });
 
 const preview: Preview = {

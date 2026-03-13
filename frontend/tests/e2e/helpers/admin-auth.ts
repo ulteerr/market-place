@@ -35,6 +35,8 @@ type AdminAuthUserOverrides = Partial<AdminAuthUser> & {
   settings?: Partial<NonNullable<AdminAuthUser['settings']>>;
 };
 
+export type { AdminAuthUserOverrides };
+
 export const defaultAdminUser: AdminAuthUser = {
   id: '1',
   email: 'admin@example.com',

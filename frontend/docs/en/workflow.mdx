@@ -34,3 +34,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - Storybook docs pages updated when architectural/process context changes.
 - `npm run build-storybook` passes locally/in CI.
 - `frontend/docs` updated for architectural or contract changes.
+- For public SSR changes:
+  - run `make cache-reset-all` before final verification;
+  - run SSR/SEO checklist from `ssr-and-seo-checklist.mdx`;
+  - review performance budget for `/` and `/catalog/**` from `performance-budget.mdx`;
+  - pass the final handoff gate from `public-qa-gate.mdx`;
+  - if budget is exceeded, add explicit PR justification.

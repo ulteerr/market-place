@@ -107,6 +107,346 @@ presence_heartbeat:
       '401':
         $ref: ../errors.yaml#/UnauthorizedError
 
+ui_error_reports:
+  post:
+    tags: [Support]
+    summary: Submit UI error report
+    description: Accepts a sanitized user-facing UI error report with page, block, context and attachment metadata.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [page, block, description, context]
+            properties:
+              page:
+                type: object
+                required: [url, path]
+                properties:
+                  url:
+                    type: string
+                    maxLength: 2000
+                    example: https://example.test/catalog/football
+                  path:
+                    type: string
+                    maxLength: 2000
+                    example: /catalog/football
+                  routeName:
+                    type: string
+                    nullable: true
+                    maxLength: 255
+                    example: catalog-slug
+              block:
+                type: object
+                required: [id, strategy, queryPath, selectedAt]
+                properties:
+                  id:
+                    type: string
+                    maxLength: 255
+                    example: public-header
+                  strategy:
+                    type: string
+                    maxLength: 64
+                    example: data-test
+                  queryPath:
+                    type: string
+                    maxLength: 2000
+                    example: header:nth-of-type(1)
+                  selectedAt:
+                    type: string
+                    format: date-time
+                    example: 2026-03-11T10:00:00.000Z
+              description:
+                type: string
+                maxLength: 5000
+                example: Клик по каталогу не открывает меню.
+              attachments:
+                type: array
+                maxItems: 5
+                items:
+                  type: object
+                  required: [name, safeName, type, size]
+                  properties:
+                    name:
+                      type: string
+                      maxLength: 255
+                      example: screen.png
+                    safeName:
+                      type: string
+                      maxLength: 255
+                      example: screen.png
+                    type:
+                      type: string
+                      enum:
+                        - image/png
+                        - image/jpeg
+                        - image/webp
+                        - image/gif
+                        - application/pdf
+                        - text/plain
+                      example: image/png
+                    size:
+                      type: integer
+                      minimum: 1
+                      maximum: 10485760
+                      example: 12345
+              context:
+                type: object
+                required: [userAgent, viewport, theme, locale, timestamp]
+                properties:
+                  userAgent:
+                    type: string
+                    maxLength: 2000
+                    example: Playwright/1.0
+                  viewport:
+                    type: object
+                    required: [width, height]
+                    properties:
+                      width:
+                        type: integer
+                        minimum: 0
+                        maximum: 20000
+                        example: 1366
+                      height:
+                        type: integer
+                        minimum: 0
+                        maximum: 20000
+                        example: 900
+                  theme:
+                    type: string
+                    maxLength: 32
+                    example: dark
+                  locale:
+                    type: string
+                    maxLength: 16
+                    example: ru
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2026-03-11T10:01:00.000Z
+    responses:
+      '201':
+        description: UI error report accepted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: UI error report accepted
+                data:
+                  type: object
+                  required: [reportId, status]
+                  properties:
+                    reportId:
+                      type: string
+                      format: uuid
+                    status:
+                      type: string
+                      example: received
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+      '429':
+        description: Too many requests
+
+admin_cache_reset:
+  post:
+    tags: [Admin Operations]
+    summary: Reset frontend SSR and backend caches
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [scopes]
+            properties:
+              scopes:
+                type: array
+                minItems: 1
+                uniqueItems: true
+                items:
+                  type: string
+                  enum: [frontend-ssr, backend]
+                example: [frontend-ssr, backend]
+    responses:
+      '200':
+        description: Admin cache reset completed
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Admin cache reset completed
+                data:
+                  type: object
+                  required: [scopes, status]
+                  properties:
+                    scopes:
+                      type: array
+                      items:
+                        type: string
+                        enum: [frontend-ssr, backend]
+                    status:
+                      type: string
+                      example: completed
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_observability:
+  get:
+    tags: [Admin Operations]
+    summary: Get observability dashboard
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: domain
+        in: query
+        required: false
+        schema:
+          type: string
+          example: auth
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          example: 50
+    responses:
+      '200':
+        description: Observability dashboard snapshot
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, data]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                data:
+                  type: object
+                  properties:
+                    summary:
+                      type: object
+                      properties:
+                        domains:
+                          type: object
+                          additionalProperties:
+                            type: object
+                            additionalProperties: true
+                        updated_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+                    incidents:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: true
+                    analytics:
+                      type: object
+                      additionalProperties:
+                        type: object
+                        additionalProperties: true
+                    alerts:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: true
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+admin_observability_realtime_event:
+  post:
+    tags: [Admin Operations]
+    summary: Record realtime observability event
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [event]
+            properties:
+              event:
+                type: string
+                enum:
+                  - websocket_connect_ok
+                  - websocket_connect_error
+                  - websocket_subscribe_ok
+                  - websocket_subscribe_error
+                  - settings_realtime_fallback_enabled
+                  - settings_realtime_fallback_disabled
+                  - broadcast_dispatch_ok
+                  - broadcast_dispatch_error
+              status:
+                type: string
+                example: ok
+              severity:
+                type: string
+                example: info
+              meta:
+                type: object
+                additionalProperties: true
+    responses:
+      '200':
+        description: Realtime observability event accepted
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: ok
+                message:
+                  type: string
+                  example: Realtime observability event accepted
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        description: Invalid realtime event
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, message]
+              properties:
+                status:
+                  type: string
+                  example: error
+                message:
+                  type: string
+                  example: Invalid realtime event
+
 me_avatar:
   post:
     tags: [Users]

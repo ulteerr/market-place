@@ -25,6 +25,9 @@ paths:
   /api/auth/register:
     $ref: ./modules/auth.yaml#/register
 
+  /api/auth/logout:
+    $ref: ./modules/auth.yaml#/logout
+
   /api/me:
     $ref: ./modules/users.yaml#/me
 
@@ -36,6 +39,9 @@ paths:
 
   /api/presence/heartbeat:
     $ref: ./modules/users.yaml#/presence_heartbeat
+
+  /api/reports/ui-errors:
+    $ref: ./modules/users.yaml#/ui_error_reports
 
   /api/me/avatar:
     $ref: ./modules/users.yaml#/me_avatar
@@ -55,8 +61,20 @@ paths:
   /api/admin/permissions:
     $ref: ./modules/users.yaml#/admin_permissions
 
+  /api/admin/cache/reset:
+    $ref: ./modules/users.yaml#/admin_cache_reset
+
+  /api/admin/observability:
+    $ref: ./modules/users.yaml#/admin_observability
+
+  /api/admin/observability/realtime-event:
+    $ref: ./modules/users.yaml#/admin_observability_realtime_event
+
   /api/admin/roles/{id}:
     $ref: ./modules/users.yaml#/admin_roles_by_id
+
+  /api/admin/action-logs:
+    $ref: ./modules/actionlog.yaml#/admin_action_logs
 
   /api/admin/organizations:
     $ref: ./modules/organizations.yaml#/admin_organizations
@@ -91,10 +109,16 @@ paths:
   /api/organizations/{organizationId}/members:
     $ref: ./modules/organizations.yaml#/organization_members
 
+  /api/organizations/{organizationId}/users:
+    $ref: ./modules/organizations.yaml#/organization_members
+
   /api/organizations/{organizationId}/clients:
     $ref: ./modules/organizations.yaml#/organization_clients
 
   /api/organizations/{organizationId}/members/{memberId}:
+    $ref: ./modules/organizations.yaml#/organization_members_by_id
+
+  /api/organizations/{organizationId}/users/{memberId}:
     $ref: ./modules/organizations.yaml#/organization_members_by_id
 
   /api/geo/countries:

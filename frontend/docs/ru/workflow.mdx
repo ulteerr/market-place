@@ -34,3 +34,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - Docs-страницы Storybook обновлены при изменениях архитектуры/процесса.
 - `npm run build-storybook` проходит локально и в CI.
 - `frontend/docs` обновлён при изменении архитектурных или контрактных договорённостей.
+- Для изменений public SSR:
+  - перед финальной проверкой выполнить `make cache-reset-all`;
+  - пройти SSR/SEO чеклист из `ssr-and-seo-checklist.mdx`;
+  - проверить performance budget для `/` и `/catalog/**` из `performance-budget.mdx`;
+  - пройти финальный gate из `public-qa-gate.mdx`;
+  - при выходе за budget добавить явное обоснование в PR.

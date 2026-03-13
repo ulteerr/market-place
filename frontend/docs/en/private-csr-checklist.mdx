@@ -1,0 +1,59 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Frontend/EN/Private CSR Checklist" />
+
+# Private CSR Checklist
+
+## Scope
+
+Use this checklist for private CSR routes:
+
+- `/account/**`
+- `/organizations/**`
+
+Do not use it for public SSR routes:
+
+- `/`
+- `/catalog/**`
+- `/content/**`
+
+## When to run
+
+- Before final review of private cabinets in a PR.
+- After changes in route rules for private groups.
+- After changes in user settings bootstrapping.
+- After changes in theme initialization, auth hydration, or private layouts.
+
+## Required checks
+
+### 1. Route remains CSR
+
+- Verify the route belongs to the private CSR policy.
+- Do not introduce SSR-only assumptions into `/account/**` or `/organizations/**`.
+
+### 2. No SEO indexing requirements
+
+- `h1`, `title`, and `description` may exist for usability, but they are not an indexing gate for private pages.
+- Do not block private page delivery on public SEO requirements.
+
+### 3. No schema.org requirement
+
+- `schema.org` is not required for private routes.
+- Do not inject public JSON-LD blocks into `/account/**` or `/organizations/**`.
+
+### 4. Theme is applied before the first visible frame
+
+- Reload the page in both `light` and `dark`.
+- Confirm there is no visible flash from a wrong theme before hydration completes.
+- The first visible frame must already use the resolved theme.
+
+### 5. Auth-dependent UI is stable on first paint
+
+- Header, toolbar, and layout shell should not jump between anonymous and authenticated states after first paint.
+- User settings loaded from auth/runtime should not cause visible layout flicker.
+
+## Failure handling
+
+- Treat it as private shell regression.
+- Verify bootstrapping logic in `nuxt.config.ts`, `useUserSettings`, and private layouts.
+- Do not close the task/PR until the first-paint issue is resolved.
