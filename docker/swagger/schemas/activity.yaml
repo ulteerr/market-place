@@ -1,0 +1,612 @@
+components:
+  schemas:
+    ActivityOrganizationRef:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: ФК Зенит
+
+    ActivityCityRef:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Санкт-Петербург
+
+    ActivityLocationRef:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+          nullable: true
+        city_id:
+          type: string
+          format: uuid
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          example: Васильевский остров, 15
+        city:
+          $ref: '#/components/schemas/ActivityCityRef'
+
+    ActivityCategoryParentRef:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Спорт
+        slug:
+          type: string
+          example: sport
+
+    ActivityCategoryRef:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Футбол
+        slug:
+          type: string
+          example: futbol
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        parent:
+          $ref: '#/components/schemas/ActivityCategoryParentRef'
+
+    ActivityFile:
+      type: object
+      nullable: true
+      description: >
+        Public file projection from Files module. Activities use `cover` as single-file
+        collection and `gallery` as ordered multi-file collection.
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          example: https://example.test/storage/files/cover.jpg
+        original_name:
+          type: string
+          nullable: true
+        mime_type:
+          type: string
+          nullable: true
+        size:
+          type: integer
+          nullable: true
+        collection:
+          type: string
+          nullable: true
+          example: cover
+
+    ActivitySchedule:
+      type: object
+      required: [id, day_of_week, start_time, end_time]
+      properties:
+        id:
+          type: string
+          format: uuid
+        day_of_week:
+          type: integer
+          minimum: 1
+          maximum: 7
+          example: 2
+        start_time:
+          type: string
+          example: '10:00:00'
+        end_time:
+          type: string
+          example: '12:00:00'
+
+    Activity:
+      type: object
+      required:
+        - id
+        - organization_id
+        - location_id
+        - name
+        - slug
+        - short_description
+        - status
+        - is_featured
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: ФАЗ Зенит Василеостровский
+        slug:
+          type: string
+          example: faz-zenit-vasileostrovskiy
+        short_description:
+          type: string
+          example: Футбольная секция для детей
+        description:
+          type: string
+          nullable: true
+        min_age:
+          type: integer
+          nullable: true
+          example: 5
+        max_age:
+          type: integer
+          nullable: true
+          example: 17
+        capacity:
+          type: integer
+          nullable: true
+          example: 25
+        price_from:
+          type: number
+          format: float
+          nullable: true
+          example: 1500
+        price_to:
+          type: number
+          format: float
+          nullable: true
+          example: 3000
+        currency:
+          type: string
+          nullable: true
+          example: RUB
+        status:
+          type: string
+          enum: [draft, pending_review, published, archived]
+        is_featured:
+          type: boolean
+          example: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        organization:
+          $ref: '#/components/schemas/ActivityOrganizationRef'
+        location:
+          $ref: '#/components/schemas/ActivityLocationRef'
+        primary_category:
+          $ref: '#/components/schemas/ActivityCategoryRef'
+        schedules:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ActivitySchedule'
+        cover:
+          description: Single-file media collection `cover`.
+          $ref: '#/components/schemas/ActivityFile'
+        gallery:
+          type: array
+          nullable: true
+          description: Ordered multi-file media collection `gallery`.
+          items:
+            $ref: '#/components/schemas/ActivityFile'
+
+    ActivityFeedItem:
+      type: object
+      required: [id, public_key, name, slug, short_description, is_featured]
+      properties:
+        id:
+          type: string
+          format: uuid
+        public_key:
+          type: string
+          example: faz-zenit-vasileostrovskiy-00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+        slug:
+          type: string
+        short_description:
+          type: string
+        min_age:
+          type: integer
+          nullable: true
+        max_age:
+          type: integer
+          nullable: true
+        price_from:
+          type: number
+          format: float
+          nullable: true
+        price_to:
+          type: number
+          format: float
+          nullable: true
+        currency:
+          type: string
+          nullable: true
+        is_featured:
+          type: boolean
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        organization:
+          $ref: '#/components/schemas/ActivityOrganizationRef'
+        location:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            city:
+              $ref: '#/components/schemas/ActivityCityRef'
+            address:
+              type: string
+              nullable: true
+        primary_category:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            slug:
+              type: string
+            parent:
+              $ref: '#/components/schemas/ActivityCategoryParentRef'
+        cover:
+          $ref: '#/components/schemas/ActivityFile'
+
+    ActivityPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+            first_page_url:
+              type: string
+              nullable: true
+            from:
+              type: integer
+              nullable: true
+            last_page:
+              type: integer
+              example: 1
+            last_page_url:
+              type: string
+              nullable: true
+            links:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            next_page_url:
+              type: string
+              nullable: true
+            path:
+              type: string
+            per_page:
+              type: integer
+              example: 20
+            prev_page_url:
+              type: string
+              nullable: true
+            to:
+              type: integer
+              nullable: true
+            total:
+              type: integer
+              example: 18
+
+    ActivityFeedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [items, next_cursor]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ActivityFeedItem'
+            next_cursor:
+              type: string
+              nullable: true
+
+    ActivityFeaturedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityFeedItem'
+
+    ActivitySingleResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: '#/components/schemas/Activity'
+
+    ActivityMutateResponse:
+      type: object
+      required: [status, message, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Updated successfully
+        data:
+          $ref: '#/components/schemas/Activity'
+
+    ActivityDeleteResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Deleted successfully
+
+    ActivitySlugPreviewResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [slug]
+          properties:
+            slug:
+              type: string
+              example: faz-zenit-vasileostrovskiy
+
+    ActivityCreateRequest:
+      type: object
+      required: [organization_id, location_id, category_id, name, slug, short_description]
+      properties:
+        organization_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        category_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 255
+        short_description:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        min_age:
+          type: integer
+          nullable: true
+        max_age:
+          type: integer
+          nullable: true
+        capacity:
+          type: integer
+          nullable: true
+        price_from:
+          type: number
+          format: float
+          nullable: true
+        price_to:
+          type: number
+          format: float
+          nullable: true
+        currency:
+          type: string
+          maxLength: 5
+          nullable: true
+        status:
+          type: string
+          enum: [draft, pending_review, published, archived]
+        is_featured:
+          type: boolean
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        cover:
+          type: string
+          format: binary
+          nullable: true
+        cover_delete:
+          type: boolean
+          nullable: true
+        gallery:
+          type: array
+          items:
+            type: string
+            format: binary
+        gallery_delete_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        gallery_order_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        schedules:
+          type: array
+          items:
+            type: object
+            required: [day_of_week, start_time, end_time]
+            properties:
+              day_of_week:
+                type: integer
+                minimum: 1
+                maximum: 7
+              start_time:
+                type: string
+                example: '10:00:00'
+              end_time:
+                type: string
+                example: '12:00:00'
+
+    ActivityUpdateRequest:
+      type: object
+      properties:
+        organization_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        category_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 255
+        short_description:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        min_age:
+          type: integer
+          nullable: true
+        max_age:
+          type: integer
+          nullable: true
+        capacity:
+          type: integer
+          nullable: true
+        price_from:
+          type: number
+          format: float
+          nullable: true
+        price_to:
+          type: number
+          format: float
+          nullable: true
+        currency:
+          type: string
+          maxLength: 5
+          nullable: true
+        status:
+          type: string
+          enum: [draft, pending_review, published, archived]
+        is_featured:
+          type: boolean
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        cover:
+          type: string
+          format: binary
+          nullable: true
+        cover_delete:
+          type: boolean
+          nullable: true
+        gallery:
+          type: array
+          items:
+            type: string
+            format: binary
+        gallery_delete_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        gallery_order_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        schedules:
+          type: array
+          items:
+            type: object
+            required: [day_of_week, start_time, end_time]
+            properties:
+              day_of_week:
+                type: integer
+                minimum: 1
+                maximum: 7
+              start_time:
+                type: string
+                example: '10:00:00'
+              end_time:
+                type: string
+                example: '12:00:00'

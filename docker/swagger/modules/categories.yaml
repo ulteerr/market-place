@@ -1,0 +1,297 @@
+admin_categories_slug_preview:
+  get:
+    tags: [Admin Categories]
+    summary: Preview category slug (admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 255
+          example: Футбол
+      - name: parent_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      - name: ignore_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+    responses:
+      '200':
+        description: Generated unique slug preview
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategorySlugPreviewResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_categories_tree:
+  get:
+    tags: [Admin Categories]
+    summary: Get categories tree (admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: only_active
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    responses:
+      '200':
+        description: Categories tree
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryTreeResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+admin_categories:
+  get:
+    tags: [Admin Categories]
+    summary: List categories (admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+          example: спорт
+      - name: parent_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      - name: is_active
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [name, slug, sort_order, is_active, created_at, updated_at]
+          example: sort_order
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          example: asc
+    responses:
+      '200':
+        description: Paginated categories list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+  post:
+    tags: [Admin Categories]
+    summary: Create category (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/category.yaml#/components/schemas/CategoryCreateRequest
+    responses:
+      '201':
+        description: Category created
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryMutateResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_categories_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Admin Categories]
+    summary: Get category by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Category details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategorySingleResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+  patch:
+    tags: [Admin Categories]
+    summary: Update category (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/category.yaml#/components/schemas/CategoryUpdateRequest
+    responses:
+      '200':
+        description: Category updated
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryMutateResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+  delete:
+    tags: [Admin Categories]
+    summary: Delete category (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Category deleted
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryDeleteResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+public_categories_roots:
+  get:
+    tags: [Public Categories]
+    summary: Get root categories
+    parameters:
+      - name: only_active
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    responses:
+      '200':
+        description: Root categories list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryTreeResponse
+
+public_categories_tree:
+  get:
+    tags: [Public Categories]
+    summary: Get public categories tree
+    parameters:
+      - name: only_active
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    responses:
+      '200':
+        description: Categories tree for frontend navigation
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryTreeResponse
+
+public_categories_children:
+  parameters:
+    - name: parentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Public Categories]
+    summary: Get children categories by parent id
+    parameters:
+      - name: only_active
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    responses:
+      '200':
+        description: Child categories list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/category.yaml#/components/schemas/CategoryChildrenResponse

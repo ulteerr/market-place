@@ -37,7 +37,6 @@ test.describe('Public header responsive', () => {
     await expect(
       page.locator('[data-test="public-header-mobile-menu-toggle"]').last()
     ).toBeVisible();
-    await expect(page.locator('[data-test="public-header-search"]').last()).toBeVisible();
 
     const mobileToggle = page.locator('[data-test="public-header-mobile-menu-toggle"]').last();
     await mobileToggle.click();

@@ -88,6 +88,33 @@ paths:
   /api/admin/children/{id}:
     $ref: ./modules/children.yaml#/admin_children_by_id
 
+  /api/admin/categories/slug-preview:
+    $ref: ./modules/categories.yaml#/admin_categories_slug_preview
+
+  /api/admin/categories/tree:
+    $ref: ./modules/categories.yaml#/admin_categories_tree
+
+  /api/admin/categories:
+    $ref: ./modules/categories.yaml#/admin_categories
+
+  /api/admin/categories/{id}:
+    $ref: ./modules/categories.yaml#/admin_categories_by_id
+
+  /api/admin/activities/slug-preview:
+    $ref: ./modules/activities.yaml#/admin_activities_slug_preview
+
+  /api/admin/activities:
+    $ref: ./modules/activities.yaml#/admin_activities
+
+  /api/admin/activities/{id}:
+    $ref: ./modules/activities.yaml#/admin_activities_by_id
+
+  /api/admin/activity-leads:
+    $ref: ./modules/activities.yaml#/admin_activity_leads
+
+  /api/admin/activity-leads/{leadId}/status:
+    $ref: ./modules/activities.yaml#/admin_activity_leads_status
+
   /api/organizations/my:
     $ref: ./modules/organizations.yaml#/my_organizations
 
@@ -138,6 +165,36 @@ paths:
 
   /api/metro-stations:
     $ref: ./modules/metro.yaml#/geo_metro_stations
+
+  /api/categories/roots:
+    $ref: ./modules/categories.yaml#/public_categories_roots
+
+  /api/categories/tree:
+    $ref: ./modules/categories.yaml#/public_categories_tree
+
+  /api/categories/{parentId}/children:
+    $ref: ./modules/categories.yaml#/public_categories_children
+
+  /api/activities:
+    $ref: ./modules/activities.yaml#/public_activities_index
+
+  /api/activities/feed:
+    $ref: ./modules/activities.yaml#/public_activities_feed
+
+  /api/activities/featured:
+    $ref: ./modules/activities.yaml#/public_activities_featured
+
+  /api/activities/{publicKey}:
+    $ref: ./modules/activities.yaml#/public_activities_by_public_key
+
+  /api/activities/{activityId}/leads:
+    $ref: ./modules/activities.yaml#/public_activity_leads_submit
+
+  /api/organizations/{organizationId}/activity-leads:
+    $ref: ./modules/activities.yaml#/organization_activity_leads
+
+  /api/organizations/{organizationId}/activity-leads/{leadId}/status:
+    $ref: ./modules/activities.yaml#/organization_activity_leads_status
 
   /api/admin/geo/countries:
     $ref: ./modules/geo.yaml#/admin_geo_countries

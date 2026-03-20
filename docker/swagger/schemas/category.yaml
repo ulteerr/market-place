@@ -1,0 +1,240 @@
+components:
+  schemas:
+    CategoryParent:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Спорт
+        slug:
+          type: string
+          example: sport
+
+    CategoryTreeNode:
+      type: object
+      required: [id, name, slug, parent_id, sort_order, is_active]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Футбол
+        slug:
+          type: string
+          example: futbol
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        sort_order:
+          type: integer
+          minimum: 0
+          example: 0
+        is_active:
+          type: boolean
+          example: true
+        children_count:
+          type: integer
+          nullable: true
+          example: 0
+        activities_count:
+          type: integer
+          nullable: true
+          example: 12
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        parent:
+          $ref: '#/components/schemas/CategoryParent'
+        children:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CategoryTreeNode'
+
+    Category:
+      allOf:
+        - $ref: '#/components/schemas/CategoryTreeNode'
+
+    CategoryPaginatedResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [current_page, data, last_page, per_page, total]
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+            first_page_url:
+              type: string
+              nullable: true
+            from:
+              type: integer
+              nullable: true
+            last_page:
+              type: integer
+              example: 1
+            last_page_url:
+              type: string
+              nullable: true
+            links:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            next_page_url:
+              type: string
+              nullable: true
+            path:
+              type: string
+            per_page:
+              type: integer
+              example: 20
+            prev_page_url:
+              type: string
+              nullable: true
+            to:
+              type: integer
+              nullable: true
+            total:
+              type: integer
+              example: 12
+
+    CategoryTreeResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryTreeNode'
+
+    CategoryChildrenResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryTreeNode'
+
+    CategorySlugPreviewResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          required: [slug]
+          properties:
+            slug:
+              type: string
+              example: futbol
+
+    CategorySingleResponse:
+      type: object
+      required: [status, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          $ref: '#/components/schemas/Category'
+
+    CategoryMutateResponse:
+      type: object
+      required: [status, message, data]
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Updated successfully
+        data:
+          $ref: '#/components/schemas/Category'
+
+    CategoryDeleteResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Deleted successfully
+
+    CategoryCreateRequest:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Футбол
+        slug:
+          type: string
+          maxLength: 255
+          example: futbol
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        sort_order:
+          type: integer
+          minimum: 0
+          example: 0
+        is_active:
+          type: boolean
+          example: true
+
+    CategoryUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Футбол
+        slug:
+          type: string
+          maxLength: 255
+          example: futbol
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        sort_order:
+          type: integer
+          minimum: 0
+          example: 0
+        is_active:
+          type: boolean
+          example: true

@@ -1,0 +1,461 @@
+admin_activities_slug_preview:
+  get:
+    tags: [Admin Activities]
+    summary: Preview activity slug (admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 255
+          example: ФАЗ Зенит Василеостровский
+      - name: ignore_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+    responses:
+      '200':
+        description: Generated unique slug preview
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivitySlugPreviewResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_activities:
+  get:
+    tags: [Admin Activities]
+    summary: List activities (admin)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+          example: футбол
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [draft, pending_review, published, archived]
+      - name: is_featured
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: location_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: category_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: city_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [name, status, is_featured, published_at, price_from, price_to, created_at, updated_at]
+          example: created_at
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          example: desc
+    responses:
+      '200':
+        description: Paginated activities list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityPaginatedResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+
+  post:
+    tags: [Admin Activities]
+    summary: Create activity (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: ../schemas/activity.yaml#/components/schemas/ActivityCreateRequest
+    responses:
+      '201':
+        description: Activity created
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityMutateResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+admin_activities_by_id:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  get:
+    tags: [Admin Activities]
+    summary: Get activity by id (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Activity details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivitySingleResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+  patch:
+    tags: [Admin Activities]
+    summary: Update activity (admin)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: ../schemas/activity.yaml#/components/schemas/ActivityUpdateRequest
+    responses:
+      '200':
+        description: Activity updated
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityMutateResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+      '422':
+        $ref: ../errors.yaml#/ValidationError
+
+  delete:
+    tags: [Admin Activities]
+    summary: Delete activity (admin)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Activity deleted
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityDeleteResponse
+      '401':
+        $ref: ../errors.yaml#/UnauthorizedError
+      '403':
+        $ref: ../errors.yaml#/ForbiddenError
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+public_activities_index:
+  get:
+    tags: [Public Activities]
+    summary: List public activities
+    parameters:
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+          example: футбол
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [published]
+          example: published
+      - name: is_featured
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: root_category_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: location_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: category_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: city_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [created_at]
+          example: created_at
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          example: desc
+    responses:
+      '200':
+        description: Paginated public activities list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityPaginatedResponse
+
+public_activities_feed:
+  get:
+    tags: [Public Activities]
+    summary: Get public activities feed
+    description: >
+      Cursor-based feed for infinite loading UI.
+      This endpoint is intended for client-facing scroll feed and does not use
+      admin-style pagination contract. Response payload contains only `items`
+      and `next_cursor`.
+    parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 48
+          example: 20
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          nullable: true
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+          example: футбол
+      - name: root_category_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: location_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: category_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: city_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: is_featured
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [created_at]
+          example: created_at
+      - name: sort_dir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          example: desc
+    responses:
+      '200':
+        description: Cursor-based activities feed
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityFeedResponse
+            examples:
+              infinite_feed:
+                summary: Infinite loading response
+                value:
+                  status: ok
+                  data:
+                    items:
+                      - id: 00000000-0000-0000-0000-000000000001
+                        public_key: faz-zenit-vasileostrovskiy-00000000-0000-0000-0000-000000000001
+                        name: ФАЗ Зенит Василеостровский
+                        slug: faz-zenit-vasileostrovskiy
+                        short_description: Футбольная секция для детей
+                        is_featured: true
+                    next_cursor: eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0xOFQxMDowMDowMFoiLCJpZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInNvcnRfZGlyIjoiZGVzYyJ9
+
+public_activities_featured:
+  get:
+    tags: [Public Activities]
+    summary: Get featured activities
+    parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 24
+          example: 12
+    responses:
+      '200':
+        description: Featured activities list
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivityFeaturedResponse
+
+public_activities_by_public_key:
+  parameters:
+    - name: publicKey
+      in: path
+      required: true
+      schema:
+        type: string
+        example: faz-zenit-vasileostrovskiy-00000000-0000-0000-0000-000000000000
+
+  get:
+    tags: [Public Activities]
+    summary: Get public activity by route key
+    description: Reads activity by uuid-backed public route key `{slug}-{uuid}`.
+    responses:
+      '200':
+        description: Activity details
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/activity.yaml#/components/schemas/ActivitySingleResponse
+      '404':
+        $ref: ../errors.yaml#/NotFoundError
+
+public_activity_leads_submit: {}
+
+organization_activity_leads: {}
+
+organization_activity_leads_status: {}
+
+admin_activity_leads: {}
+
+admin_activity_leads_status: {}

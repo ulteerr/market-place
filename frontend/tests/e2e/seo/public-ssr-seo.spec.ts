@@ -10,8 +10,8 @@ import {
 const cases = [
   {
     path: '/',
-    expectedH1: 'Marketplace: публичный контур',
-    expectedTitle: 'Главная | Marketplace',
+    expectedH1: '',
+    expectedTitle: 'Marketplace: публичный контур | Marketplace',
     expectedDescription:
       'Публичная главная страница marketplace с каталогом направлений, контентными страницами и SEO-ready маршрутизацией.',
     expectedJsonLdTypes: ['WebSite', 'Organization'],

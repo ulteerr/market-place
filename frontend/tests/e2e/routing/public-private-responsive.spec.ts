@@ -22,7 +22,7 @@ test.describe('Public and private responsive smoke', () => {
 
       await page.goto('/');
       await expect(page.locator('[data-test="public-header"]')).toBeVisible();
-      await expect(page.locator('[data-test="home-public-routes"]').last()).toBeVisible();
+      await expect(page.locator('[data-test="home-featured-activities"]').last()).toBeVisible();
       if (enforceNoOverflow) {
         await assertNoHorizontalOverflow(page);
       }

@@ -12,6 +12,19 @@ describe('useOrganizationAccess', () => {
 
   const installGlobals = () => {
     vi.stubGlobal('computed', computed);
+    vi.stubGlobal('useI18n', () => ({
+      t: (key: string) => {
+        const map: Record<string, string> = {
+          'app.organizations.access.owner': 'Owner',
+          'app.organizations.access.admin': 'Admin',
+          'app.organizations.access.manager': 'Manager',
+          'app.organizations.access.member': 'Member',
+          'app.organizations.access.none': 'No access',
+        };
+
+        return map[key] ?? key;
+      },
+    }));
     vi.stubGlobal('useAuth', () => ({
       user,
     }));
