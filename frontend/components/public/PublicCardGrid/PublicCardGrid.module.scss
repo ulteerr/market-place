@@ -1,7 +1,13 @@
 .grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.35rem;
   grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .link {
@@ -9,19 +15,121 @@
   text-decoration: none;
 }
 
+.copyCard,
+.mediaCard {
+  height: 100%;
+}
+
+.mediaCard {
+  overflow: hidden;
+  padding: 0 !important;
+  border: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+}
+
+.media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.14), transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+}
+
+.mediaImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.link:hover .mediaImage {
+  transform: scale(1.03);
+}
+
+.badge {
+  position: absolute;
+  left: 0.9rem;
+  bottom: 0.9rem;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #1d9bf0 92%, white);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.copy {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.15rem 1.15rem 1.25rem;
+  background: var(--surface-elevated);
+}
+
+.cardEyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardPrice {
+  margin: 0;
+  color: #ff4f9a;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .cardTitle {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.28rem;
   font-weight: 700;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .cardText {
-  margin: 0.75rem 0 0;
+  margin: 0;
   color: var(--muted);
+  line-height: 1.5;
+  font-size: 1.02rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
-@media (min-width: 860px) {
+.cardMeta {
+  margin: 0.1rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 980px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1260px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1480px) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }

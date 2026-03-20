@@ -127,7 +127,15 @@
       </div>
 
       <div :class="styles.bottomRow" data-test="public-header-bottom-row">
-        <nav :class="styles.sectionsNav" :aria-label="t('app.layout.header.sectionsAria')">
+        <UiFilterBarSkeleton v-if="categoriesPending" data-test="public-header-sections-loading" />
+        <p
+          v-else-if="categoriesError"
+          :class="styles.sectionsError"
+          data-test="public-header-sections-error"
+        >
+          {{ categoriesError }}
+        </p>
+        <nav v-else :class="styles.sectionsNav" :aria-label="t('app.layout.header.sectionsAria')">
           <NuxtLink
             v-for="link in sectionLinks"
             :key="`${link.to}-${link.label}`"
@@ -165,7 +173,31 @@
       :class="styles.catalogMenu"
       data-test="public-header-catalog-menu"
     >
-      <div :class="styles.catalogMenuInner">
+      <div
+        v-if="categoriesPending"
+        :class="styles.catalogMenuInner"
+        data-test="public-header-catalog-loading"
+      >
+        <div :class="styles.catalogLoadingColumn">
+          <UiFilterBarSkeleton :chips="4" />
+        </div>
+        <div :class="styles.catalogLoadingColumn">
+          <UiFilterBarSkeleton :chips="6" />
+        </div>
+      </div>
+      <PublicStateMessage
+        v-else-if="categoriesError"
+        :title="t('app.layout.header.categoriesErrorTitle')"
+        :description="categoriesError"
+        data-test="public-header-catalog-error"
+      />
+      <PublicStateMessage
+        v-else-if="!catalogGroups.length"
+        :title="t('app.layout.header.categoriesEmptyTitle')"
+        :description="t('app.layout.header.categoriesEmptyDescription')"
+        data-test="public-header-catalog-empty"
+      />
+      <div v-else :class="styles.catalogMenuInner">
         <div
           :class="styles.catalogCategories"
           role="menu"
@@ -298,6 +330,8 @@
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import styles from './AppHeader.module.scss';
 import { usePublicHeaderConfig } from '~/composables/layout/usePublicHeaderConfig';
+import PublicStateMessage from '~/components/public/PublicStateMessage/PublicStateMessage.vue';
+import UiFilterBarSkeleton from '~/components/ui/Skeleton/UiFilterBarSkeleton.vue';
 
 const { t, locale, setLocale } = useI18n();
 const { isAuthenticated } = useAuth();
@@ -312,8 +346,15 @@ const { localeSelectOptions, onLocaleChange } = useAdminLocaleSync({
 const isThemeUiMounted = ref(false);
 const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 const route = useRoute();
-const { quickActions, sectionLinks, catalogGroups, regionText, serviceStatusText } =
-  usePublicHeaderConfig();
+const {
+  categoriesPending,
+  categoriesError,
+  quickActions,
+  sectionLinks,
+  catalogGroups,
+  regionText,
+  serviceStatusText,
+} = usePublicHeaderConfig();
 const headerRoot = ref<HTMLElement | null>(null);
 const catalogToggleButton = ref<HTMLButtonElement | null>(null);
 const publicLocalePlaceholder = computed(() => locale.value.toUpperCase());

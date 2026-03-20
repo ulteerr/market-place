@@ -10,8 +10,15 @@ type PublicSchemaEntry = {
 
 const serializeNodes = (nodes: PublicSchemaNode[]): string => JSON.stringify(nodes);
 
-export const isPublicSchemaRoute = (path: string): boolean =>
-  path === '/' || path.startsWith('/catalog') || path.startsWith('/content');
+const privateRoutePrefixes = ['/admin', '/account', '/organizations'];
+
+export const isPublicSchemaRoute = (path: string): boolean => {
+  if (!path.startsWith('/')) {
+    return false;
+  }
+
+  return !privateRoutePrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+};
 
 export const usePublicSchemaRegistry = () => {
   const route = useRoute();

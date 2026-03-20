@@ -1,7 +1,7 @@
 <template>
   <div>
     <PageHero
-      :eyebrow="t('app.public.catalog.categoryPage.rootEyebrow')"
+      :eyebrow="t('app.public.catalog.categoryPage.leafEyebrow')"
       :title="heroTitle"
       :description="heroDescription"
     />
@@ -9,43 +9,43 @@
     <PublicSection
       class="catalog-category-page"
       :title="t('app.public.catalog.categoryPage.activitiesTitle')"
-      data-test="catalog-root-category-page"
+      data-test="catalog-leaf-category-page"
     >
       <PublicCardGridSkeleton
         v-if="pageState === 'loading'"
-        data-test="catalog-root-category-loading"
+        data-test="catalog-leaf-category-loading"
       />
       <PublicStateMessage
         v-else-if="pageState === 'empty'"
         :eyebrow="t('app.defaults.stateEyebrow')"
         :title="t('app.public.catalog.categoryPage.emptyTitle')"
         :description="t('app.public.catalog.categoryPage.emptyDescription')"
-        data-test="catalog-root-category-empty"
+        data-test="catalog-leaf-category-empty"
       />
       <PublicStateMessage
         v-else-if="pageState === 'error'"
         :eyebrow="t('app.defaults.stateEyebrow')"
         :title="t('app.public.catalog.categoryPage.errorTitle')"
         :description="t('app.public.catalog.categoryPage.errorDescription')"
-        data-test="catalog-root-category-error"
+        data-test="catalog-leaf-category-error"
       />
       <template v-else>
-        <div
-          v-if="childLinks.length"
-          class="catalog-category-page__chips"
-          data-test="catalog-root-category-children"
-        >
+        <div class="catalog-category-page__chips" data-test="catalog-leaf-category-siblings">
+          <NuxtLink :to="rootPath" class="catalog-category-page__chip">
+            {{ rootCategory?.name }}
+          </NuxtLink>
           <NuxtLink
-            v-for="link in childLinks"
+            v-for="link in siblingLinks"
             :key="link.to"
             :to="link.to"
             class="catalog-category-page__chip"
+            :class="{ 'catalog-category-page__chip--active': link.active }"
           >
             {{ link.label }}
           </NuxtLink>
         </div>
 
-        <PublicCardGrid :items="activityCards" data-test="catalog-root-category-activities-grid" />
+        <PublicCardGrid :items="activityCards" data-test="catalog-leaf-category-activities-grid" />
       </template>
     </PublicSection>
   </div>
@@ -56,6 +56,7 @@ import { computed } from 'vue';
 import { usePublicPreviewState } from '~/composables/layout/usePublicPreviewState';
 import {
   buildPublicLeafCategoryPath,
+  buildPublicRootCategoryPath,
   findPublicCategoryBySlugs,
   usePublicCategories,
 } from '~/composables/usePublicCategories';
@@ -79,37 +80,42 @@ const config = useRuntimeConfig();
 const previewState = usePublicPreviewState();
 const publicCategoriesApi = usePublicCategories();
 const publicActivitiesApi = usePublicActivities();
-const rootSlug = computed(() => String(route.params.slug || ''));
+const rootSlug = computed(() => String(route.params.root || ''));
+const leafSlug = computed(() => String(route.params.leaf || ''));
 
 const { data, pending, error } = await useAsyncData(
-  () => `catalog-root-category:${rootSlug.value}`,
+  () => `catalog-leaf-category:${rootSlug.value}:${leafSlug.value}`,
   async () => {
     const tree = await publicCategoriesApi.tree();
-    const resolved = findPublicCategoryBySlugs(tree, rootSlug.value);
+    const resolved = findPublicCategoryBySlugs(tree, rootSlug.value, leafSlug.value);
 
-    if (!resolved) {
+    if (!resolved || !resolved.leaf) {
       return {
-        category: null,
-        children: [],
+        root: null,
+        leaf: null,
+        siblings: [],
         activities: [],
       };
     }
 
     const feed = await publicActivitiesApi.feed({
       limit: 12,
+      category_id: resolved.leaf.id,
       root_category_id: resolved.root.id,
     });
 
     return {
-      category: resolved.root,
-      children: resolved.root.children ?? [],
+      root: resolved.root,
+      leaf: resolved.leaf,
+      siblings: resolved.root.children ?? [],
       activities: feed.items,
     };
   }
 );
 
-const category = computed(() => data.value?.category ?? null);
-const childCategories = computed(() => data.value?.children ?? []);
+const rootCategory = computed(() => data.value?.root ?? null);
+const leafCategory = computed(() => data.value?.leaf ?? null);
+const siblingCategories = computed(() => data.value?.siblings ?? []);
 const activities = computed(() => data.value?.activities ?? []);
 
 const pageState = computed<'loading' | 'ready' | 'empty' | 'error'>(() => {
@@ -133,34 +139,45 @@ const pageState = computed<'loading' | 'ready' | 'empty' | 'error'>(() => {
     return 'error';
   }
 
-  if (!category.value || !activities.value.length) {
+  if (!rootCategory.value || !leafCategory.value || !activities.value.length) {
     return 'empty';
   }
 
   return 'ready';
 });
 
-const canonicalPath = computed(() => `/catalog/${rootSlug.value}`);
+const rootPath = computed(() =>
+  rootCategory.value ? buildPublicRootCategoryPath(rootCategory.value) : '/catalog'
+);
+const canonicalPath = computed(() =>
+  rootCategory.value && leafCategory.value
+    ? buildPublicLeafCategoryPath(rootCategory.value, leafCategory.value)
+    : `/catalog/${rootSlug.value}/${leafSlug.value}`
+);
 
 const seo = usePublicPageSeo({
-  h1: computed(() => category.value?.name || t('app.public.catalog.categoryPage.fallbackTitle')),
+  h1: computed(
+    () => leafCategory.value?.name || t('app.public.catalog.categoryPage.fallbackTitle')
+  ),
   title: computed(() => {
-    const title = category.value?.name || t('app.public.catalog.categoryPage.fallbackTitle');
-    return t('app.public.catalog.categoryPage.rootSeoTitle', { title });
+    const title = leafCategory.value?.name || t('app.public.catalog.categoryPage.fallbackTitle');
+    return t('app.public.catalog.categoryPage.leafSeoTitle', { title });
   }),
   description: computed(() => {
-    const title = category.value?.name || t('app.public.catalog.categoryPage.fallbackTitle');
-    return t('app.public.catalog.categoryPage.rootSeoDescription', { title });
+    const title = leafCategory.value?.name || t('app.public.catalog.categoryPage.fallbackTitle');
+    const root = rootCategory.value?.name || '';
+    return t('app.public.catalog.categoryPage.leafSeoDescription', { title, root });
   }),
   canonicalPath,
 });
 const heroTitle = seo.h1;
 const heroDescription = seo.description;
 
-const childLinks = computed(() =>
-  childCategories.value.map((child) => ({
-    label: child.name,
-    to: buildPublicLeafCategoryPath(category.value!, child),
+const siblingLinks = computed(() =>
+  siblingCategories.value.map((category) => ({
+    label: category.name,
+    to: buildPublicLeafCategoryPath(rootCategory.value!, category),
+    active: leafCategory.value?.id === category.id,
   }))
 );
 
@@ -179,7 +196,7 @@ const activityCards = computed(() =>
         ? `${activity.price_from} ${activity.currency || ''}`.trim()
         : undefined,
     meta: [activity.organization?.name, activity.location?.city?.name].filter(Boolean).join(' · '),
-    dataTest: `catalog-root-category-activity-${activity.id}`,
+    dataTest: `catalog-leaf-category-activity-${activity.id}`,
   }))
 );
 
@@ -188,13 +205,14 @@ const pageSchemaNode = computed(() =>
   buildBreadcrumbListSchema(siteUrl, [
     { name: t('app.public.catalog.breadcrumbs.home'), path: '/' },
     { name: t('app.public.catalog.breadcrumbs.current'), path: '/catalog' },
-    { name: category.value?.name || rootSlug.value, path: canonicalPath.value },
+    { name: rootCategory.value?.name || rootSlug.value, path: rootPath.value },
+    { name: leafCategory.value?.name || leafSlug.value, path: canonicalPath.value },
   ])
 );
 const sectionSchemaNode = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: category.value?.name || t('app.public.catalog.categoryPage.activitiesTitle'),
+  name: leafCategory.value?.name || t('app.public.catalog.categoryPage.activitiesTitle'),
   itemListElement: activityCards.value.map((item, index) => ({
     '@type': 'ListItem',
     position: index + 1,
@@ -204,11 +222,11 @@ const sectionSchemaNode = computed(() => ({
 }));
 
 usePublicSchemaNode(
-  computed(() => `page:catalog-root:${rootSlug.value}`),
+  computed(() => `page:catalog-leaf:${rootSlug.value}:${leafSlug.value}`),
   pageSchemaNode
 );
 usePublicSchemaNode(
-  computed(() => `section:catalog-root:${rootSlug.value}`),
+  computed(() => `section:catalog-leaf:${rootSlug.value}:${leafSlug.value}`),
   sectionSchemaNode
 );
 </script>
@@ -246,5 +264,11 @@ usePublicSchemaNode(
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, var(--surface-elevated));
+}
+
+.catalog-category-page__chip--active {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-elevated));
+  color: var(--accent);
 }
 </style>

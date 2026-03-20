@@ -1,3 +1,9 @@
+import {
+  buildPublicLeafCategoryPath,
+  buildPublicRootCategoryPath,
+  usePublicCategories,
+} from '~/composables/usePublicCategories';
+
 type HeaderLink = {
   label: string;
   to: string;
@@ -11,6 +17,10 @@ type CatalogGroup = {
 
 export const usePublicHeaderConfig = () => {
   const { t } = useI18n();
+  const publicCategoriesApi = usePublicCategories();
+  const categoriesTree = ref<Awaited<ReturnType<typeof publicCategoriesApi.tree>>>([]);
+  const categoriesPending = ref(true);
+  const categoriesError = ref('');
 
   const quickActions = computed<HeaderLink[]>(() => [
     { label: t('app.layout.header.quickActions.orders'), to: '/login' },
@@ -20,49 +30,43 @@ export const usePublicHeaderConfig = () => {
 
   const sectionLinks = computed<HeaderLink[]>(() => [
     { label: t('app.layout.header.sections.home'), to: '/' },
-    { label: t('app.layout.header.sections.football'), to: '/' },
-    { label: t('app.layout.header.sections.floorball'), to: '/' },
-    { label: t('app.layout.header.sections.volleyball'), to: '/' },
-    { label: t('app.layout.header.sections.drawing'), to: '/' },
+    ...(categoriesTree.value || []).map((category) => ({
+      label: category.name,
+      to: buildPublicRootCategoryPath(category),
+    })),
   ]);
 
-  const catalogGroups = computed<CatalogGroup[]>(() => [
-    {
-      id: 'sports',
-      title: t('app.layout.header.catalog.sports'),
-      subcategories: [
-        { label: t('app.layout.header.sections.football'), to: '/' },
-        { label: t('app.layout.header.sections.floorball'), to: '/' },
-        { label: t('app.layout.header.sections.volleyball'), to: '/' },
-        { label: t('app.layout.header.catalog.basketball'), to: '/' },
-      ],
-    },
-    {
-      id: 'creative',
-      title: t('app.layout.header.catalog.creative'),
-      subcategories: [
-        { label: t('app.layout.header.sections.drawing'), to: '/' },
-        { label: t('app.layout.header.catalog.sculpture'), to: '/' },
-        { label: t('app.layout.header.catalog.theater'), to: '/' },
-        { label: t('app.layout.header.catalog.music'), to: '/' },
-      ],
-    },
-    {
-      id: 'development',
-      title: t('app.layout.header.catalog.development'),
-      subcategories: [
-        { label: t('app.layout.header.catalog.chess'), to: '/' },
-        { label: t('app.layout.header.catalog.robotics'), to: '/' },
-        { label: t('app.layout.header.catalog.schoolPrep'), to: '/' },
-        { label: t('app.layout.header.catalog.english'), to: '/' },
-      ],
-    },
-  ]);
+  const catalogGroups = computed<CatalogGroup[]>(() =>
+    (categoriesTree.value || []).map((category) => ({
+      id: category.id,
+      title: category.name,
+      subcategories: (category.children || []).map((child) => ({
+        label: child.name,
+        to: buildPublicLeafCategoryPath(category, child),
+      })),
+    }))
+  );
 
   const regionText = computed(() => t('app.layout.header.region'));
   const serviceStatusText = computed(() => t('app.layout.header.serviceStatus'));
 
+  onMounted(async () => {
+    categoriesPending.value = true;
+    categoriesError.value = '';
+
+    try {
+      categoriesTree.value = await publicCategoriesApi.tree();
+    } catch {
+      categoriesTree.value = [];
+      categoriesError.value = t('app.layout.header.categoriesLoadError');
+    } finally {
+      categoriesPending.value = false;
+    }
+  });
+
   return {
+    categoriesPending,
+    categoriesError,
     quickActions,
     sectionLinks,
     catalogGroups,
