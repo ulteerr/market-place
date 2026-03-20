@@ -4,6 +4,7 @@ export type AdminNavIcon =
   | 'settings'
   | 'users'
   | 'roles'
+  | 'categories'
   | 'activity'
   | 'monitoring'
   | 'organization'
@@ -126,6 +127,24 @@ export const adminNavigationSectionDefinitions: AdminNavigationSectionDefinition
     labelKey: 'admin.layout.sections.organization',
     icon: 'organization',
     items: [
+      {
+        key: 'categories',
+        to: '/admin/categories',
+        labelKey: 'admin.layout.menu.categories',
+        icon: 'categories',
+      },
+      {
+        key: 'activities',
+        to: '/admin/activities',
+        labelKey: 'admin.layout.menu.activities',
+        icon: 'activity',
+      },
+      {
+        key: 'activity-leads',
+        to: '/admin/activity-leads',
+        labelKey: 'admin.layout.menu.activityLeads',
+        icon: 'activity',
+      },
       {
         key: 'organizations',
         to: '/admin/organizations',

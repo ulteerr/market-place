@@ -133,6 +133,12 @@
                   :class="styles.link"
                   >{{ t('app.organizations.overview.sections.requestsAction') }}</NuxtLink
                 >
+                <NuxtLink
+                  v-if="canViewActivityLeads"
+                  to="/organizations/activity-leads"
+                  :class="styles.link"
+                  >{{ t('app.organizations.overview.sections.leadsAction') }}</NuxtLink
+                >
               </div>
             </div>
           </template>
@@ -181,7 +187,7 @@ definePageMeta({
 
 const { t } = useI18n();
 const pageState = usePrivatePreviewState();
-const { accessLabel, canReadClients, canReadMembers, canViewJoinRequests } =
+const { accessLabel, canReadClients, canReadMembers, canViewJoinRequests, canViewActivityLeads } =
   useOrganizationAccess();
 
 const metrics = computed(() => [

@@ -29,6 +29,9 @@ interface UseAdminNavigationOptions {
 const navigationPermissions: Record<string, string> = {
   users: 'admin.users.read',
   roles: 'admin.roles.read',
+  categories: 'admin.categories.read',
+  activities: 'admin.activities.read',
+  'activity-leads': 'admin.activity-leads.read',
   organizations: 'org.company.profile.read',
   children: 'org.children.read',
   'action-logs': 'admin.action-log.read',

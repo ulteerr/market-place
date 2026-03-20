@@ -31,6 +31,8 @@ export const useOrganizationAccess = () => {
   const canManageClients = computed(() => hasPermission('org.children.write'));
   const canViewJoinRequests = computed(() => hasPermission('org.members.read'));
   const canReviewJoinRequests = computed(() => hasPermission('org.members.write'));
+  const canViewActivityLeads = computed(() => hasPermission('org.activity-leads.read'));
+  const canReviewActivityLeads = computed(() => hasPermission('org.activity-leads.update'));
 
   const inferredRole = computed<OrganizationAccessLevel>(() => {
     if (explicitRole.value) {
@@ -67,5 +69,7 @@ export const useOrganizationAccess = () => {
     canManageClients,
     canViewJoinRequests,
     canReviewJoinRequests,
+    canViewActivityLeads,
+    canReviewActivityLeads,
   };
 };
