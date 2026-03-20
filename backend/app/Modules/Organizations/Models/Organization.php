@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Activities\Models\Activity;
 use Modules\Organizations\Database\Factories\OrganizationFactory;
 use Modules\Users\Models\User;
 
@@ -83,6 +84,11 @@ final class Organization extends Model
     public function locations(): HasMany
     {
         return $this->hasMany(OrganizationLocation::class, "organization_id");
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class, "organization_id");
     }
 
     protected static function newFactory(): OrganizationFactory

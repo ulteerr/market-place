@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
+use Modules\Activities\Models\Activity;
 use Modules\Children\Models\Child;
+use Modules\Categories\Models\Category;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
@@ -24,6 +26,10 @@ return [
         "organizations" => Organization::class,
         "organization_join_request" => OrganizationJoinRequest::class,
         "organization_join_requests" => OrganizationJoinRequest::class,
+        "activity" => Activity::class,
+        "activities" => Activity::class,
+        "category" => Category::class,
+        "categories" => Category::class,
         "metro_line" => MetroLine::class,
         "metro_lines" => MetroLine::class,
         "metro_station" => MetroStation::class,

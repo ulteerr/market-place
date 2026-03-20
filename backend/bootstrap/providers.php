@@ -3,6 +3,8 @@
 use App\Providers\AdminRoutesServiceProvider;
 use Modules\ActionLog\ActionLogServiceProvider;
 use Modules\Auth\AuthServiceProvider;
+use Modules\Activities\ActivitiesServiceProvider;
+use Modules\Categories\CategoriesServiceProvider;
 use Modules\Children\ChildrenServiceProvider;
 use Modules\ChangeLog\ChangeLogServiceProvider;
 use Modules\Files\FilesServiceProvider;
@@ -17,6 +19,8 @@ return [
     ActionLogServiceProvider::class,
     AuthServiceProvider::class,
     UsersServiceProvider::class,
+    CategoriesServiceProvider::class,
+    ActivitiesServiceProvider::class,
     ChildrenServiceProvider::class,
     GeoServiceProvider::class,
     MetroServiceProvider::class,

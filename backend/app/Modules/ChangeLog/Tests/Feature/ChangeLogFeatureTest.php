@@ -6,8 +6,12 @@ namespace Modules\ChangeLog\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Modules\Activities\Models\Activity;
+use Modules\Categories\Models\Category;
 use Modules\ChangeLog\Models\ChangeLog;
 use Modules\Files\Models\File;
+use Modules\Organizations\Models\Organization;
+use Modules\Organizations\Models\OrganizationLocation;
 use Modules\Users\Models\Role;
 use Modules\Users\Models\User;
 use PHPUnit\Framework\Attributes\Test;
@@ -643,6 +647,56 @@ final class ChangeLogFeatureTest extends TestCase
         $this->assertSame($beforeCount, $afterCount);
     }
 
+    #[Test]
+    public function admin_can_read_changelog_for_category(): void
+    {
+        $auth = $this->actingAsAdmin();
+
+        $category = Category::factory()->create([
+            "name" => "Спорт",
+            "slug" => "sport",
+        ]);
+
+        $category->update([
+            "name" => "Спорт updated",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/changelog?model=category&entity_id={$category->id}")
+            ->assertOk()
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.data.0.auditable_type", Category::class)
+            ->assertJsonPath("data.data.0.auditable_id", (string) $category->id);
+    }
+
+    #[Test]
+    public function admin_can_read_changelog_for_activity(): void
+    {
+        $auth = $this->actingAsAdmin();
+        $context = $this->createActivityContext();
+
+        $activity = Activity::factory()
+            ->forOrganizationLocation($context["organization"], $context["location"])
+            ->create([
+                "name" => "Футбольная секция",
+                "slug" => "futbolnaya-sektsiya",
+                "short_description" => "Тренировки для детей.",
+                "status" => "draft",
+            ]);
+
+        $activity->primaryCategory()->sync([(string) $context["leaf"]->id]);
+        $activity->update([
+            "status" => "published",
+        ]);
+
+        $this->withHeaders($auth["headers"])
+            ->getJson("/api/admin/changelog?model=activity&entity_id={$activity->id}")
+            ->assertOk()
+            ->assertJsonPath("status", "ok")
+            ->assertJsonPath("data.data.0.auditable_type", Activity::class)
+            ->assertJsonPath("data.data.0.auditable_id", (string) $activity->id);
+    }
+
     private function actingAsAdmin(): array
     {
         $superAdminRole = Role::factory()->superAdmin()->create();
@@ -650,5 +704,34 @@ final class ChangeLogFeatureTest extends TestCase
         $auth["user"]->roles()->sync([$superAdminRole->id]);
 
         return $auth;
+    }
+
+    private function createActivityContext(): array
+    {
+        $organization = Organization::factory()->create([
+            "name" => "Организация спорта",
+            "status" => "active",
+        ]);
+        $location = OrganizationLocation::factory()->create([
+            "organization_id" => (string) $organization->id,
+            "address" => "Москва, Ленина 1",
+        ]);
+        $root = Category::factory()->create([
+            "name" => "Спорт",
+            "slug" => "sport",
+        ]);
+        $leaf = Category::factory()
+            ->childOf($root)
+            ->create([
+                "name" => "Футбол",
+                "slug" => "futbol",
+            ]);
+
+        return [
+            "organization" => $organization,
+            "location" => $location,
+            "root" => $root,
+            "leaf" => $leaf,
+        ];
     }
 }

@@ -6,12 +6,16 @@ namespace Modules\Auth;
 
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Sanctum;
+use Modules\Activities\Models\Activity;
+use Modules\Activities\Policies\ActivityPolicy;
 use Modules\Auth\Models\PersonalAccessToken;
 use App\Support\ModuleServiceProvider;
 use Modules\ActionLog\Models\ActionLog;
 use Modules\ActionLog\Policies\ActionLogPolicy;
 use Modules\Auth\Contracts\TokenServiceInterface;
 use Modules\Auth\Services\SanctumTokenService;
+use Modules\Categories\Models\Category;
+use Modules\Categories\Policies\CategoryPolicy;
 use Modules\ChangeLog\Models\ChangeLog;
 use Modules\ChangeLog\Policies\ChangeLogPolicy;
 use Modules\Children\Models\Child;
@@ -58,6 +62,8 @@ class AuthServiceProvider extends ModuleServiceProvider
         Gate::policy(ActionLog::class, ActionLogPolicy::class);
         Gate::policy(ChangeLog::class, ChangeLogPolicy::class);
         Gate::policy(Organization::class, OrganizationPolicy::class);
+        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Activity::class, ActivityPolicy::class);
         Gate::policy(Child::class, ChildPolicy::class);
         Gate::policy(Country::class, CountryPolicy::class);
         Gate::policy(Region::class, RegionPolicy::class);

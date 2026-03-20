@@ -65,6 +65,16 @@ final class OrganizationPolicy
         return $this->canAccessOrganization($user, $model, "org.members.write");
     }
 
+    public function viewActivityLeads(User $user, Organization $model): bool
+    {
+        return $this->canAccessOrganization($user, $model, "org.activity-leads.read");
+    }
+
+    public function reviewActivityLeads(User $user, Organization $model): bool
+    {
+        return $this->canAccessOrganization($user, $model, "org.activity-leads.update");
+    }
+
     private function canAccessOrganization(
         User $user,
         Organization $organization,

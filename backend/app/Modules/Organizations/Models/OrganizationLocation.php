@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Activities\Models\Activity;
 use Modules\Geo\Models\City;
 use Modules\Geo\Models\Country;
 use Modules\Geo\Models\District;
@@ -65,6 +66,11 @@ final class OrganizationLocation extends Model
     public function metroConnections(): HasMany
     {
         return $this->hasMany(OrganizationLocationMetroStation::class, "organization_location_id");
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class, "location_id");
     }
 
     protected static function newFactory(): OrganizationLocationFactory
