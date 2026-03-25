@@ -282,7 +282,7 @@ const { isAuthenticated, user } = useAuth();
 const publicKey = computed(() => String(route.params.activity || ''));
 const activity = ref<Awaited<ReturnType<typeof publicActivitiesApi.show>> | null>(null);
 const activityError = ref<unknown>(null);
-const activityPending = ref(true);
+const activityPending = ref(previewState.value === 'ready');
 const leadChildren = ref<ActivityLeadChild[]>([]);
 const leadLoadingChildren = ref(false);
 const leadSubmitting = ref(false);
@@ -326,6 +326,19 @@ const canonicalPath = computed(() => {
     primary_category: activity.value.primary_category,
   });
 });
+
+if (previewState.value === 'ready') {
+  try {
+    activity.value = await publicActivitiesApi.show(publicKey.value);
+  } catch (error) {
+    activity.value = null;
+    activityError.value = error;
+  } finally {
+    activityPending.value = false;
+  }
+} else {
+  activityPending.value = false;
+}
 
 const pageState = computed<'loading' | 'ready' | 'empty' | 'error'>(() => {
   if (previewState.value === 'loading') {
@@ -668,31 +681,6 @@ const submitLead = async () => {
   }
 };
 
-const loadActivity = async () => {
-  activityPending.value = true;
-  activityError.value = null;
-
-  try {
-    const response = await publicActivitiesApi.show(publicKey.value);
-
-    activity.value = response;
-
-    const nextCanonicalPath = buildPublicActivityPath({
-      public_key: publicKey.value,
-      primary_category: response.primary_category,
-    });
-
-    if (route.path !== nextCanonicalPath) {
-      await navigateTo(nextCanonicalPath, { replace: true });
-    }
-  } catch (error) {
-    activity.value = null;
-    activityError.value = error;
-  } finally {
-    activityPending.value = false;
-  }
-};
-
 const schemaNodes = computed(() => {
   if (!activity.value) {
     return {
@@ -718,8 +706,18 @@ usePublicSchemaNode(
 
 onMounted(() => {
   if (previewState.value !== 'ready') {
-    activityPending.value = false;
     return;
+  }
+
+  const nextCanonicalPath = activity.value
+    ? buildPublicActivityPath({
+        public_key: publicKey.value,
+        primary_category: activity.value.primary_category,
+      })
+    : null;
+
+  if (nextCanonicalPath && route.path !== nextCanonicalPath) {
+    void navigateTo(nextCanonicalPath, { replace: true });
   }
 
   if (user.value?.phone && !leadForm.contact_payload.phone) {
@@ -727,7 +725,6 @@ onMounted(() => {
   }
 
   void loadLeadChildren();
-  void loadActivity();
 });
 </script>
 

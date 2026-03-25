@@ -1,14 +1,19 @@
 <template>
-  <div :class="styles.grid" :data-test="dataTest">
-    <NuxtLink v-for="item in items" :key="item.to" :to="item.to" :class="styles.link">
+  <div :class="[styles.grid, 'public-card-grid']" :data-test="dataTest">
+    <NuxtLink
+      v-for="item in items"
+      :key="item.to"
+      :to="item.to"
+      :class="[styles.link, 'public-card-grid__link']"
+    >
       <UiCard
         :variant="item.variant ?? variant"
         :padding="padding"
         interactive
-        :class="item.imageUrl ? styles.mediaCard : styles.copyCard"
+        :class="[item.imageUrl ? styles.mediaCard : styles.copyCard, 'public-card-grid__card']"
         :data-test="item.dataTest ?? 'public-card-grid-item'"
       >
-        <div v-if="item.imageUrl" :class="styles.media">
+        <div v-if="item.imageUrl" :class="[styles.media, 'public-card-grid__media']">
           <img
             :src="item.imageUrl"
             :alt="item.imageAlt || item.title"
@@ -17,7 +22,7 @@
           />
           <span v-if="item.badge" :class="styles.badge">{{ item.badge }}</span>
         </div>
-        <div :class="styles.copy">
+        <div :class="[styles.copy, 'public-card-grid__copy']">
           <p v-if="item.eyebrow" :class="styles.cardEyebrow">{{ item.eyebrow }}</p>
           <p v-if="item.price" :class="styles.cardPrice">{{ item.price }}</p>
           <h3 :class="styles.cardTitle">{{ item.title }}</h3>

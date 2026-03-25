@@ -184,42 +184,50 @@
 .sectionsNav {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.3rem;
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  padding: 0.2rem 0;
 
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-.sectionsError {
-  color: var(--header-muted);
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 0.42rem 0;
-}
-
 .sectionLink {
-  color: var(--header-ink);
-  font-size: 0.82rem;
-  font-weight: 600;
+  position: relative;
+  color: var(--header-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   text-decoration: none;
   border-radius: 999px;
-  padding: 0.42rem 0.72rem;
+  padding: 0.36rem 0.1rem;
   white-space: nowrap;
   transition:
     color 0.2s ease,
-    background-color 0.2s ease;
+    opacity 0.2s ease;
+
+  &:not(:last-child)::after {
+    content: '•';
+    color: color-mix(in srgb, var(--header-muted) 72%, transparent);
+    margin-left: 0.65rem;
+  }
 
   &:hover,
   &:focus-visible {
     outline: none;
     color: var(--header-accent);
-    background-color: var(--header-spotlight);
+    opacity: 1;
+  }
+
+  &:global(.router-link-active),
+  &:global(.router-link-exact-active) {
+    color: var(--header-ink);
   }
 }
 

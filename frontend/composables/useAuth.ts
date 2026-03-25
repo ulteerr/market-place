@@ -1,4 +1,10 @@
 import { resolveAssetUrl } from '~/composables/asset-url';
+import {
+  clearGuestPreferences,
+  mergeGuestSettingsIntoAccountSettings,
+  readGuestPreferences,
+  writeGuestPreferences,
+} from '~/composables/guest-preferences';
 
 interface AuthUser {
   avatar?: {
@@ -50,6 +56,16 @@ interface MeResponse {
   user: AuthUser;
 }
 
+interface RegisterPayload {
+  email: string;
+  password: string;
+  password_confirmation: string;
+  first_name?: string;
+  last_name?: string;
+  middle_name?: string;
+  phone?: string | null;
+}
+
 export const useAuth = () => {
   const config = useRuntimeConfig();
   const authCookieMaxAge = 60 * 60 * 24 * 30;
@@ -98,6 +114,40 @@ export const useAuth = () => {
     user.value = normalizeUserAssets(nextUser);
   };
 
+  const syncGuestPreferencesAfterAuth = async (): Promise<void> => {
+    const guestPreferences = readGuestPreferences();
+    const guestSettings = guestPreferences.settings;
+    const hasFavorites = (guestPreferences.favorites?.length ?? 0) > 0;
+
+    if (!guestSettings) {
+      if (!hasFavorites) {
+        clearGuestPreferences();
+      }
+
+      return;
+    }
+
+    const api = useApi();
+    await api('/api/me/settings', {
+      method: 'PATCH',
+      body: {
+        settings: guestSettings,
+      },
+    });
+
+    await refreshUser();
+
+    if (hasFavorites) {
+      writeGuestPreferences({
+        v: 1,
+        favorites: guestPreferences.favorites,
+      });
+      return;
+    }
+
+    clearGuestPreferences();
+  };
+
   const login = async (email: string, password: string): Promise<void> => {
     const api = useApi();
 
@@ -110,7 +160,35 @@ export const useAuth = () => {
     });
 
     token.value = response.token;
-    setUser(response.user);
+    const guestSettings = readGuestPreferences().settings;
+    setUser({
+      ...response.user,
+      settings: mergeGuestSettingsIntoAccountSettings(
+        response.user.settings ?? null,
+        guestSettings
+      ),
+    });
+    await syncGuestPreferencesAfterAuth();
+  };
+
+  const register = async (payload: RegisterPayload): Promise<void> => {
+    const api = useApi();
+
+    const response = await api<LoginResponse>('/api/auth/register', {
+      method: 'POST',
+      body: payload,
+    });
+
+    token.value = response.token;
+    const guestSettings = readGuestPreferences().settings;
+    setUser({
+      ...response.user,
+      settings: mergeGuestSettingsIntoAccountSettings(
+        response.user.settings ?? null,
+        guestSettings
+      ),
+    });
+    await syncGuestPreferencesAfterAuth();
   };
 
   const refreshUser = async (): Promise<AuthUser | null> => {
@@ -183,6 +261,13 @@ export const useAuth = () => {
   };
 
   const logout = async (): Promise<void> => {
+    if (user.value?.settings) {
+      writeGuestPreferences({
+        ...readGuestPreferences(),
+        settings: user.value.settings,
+      });
+    }
+
     try {
       const api = useApi();
       await api('/api/auth/logout', { method: 'POST' });
@@ -200,6 +285,7 @@ export const useAuth = () => {
     isAuthenticated,
     canAccessAdminPanel,
     login,
+    register,
     refreshUser,
     updateProfile,
     updatePassword,

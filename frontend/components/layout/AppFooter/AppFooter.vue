@@ -1,5 +1,5 @@
 <template>
-  <footer :class="styles.footer">
+  <footer :class="[styles.footer, 'public-app-footer']">
     <div :class="styles.container">
       <p>Marketplace Frontend</p>
       <p>Backend API: {{ apiBase }}</p>

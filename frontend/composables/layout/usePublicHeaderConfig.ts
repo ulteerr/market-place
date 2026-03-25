@@ -18,9 +18,12 @@ type CatalogGroup = {
 export const usePublicHeaderConfig = () => {
   const { t } = useI18n();
   const publicCategoriesApi = usePublicCategories();
-  const categoriesTree = ref<Awaited<ReturnType<typeof publicCategoriesApi.tree>>>([]);
-  const categoriesPending = ref(true);
-  const categoriesError = ref('');
+  const categoriesTree = useState<Awaited<ReturnType<typeof publicCategoriesApi.tree>>>(
+    'public-header-categories-tree',
+    () => []
+  );
+  const categoriesPending = useState<boolean>('public-header-categories-pending', () => true);
+  const categoriesError = useState<string>('public-header-categories-error', () => '');
 
   const quickActions = computed<HeaderLink[]>(() => [
     { label: t('app.layout.header.quickActions.orders'), to: '/login' },
@@ -50,7 +53,13 @@ export const usePublicHeaderConfig = () => {
   const regionText = computed(() => t('app.layout.header.region'));
   const serviceStatusText = computed(() => t('app.layout.header.serviceStatus'));
 
-  onMounted(async () => {
+  const loadCategories = async () => {
+    if (categoriesTree.value.length) {
+      categoriesPending.value = false;
+      categoriesError.value = '';
+      return;
+    }
+
     categoriesPending.value = true;
     categoriesError.value = '';
 
@@ -61,6 +70,16 @@ export const usePublicHeaderConfig = () => {
       categoriesError.value = t('app.layout.header.categoriesLoadError');
     } finally {
       categoriesPending.value = false;
+    }
+  };
+
+  if (import.meta.server) {
+    onServerPrefetch(loadCategories);
+  }
+
+  onMounted(() => {
+    if (categoriesPending.value || (!categoriesTree.value.length && !categoriesError.value)) {
+      void loadCategories();
     }
   });
 

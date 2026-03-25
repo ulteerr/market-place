@@ -1,5 +1,9 @@
 <template>
-  <header ref="headerRoot" :class="styles.header" data-test="public-header">
+  <header
+    ref="headerRoot"
+    :class="[styles.header, 'public-header-shell']"
+    data-test="public-header"
+  >
     <div :class="styles.container">
       <div :class="styles.topRow">
         <NuxtLink to="/" :class="styles.logo" data-test="public-header-logo">{{
@@ -127,15 +131,11 @@
       </div>
 
       <div :class="styles.bottomRow" data-test="public-header-bottom-row">
-        <UiFilterBarSkeleton v-if="categoriesPending" data-test="public-header-sections-loading" />
-        <p
-          v-else-if="categoriesError"
-          :class="styles.sectionsError"
-          data-test="public-header-sections-error"
+        <nav
+          v-if="sectionLinks.length"
+          :class="styles.sectionsNav"
+          :aria-label="t('app.layout.header.sectionsAria')"
         >
-          {{ categoriesError }}
-        </p>
-        <nav v-else :class="styles.sectionsNav" :aria-label="t('app.layout.header.sectionsAria')">
           <NuxtLink
             v-for="link in sectionLinks"
             :key="`${link.to}-${link.label}`"
@@ -156,6 +156,7 @@
           <div :class="styles.localeSelect" data-test="public-header-locale-select">
             <UiSelect
               class="public-header-locale-ui-select"
+              id="public-header-locale"
               :model-value="locale"
               :options="localeSelectOptions"
               :searchable="false"
@@ -272,6 +273,7 @@
         <div :class="styles.localeSelect" data-test="public-header-mobile-locale-select">
           <UiSelect
             class="public-header-locale-ui-select"
+            id="public-header-mobile-locale"
             :model-value="locale"
             :options="localeSelectOptions"
             :searchable="false"
@@ -347,7 +349,6 @@ const isThemeUiMounted = ref(false);
 const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 const route = useRoute();
 const {
-  categoriesPending,
   categoriesError,
   quickActions,
   sectionLinks,

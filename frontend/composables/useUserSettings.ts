@@ -17,6 +17,11 @@ import {
   cloneSettings,
   settingsAreSame,
 } from '~/composables/user-settings/runtime';
+import {
+  clearGuestPreferences,
+  readGuestPreferences,
+  writeGuestPreferences,
+} from '~/composables/guest-preferences';
 import { subscribeToMeSettingsRealtime } from '~/composables/user-settings/realtime';
 import type {
   AdminCrudContentMode,
@@ -67,7 +72,19 @@ export const useUserSettings = () => {
   const isDark = computed(() => theme.value === 'dark');
 
   const persist = () => {
-    // server is the source of truth for settings
+    if (!process.client) {
+      return;
+    }
+
+    if (isAuthenticated.value) {
+      clearGuestPreferences();
+      return;
+    }
+
+    writeGuestPreferences({
+      ...readGuestPreferences(),
+      settings: cloneSettings(settings.value),
+    });
   };
 
   const toSettingsSnapshot = (value: UserSettings): string => JSON.stringify(cloneSettings(value));
@@ -203,8 +220,11 @@ export const useUserSettings = () => {
       return;
     }
 
-    const remoteSettings = (user.value?.settings ?? null) as Partial<UserSettings> | null;
-    const mergedSettings = mergeSettings(remoteSettings);
+    const guestSettings = !isAuthenticated.value ? (readGuestPreferences().settings ?? null) : null;
+    const sourceSettings = (user.value?.settings ??
+      guestSettings ??
+      null) as Partial<UserSettings> | null;
+    const mergedSettings = mergeSettings(sourceSettings);
 
     applySettings(mergedSettings, false);
     lastSyncedSettingsSnapshot = toSettingsSnapshot(mergedSettings);
@@ -411,13 +431,15 @@ export const useUserSettings = () => {
     watch(
       () => user.value,
       (nextUser) => {
-        if (!initialized.value || !nextUser) {
+        if (!initialized.value) {
           return;
         }
 
-        const mergedSettings = mergeSettings(
-          (nextUser.settings ?? null) as Partial<UserSettings> | null
-        );
+        const mergedSettings = nextUser
+          ? mergeSettings((nextUser.settings ?? null) as Partial<UserSettings> | null)
+          : mergeSettings(
+              (readGuestPreferences().settings ?? null) as Partial<UserSettings> | null
+            );
 
         applySettings(mergedSettings, false);
       },

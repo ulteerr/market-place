@@ -101,12 +101,33 @@ const config = useRuntimeConfig();
 const publicActivitiesApi = usePublicActivities();
 
 const featuredActivities = ref<Awaited<ReturnType<typeof publicActivitiesApi.featured>>>([]);
-const featuredPending = ref(true);
+const featuredPending = ref(previewState.value === 'ready');
 const featuredError = ref<unknown>(null);
 
 const homeFeedActivities = ref<Awaited<ReturnType<typeof publicActivitiesApi.feed>>['items']>([]);
-const homeFeedPending = ref(true);
+const homeFeedPending = ref(previewState.value === 'ready');
 const homeFeedError = ref<unknown>(null);
+
+if (previewState.value === 'ready') {
+  try {
+    const [featuredResponse, homeFeedResponse] = await Promise.all([
+      publicActivitiesApi.featured(6),
+      publicActivitiesApi.feed({ limit: 24 }),
+    ]);
+
+    featuredActivities.value = featuredResponse;
+    homeFeedActivities.value = homeFeedResponse.items;
+  } catch (error) {
+    featuredError.value = error;
+    homeFeedError.value = error;
+  } finally {
+    featuredPending.value = false;
+    homeFeedPending.value = false;
+  }
+} else {
+  featuredPending.value = false;
+  homeFeedPending.value = false;
+}
 
 const seo = usePublicPageSeo({
   h1: computed(() => t('app.public.home.heroTitle')),
@@ -211,7 +232,7 @@ const featuredSectionState = computed<'loading' | 'ready' | 'empty' | 'error'>((
     return 'error';
   }
 
-  if (!featuredActivities.value.length) {
+  if (!(featuredActivities.value ?? []).length) {
     return 'empty';
   }
 
@@ -239,7 +260,7 @@ const feedSectionState = computed<'loading' | 'ready' | 'empty' | 'error'>(() =>
     return 'error';
   }
 
-  if (!homeFeedActivities.value.length) {
+  if (!(homeFeedActivities.value ?? []).length) {
     return 'empty';
   }
 
@@ -247,7 +268,7 @@ const feedSectionState = computed<'loading' | 'ready' | 'empty' | 'error'>(() =>
 });
 
 const featuredCards = computed(() =>
-  (featuredActivities.value ?? []).map((activity) =>
+  featuredActivities.value.map((activity) =>
     mapActivityToCard(activity, {
       badge: t('app.public.home.featuredBadge'),
       dataTestPrefix: 'home-featured-activity',
@@ -266,7 +287,7 @@ const newCards = computed(() =>
 
 const categorySection = computed(() =>
   pickGroupedSection(
-    homeFeedActivities.value,
+    homeFeedActivities.value ?? [],
     (activity) =>
       [activity.primary_category?.parent?.name, activity.primary_category?.name]
         .filter(Boolean)
@@ -277,7 +298,7 @@ const categorySection = computed(() =>
 
 const citySection = computed(() =>
   pickGroupedSection(
-    homeFeedActivities.value,
+    homeFeedActivities.value ?? [],
     (activity) => activity.location?.city?.name || '',
     'home-city-activity'
   )
@@ -285,40 +306,11 @@ const citySection = computed(() =>
 
 const organizationSection = computed(() =>
   pickGroupedSection(
-    homeFeedActivities.value,
+    homeFeedActivities.value ?? [],
     (activity) => activity.organization?.name || '',
     'home-organization-activity'
   )
 );
-
-const loadFeaturedActivities = async () => {
-  featuredPending.value = true;
-  featuredError.value = null;
-
-  try {
-    featuredActivities.value = await publicActivitiesApi.featured(6);
-  } catch (error) {
-    featuredActivities.value = [];
-    featuredError.value = error;
-  } finally {
-    featuredPending.value = false;
-  }
-};
-
-const loadHomeFeedActivities = async () => {
-  homeFeedPending.value = true;
-  homeFeedError.value = null;
-
-  try {
-    const response = await publicActivitiesApi.feed({ limit: 24 });
-    homeFeedActivities.value = response.items;
-  } catch (error) {
-    homeFeedActivities.value = [];
-    homeFeedError.value = error;
-  } finally {
-    homeFeedPending.value = false;
-  }
-};
 
 const siteUrl = config.public.siteUrl;
 const homeSchemaCards = computed(() => {
@@ -347,17 +339,6 @@ const sectionSchemaNode = computed(() => schemaNodes.value.sectionNode);
 
 usePublicSchemaNode('page:home', pageSchemaNode);
 usePublicSchemaNode('section:home-routes', sectionSchemaNode);
-
-onMounted(() => {
-  if (previewState.value !== 'ready') {
-    featuredPending.value = false;
-    homeFeedPending.value = false;
-    return;
-  }
-
-  void loadFeaturedActivities();
-  void loadHomeFeedActivities();
-});
 </script>
 
 <style scoped lang="scss">

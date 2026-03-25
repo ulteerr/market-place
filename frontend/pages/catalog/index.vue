@@ -266,6 +266,8 @@ const hydrateFiltersFromRoute = () => {
   filters.sort_dir = normalizeSortDir(getSingleQueryValue(route.query.sort_dir).trim());
 };
 
+hydrateFiltersFromRoute();
+
 const rootCategoryOptions = computed(() => [
   {
     value: '',
@@ -383,6 +385,55 @@ const activeFeedFilters = computed(() => ({
   sort_dir: filters.sort_dir,
 }));
 
+const syncRootSelectionFromLeaf = () => {
+  if (!filters.category_id) {
+    return;
+  }
+
+  const matchedRoot = categoriesTree.value.find((rootCategory) =>
+    (rootCategory.children ?? []).some((child) => child.id === filters.category_id)
+  );
+
+  filters.root_category_id = matchedRoot?.id ?? '';
+};
+
+if (previewState.value === 'ready') {
+  categoriesPending.value = true;
+  activitiesInitialPending.value = true;
+
+  try {
+    const initialCategoriesData = await publicCategoriesApi.tree(true);
+    categoriesTree.value = initialCategoriesData;
+    syncRootSelectionFromLeaf();
+  } catch {
+    categoriesTree.value = [];
+    categoriesError.value = t('app.public.catalog.filters.loadError');
+  } finally {
+    categoriesPending.value = false;
+  }
+
+  try {
+    const initialActivitiesData = await publicActivitiesApi.feed({
+      limit: 12,
+      cursor: null,
+      ...activeFeedFilters.value,
+    });
+
+    activities.value = initialActivitiesData.items;
+    activitiesNextCursor.value = initialActivitiesData.next_cursor;
+  } catch (error) {
+    activities.value = [];
+    activitiesNextCursor.value = null;
+    activitiesError.value = error;
+  } finally {
+    activitiesInitialPending.value = false;
+  }
+} else {
+  activitiesInitialPending.value = false;
+  categoriesPending.value = false;
+  isHydratingFilters.value = false;
+}
+
 const disconnectActivitiesObserver = () => {
   activitiesObserver?.disconnect();
   activitiesObserver = null;
@@ -456,17 +507,7 @@ const setupActivitiesObserver = () => {
   activitiesObserver.observe(activitiesSentinel.value);
 };
 
-const syncRootSelectionFromLeaf = () => {
-  if (!filters.category_id) {
-    return;
-  }
-
-  const matchedRoot = categoriesTree.value.find((rootCategory) =>
-    (rootCategory.children ?? []).some((child) => child.id === filters.category_id)
-  );
-
-  filters.root_category_id = matchedRoot?.id ?? '';
-};
+isHydratingFilters.value = false;
 
 const loadCategories = async () => {
   categoriesPending.value = true;
@@ -622,16 +663,9 @@ useHead({
 
 onMounted(async () => {
   if (previewState.value !== 'ready') {
-    activitiesInitialPending.value = false;
-    categoriesPending.value = false;
-    isHydratingFilters.value = false;
     return;
   }
 
-  hydrateFiltersFromRoute();
-  await loadCategories();
-  isHydratingFilters.value = false;
-  await loadActivities();
   await nextTick();
   setupActivitiesObserver();
 });
