@@ -1,9 +1,5 @@
 <template>
-  <header
-    ref="headerRoot"
-    :class="[styles.header, 'public-header-shell']"
-    data-test="public-header"
-  >
+  <header ref="headerRoot" :class="styles.header" data-test="public-header">
     <div :class="styles.container">
       <div :class="styles.topRow">
         <NuxtLink to="/" :class="styles.logo" data-test="public-header-logo">{{

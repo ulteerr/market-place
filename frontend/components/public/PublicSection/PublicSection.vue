@@ -1,5 +1,5 @@
 <template>
-  <section :class="[styles.section, 'public-section-shell']" :data-test="dataTest">
+  <section :class="styles.section" :data-test="dataTest">
     <div v-if="title || description" :class="styles.heading">
       <h2 v-if="title" :class="styles.title">{{ title }}</h2>
       <p v-if="description" :class="styles.description">{{ description }}</p>
