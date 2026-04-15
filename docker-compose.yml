@@ -152,6 +152,106 @@ services:
     networks:
       - app
 
+  elasticsearch:
+    image: ${ELASTICSEARCH_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch:8.18.0}
+    restart: unless-stopped
+    environment:
+      discovery.type: ${ELASTICSEARCH_DISCOVERY_TYPE:-single-node}
+      xpack.security.enabled: "${ELASTICSEARCH_XPACK_SECURITY_ENABLED:-false}"
+      xpack.security.http.ssl.enabled: "${ELASTICSEARCH_XPACK_HTTP_SSL_ENABLED:-false}"
+      xpack.ml.enabled: "${ELASTICSEARCH_XPACK_ML_ENABLED:-false}"
+      ingest.geoip.downloader.enabled: "${ELASTICSEARCH_INGEST_GEOIP_DOWNLOADER_ENABLED:-false}"
+      ELASTIC_USERNAME: ${ELASTICSEARCH_USERNAME:-elastic}
+      ELASTIC_PASSWORD: ${ELASTICSEARCH_PASSWORD:-marketplace-elastic-local}
+      ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms256m -Xmx256m}
+    mem_limit: ${ELASTICSEARCH_MEM_LIMIT:-512m}
+    cpus: "${ELASTICSEARCH_CPUS:-0.25}"
+    ports:
+      - "${ELASTICSEARCH_PORT:-9201}:9200"
+    volumes:
+      - ./docker/data/elasticsearch:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "if [ \"${ELASTICSEARCH_XPACK_SECURITY_ENABLED:-false}\" = \"true\" ]; then curl -fsS -u \"${ELASTICSEARCH_USERNAME:-elastic}:${ELASTICSEARCH_PASSWORD:-marketplace-elastic-local}\" http://localhost:9200/_cluster/health >/dev/null; else curl -fsS http://localhost:9200/_cluster/health >/dev/null; fi || exit 1"
+        ]
+      interval: ${ELASTICSEARCH_HEALTHCHECK_INTERVAL:-15s}
+      timeout: ${ELASTICSEARCH_HEALTHCHECK_TIMEOUT:-5s}
+      retries: ${ELASTICSEARCH_HEALTHCHECK_RETRIES:-10}
+      start_period: ${ELASTICSEARCH_HEALTHCHECK_START_PERIOD:-90s}
+    networks:
+      - app
+
+  elasticsearch-setup:
+    image: curlimages/curl:8.12.1
+    restart: "no"
+    environment:
+      ELASTICSEARCH_HOST: http://elasticsearch:9200
+      ELASTICSEARCH_XPACK_SECURITY_ENABLED: ${ELASTICSEARCH_XPACK_SECURITY_ENABLED:-false}
+      ELASTICSEARCH_USERNAME: ${ELASTICSEARCH_USERNAME:-elastic}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD:-marketplace-elastic-local}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-marketplace-kibana-system-local}
+    command:
+      - sh
+      - -lc
+      - |
+        if [ "$$ELASTICSEARCH_XPACK_SECURITY_ENABLED" != "true" ]; then
+          exit 0
+        fi
+
+        until curl -fsS -u "$$ELASTICSEARCH_USERNAME:$$ELASTICSEARCH_PASSWORD" "$$ELASTICSEARCH_HOST/_security/_authenticate" >/dev/null; do
+          sleep 3
+        done
+
+        curl -fsS -u "$$ELASTICSEARCH_USERNAME:$$ELASTICSEARCH_PASSWORD" \
+          -H 'Content-Type: application/json' \
+          -X POST "$$ELASTICSEARCH_HOST/_security/user/kibana_system/_password" \
+          -d "{\"password\":\"$$KIBANA_SYSTEM_PASSWORD\"}" >/dev/null
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - app
+
+  kibana:
+    image: ${KIBANA_IMAGE:-docker.elastic.co/kibana/kibana:8.18.0}
+    restart: unless-stopped
+    profiles:
+      - search-debug
+    environment:
+      NODE_OPTIONS: ${KIBANA_NODE_OPTIONS:---max-old-space-size=512}
+      KIBANA_SERVER_NAME: ${KIBANA_SERVER_NAME:-kibana}
+      KIBANA_ELASTICSEARCH_HOSTS: ${KIBANA_ELASTICSEARCH_HOSTS:-http://elasticsearch:9200}
+      KIBANA_ELASTICSEARCH_USERNAME: ${KIBANA_ELASTICSEARCH_USERNAME:-kibana_system}
+      KIBANA_ELASTICSEARCH_PASSWORD: ${KIBANA_ELASTICSEARCH_PASSWORD:-marketplace-kibana-system-local}
+      KIBANA_SECURITY_ENCRYPTION_KEY: ${KIBANA_SECURITY_ENCRYPTION_KEY}
+      KIBANA_ENCRYPTED_SAVED_OBJECTS_KEY: ${KIBANA_ENCRYPTED_SAVED_OBJECTS_KEY}
+      KIBANA_REPORTING_ENCRYPTION_KEY: ${KIBANA_REPORTING_ENCRYPTION_KEY}
+    mem_limit: ${KIBANA_MEM_LIMIT:-768m}
+    cpus: "${KIBANA_CPUS:-0.25}"
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    volumes:
+      - ./docker/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:5601/api/status >/dev/null || curl -fsS http://localhost:5601/login >/dev/null || exit 1"
+        ]
+      interval: ${KIBANA_HEALTHCHECK_INTERVAL:-20s}
+      timeout: ${KIBANA_HEALTHCHECK_TIMEOUT:-10s}
+      retries: ${KIBANA_HEALTHCHECK_RETRIES:-12}
+      start_period: ${KIBANA_HEALTHCHECK_START_PERIOD:-120s}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      elasticsearch-setup:
+        condition: service_completed_successfully
+    networks:
+      - app
+
   swagger-ui:
     image: swaggerapi/swagger-ui
     restart: unless-stopped

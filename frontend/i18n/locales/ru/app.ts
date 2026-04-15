@@ -55,6 +55,11 @@ export default {
       catalogAria: 'Открыть каталог',
       searchAria: 'Поиск по каталогу',
       searchPlaceholder: 'Найти секции, кружки, направления',
+      searchClear: 'Очистить поиск',
+      searchRecentTitle: 'Недавние запросы',
+      searchQueriesTitle: 'Подсказки',
+      searchEntitiesTitle: 'Категории и организации',
+      searchEmpty: 'Начните вводить, и мы покажем подсказки',
       quickActionsAria: 'Быстрые действия',
       themeLight: 'Светлая тема',
       themeDark: 'Тёмная тема',
@@ -70,8 +75,8 @@ export default {
         'Когда root и child категории станут активными, они появятся в каталоге.',
       categoriesLoadError: 'Не удалось загрузить категории каталога.',
       quickActions: {
-        orders: 'Заказы',
         favorites: 'Избранное',
+        favoritesCount: 'Избранное ({count})',
         admin: 'Админка',
       },
       sections: {
@@ -107,6 +112,22 @@ export default {
     },
   },
   public: {
+    favorites: {
+      eyebrow: 'Избранное',
+      heroTitle: 'Избранные активности',
+      heroDescription: 'Сохраняйте интересные секции и кружки, чтобы быстро вернуться к ним позже.',
+      seoTitle: 'Избранные активности',
+      sectionTitle: 'Сохраненные карточки',
+      emptyTitle: 'В избранном пока ничего нет',
+      emptyDescription: 'Добавляйте активности в избранное с карточек и со страницы активности.',
+      errorTitle: 'Не удалось загрузить избранное',
+      errorDescription:
+        'Повторите попытку позже или проверьте доступность публичного API активностей.',
+      actions: {
+        add: 'В избранное',
+        remove: 'Убрать из избранного',
+      },
+    },
     home: {
       eyebrow: 'Публичный контур',
       heroTitle: 'Marketplace: публичный контур',

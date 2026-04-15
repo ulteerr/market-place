@@ -3,9 +3,16 @@ import { createRealtimeEchoRuntime } from '~/composables/realtime-echo/runtime';
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
   const { isAuthenticated, token } = useAuth();
+  const route = useRoute();
   const { reportRealtimeEvent } = useRealtimeObservability();
   const connectionState = ref('disconnected');
   const CONNECT_ERROR_STABILITY_MS = 5_000;
+  const isRealtimeRoute = computed(
+    () =>
+      route.path.startsWith('/admin') ||
+      route.path.startsWith('/account') ||
+      route.path.startsWith('/organizations')
+  );
 
   const reverbPort = Math.max(1, Number(config.public.reverbPort ?? 8083));
   const reverbScheme = String(config.public.reverbScheme ?? 'http').toLowerCase();
@@ -86,9 +93,9 @@ export default defineNuxtPlugin(() => {
   });
 
   const stopWatcher = watch(
-    [isAuthenticated, token],
-    async ([authenticated]) => {
-      if (!authenticated) {
+    [isAuthenticated, token, isRealtimeRoute],
+    async ([authenticated, , eligibleRoute]) => {
+      if (!authenticated || !eligibleRoute) {
         clearPendingConnectError();
         runtime.disconnect();
         return;

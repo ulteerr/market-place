@@ -1,0 +1,17 @@
+server.host: "0.0.0.0"
+server.name: "${KIBANA_SERVER_NAME}"
+
+elasticsearch.hosts: ["${KIBANA_ELASTICSEARCH_HOSTS}"]
+elasticsearch.username: "${KIBANA_ELASTICSEARCH_USERNAME}"
+elasticsearch.password: "${KIBANA_ELASTICSEARCH_PASSWORD}"
+
+xpack.security.encryptionKey: "${KIBANA_SECURITY_ENCRYPTION_KEY}"
+xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTED_SAVED_OBJECTS_KEY}"
+xpack.reporting.encryptionKey: "${KIBANA_REPORTING_ENCRYPTION_KEY}"
+
+telemetry.optIn: false
+telemetry.allowChangingOptInStatus: false
+newsfeed.enabled: false
+
+# Local docker setup: keep cookies usable over plain HTTP.
+xpack.security.secureCookies: false

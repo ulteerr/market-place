@@ -23,7 +23,13 @@
         :description="t('app.public.home.featuredEmptyDescription')"
         data-test="home-featured-activities-empty"
       />
-      <PublicCardGrid v-else :items="featuredCards" data-test="home-featured-activities-grid" />
+      <PublicCardGrid
+        v-else
+        :items="featuredCards"
+        show-favorite-button
+        data-test="home-featured-activities-grid"
+        @toggle-favorite="toggleFavorite"
+      />
     </PublicSection>
 
     <PublicSection
@@ -49,7 +55,13 @@
         :description="t('app.public.home.feedEmptyDescription')"
         data-test="home-new-activities-empty"
       />
-      <PublicCardGrid v-else :items="newCards" data-test="home-new-activities-grid" />
+      <PublicCardGrid
+        v-else
+        :items="newCards"
+        show-favorite-button
+        data-test="home-new-activities-grid"
+        @toggle-favorite="toggleFavorite"
+      />
     </PublicSection>
 
     <PublicSection
@@ -58,7 +70,12 @@
       :title="t('app.public.home.byCategorySectionTitle', { name: categorySection.label })"
       data-test="home-category-activities"
     >
-      <PublicCardGrid :items="categorySection.cards" data-test="home-category-activities-grid" />
+      <PublicCardGrid
+        :items="categorySection.cards"
+        show-favorite-button
+        data-test="home-category-activities-grid"
+        @toggle-favorite="toggleFavorite"
+      />
     </PublicSection>
 
     <PublicSection
@@ -67,7 +84,12 @@
       :title="t('app.public.home.byCitySectionTitle', { name: citySection.label })"
       data-test="home-city-activities"
     >
-      <PublicCardGrid :items="citySection.cards" data-test="home-city-activities-grid" />
+      <PublicCardGrid
+        :items="citySection.cards"
+        show-favorite-button
+        data-test="home-city-activities-grid"
+        @toggle-favorite="toggleFavorite"
+      />
     </PublicSection>
 
     <PublicSection
@@ -78,7 +100,9 @@
     >
       <PublicCardGrid
         :items="organizationSection.cards"
+        show-favorite-button
         data-test="home-organization-activities-grid"
+        @toggle-favorite="toggleFavorite"
       />
     </PublicSection>
   </div>
@@ -87,6 +111,7 @@
 <script setup lang="ts">
 import { usePublicPreviewState } from '~/composables/layout/usePublicPreviewState';
 import { buildPublicActivityPath, usePublicActivities } from '~/composables/usePublicActivities';
+import { useFavorites } from '~/composables/useFavorites';
 import { usePublicPageSeo } from '~/composables/seo/usePublicPageSeo';
 import { buildPublicHomeSchemaNodes } from '~/composables/schema/public-home-schema';
 import { usePublicSchemaNode } from '~/composables/schema/usePublicSchemaRegistry';
@@ -99,35 +124,44 @@ const { t } = useI18n();
 const previewState = usePublicPreviewState();
 const config = useRuntimeConfig();
 const publicActivitiesApi = usePublicActivities();
+const { isFavorite, toggleFavorite } = useFavorites();
 
-const featuredActivities = ref<Awaited<ReturnType<typeof publicActivitiesApi.featured>>>([]);
-const featuredPending = ref(previewState.value === 'ready');
-const featuredError = ref<unknown>(null);
+const {
+  data: initialHomeData,
+  pending: initialHomePending,
+  error: initialHomeError,
+} = await useAsyncData(
+  'public-home-initial',
+  async () => {
+    if (previewState.value !== 'ready') {
+      return {
+        featured: [],
+        feedItems: [],
+      };
+    }
 
-const homeFeedActivities = ref<Awaited<ReturnType<typeof publicActivitiesApi.feed>>['items']>([]);
-const homeFeedPending = ref(previewState.value === 'ready');
-const homeFeedError = ref<unknown>(null);
-
-if (previewState.value === 'ready') {
-  try {
     const [featuredResponse, homeFeedResponse] = await Promise.all([
       publicActivitiesApi.featured(6),
       publicActivitiesApi.feed({ limit: 24 }),
     ]);
 
-    featuredActivities.value = featuredResponse;
-    homeFeedActivities.value = homeFeedResponse.items;
-  } catch (error) {
-    featuredError.value = error;
-    homeFeedError.value = error;
-  } finally {
-    featuredPending.value = false;
-    homeFeedPending.value = false;
+    return {
+      featured: featuredResponse,
+      feedItems: homeFeedResponse.items,
+    };
+  },
+  {
+    server: previewState.value === 'ready',
+    lazy: false,
+    default: () => ({
+      featured: [],
+      feedItems: [],
+    }),
   }
-} else {
-  featuredPending.value = false;
-  homeFeedPending.value = false;
-}
+);
+
+const featuredActivities = computed(() => initialHomeData.value?.featured ?? []);
+const homeFeedActivities = computed(() => initialHomeData.value?.feedItems ?? []);
 
 const seo = usePublicPageSeo({
   h1: computed(() => t('app.public.home.heroTitle')),
@@ -146,6 +180,8 @@ type HomeCard = {
   meta?: string;
   badge?: string;
   dataTest: string;
+  favoriteKey: string;
+  isFavorite: boolean;
 };
 
 type HomeGroupedSection = {
@@ -175,6 +211,8 @@ const mapActivityToCard = (
   meta: [activity.organization?.name, activity.location?.city?.name].filter(Boolean).join(' · '),
   badge: options.badge,
   dataTest: `${options.dataTestPrefix}-${activity.id}`,
+  favoriteKey: activity.public_key,
+  isFavorite: isFavorite(activity.public_key),
 });
 
 const pickGroupedSection = (
@@ -224,11 +262,11 @@ const featuredSectionState = computed<'loading' | 'ready' | 'empty' | 'error'>((
     return 'empty';
   }
 
-  if (featuredPending.value) {
+  if (initialHomePending.value) {
     return 'loading';
   }
 
-  if (featuredError.value) {
+  if (initialHomeError.value) {
     return 'error';
   }
 
@@ -252,11 +290,11 @@ const feedSectionState = computed<'loading' | 'ready' | 'empty' | 'error'>(() =>
     return 'empty';
   }
 
-  if (homeFeedPending.value) {
+  if (initialHomePending.value) {
     return 'loading';
   }
 
-  if (homeFeedError.value) {
+  if (initialHomeError.value) {
     return 'error';
   }
 

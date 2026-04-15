@@ -47,6 +47,13 @@ export const useUserSettings = () => {
     updateSettings: updateRemoteSettings,
   } = useAuth();
   const { reportRealtimeEvent } = useRealtimeObservability();
+  const route = useRoute();
+  const shouldUseRemoteSettingsSync = computed(
+    () =>
+      route.path.startsWith('/admin') ||
+      route.path.startsWith('/account') ||
+      route.path.startsWith('/organizations')
+  );
 
   const settings = useState<UserSettings>('user_settings', createDefaultSettings);
 
@@ -77,6 +84,12 @@ export const useUserSettings = () => {
     }
 
     if (isAuthenticated.value) {
+      if (user.value) {
+        user.value = {
+          ...user.value,
+          settings: cloneSettings(settings.value),
+        };
+      }
       clearGuestPreferences();
       return;
     }
@@ -146,6 +159,7 @@ export const useUserSettings = () => {
         locale: nextSettings.locale,
         theme: nextSettings.theme,
         collapse_menu: nextSettings.collapse_menu,
+        favorites: [...nextSettings.favorites],
         admin_crud_preferences: { ...nextSettings.admin_crud_preferences },
         admin_navigation_sections: { ...nextSettings.admin_navigation_sections },
       };
@@ -362,6 +376,11 @@ export const useUserSettings = () => {
   };
 
   const startRemoteSync = () => {
+    if (!shouldUseRemoteSettingsSync.value) {
+      stopRemoteSync();
+      return;
+    }
+
     void connectRealtimeSync();
   };
 
@@ -374,9 +393,9 @@ export const useUserSettings = () => {
 
   if (process.client && !realtimeWatcherReady.value) {
     watch(
-      [isAuthenticated, token, () => user.value?.id],
-      ([authenticated, nextToken, userId]) => {
-        if (authenticated && nextToken && userId) {
+      [isAuthenticated, token, () => user.value?.id, shouldUseRemoteSettingsSync],
+      ([authenticated, nextToken, userId, eligibleRoute]) => {
+        if (authenticated && nextToken && userId && eligibleRoute) {
           startRemoteSync();
           return;
         }
@@ -389,7 +408,12 @@ export const useUserSettings = () => {
     const realtimeEchoState = useRealtimeEchoState();
     if (realtimeEchoState) {
       watch(realtimeEchoState, (state) => {
-        if (!isAuthenticated.value || !token.value || !user.value?.id) {
+        if (
+          !isAuthenticated.value ||
+          !token.value ||
+          !user.value?.id ||
+          !shouldUseRemoteSettingsSync.value
+        ) {
           stopRemoteSync();
           return;
         }

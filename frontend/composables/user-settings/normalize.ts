@@ -85,6 +85,20 @@ export const resolveCollapseMenu = (value: unknown): boolean | undefined => {
   return typeof value === 'boolean' ? value : undefined;
 };
 
+export const normalizeFavoriteKeys = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value
+        .map((item) => (typeof item === 'string' ? item.trim() : ''))
+        .filter((item) => item !== '')
+    )
+  );
+};
+
 export const getSystemTheme = (): ThemeMode => {
   if (!process.client || !window.matchMedia) {
     return DEFAULT_THEME;
@@ -97,6 +111,7 @@ export const mergeSettings = (remoteSettings: Partial<UserSettings> | null): Use
   locale: isLocaleCode(remoteSettings?.locale) ? remoteSettings.locale : null,
   theme: isThemeMode(remoteSettings?.theme) ? remoteSettings.theme : getSystemTheme(),
   collapse_menu: resolveCollapseMenu(remoteSettings?.collapse_menu) ?? DEFAULT_COLLAPSE_MENU,
+  favorites: normalizeFavoriteKeys(remoteSettings?.favorites),
   admin_crud_preferences: normalizeAdminCrudPreferences(remoteSettings?.admin_crud_preferences),
   admin_navigation_sections: normalizeAdminNavigationSections(
     remoteSettings?.admin_navigation_sections
@@ -110,6 +125,7 @@ export const mergeIncomingSettings = (current: UserSettings, remote: unknown): U
     locale: isLocaleCode(payload.locale) ? payload.locale : current.locale,
     theme: isThemeMode(payload.theme) ? payload.theme : current.theme,
     collapse_menu: resolveCollapseMenu(payload.collapse_menu) ?? current.collapse_menu,
+    favorites: payload.favorites ? normalizeFavoriteKeys(payload.favorites) : current.favorites,
     admin_crud_preferences: {
       ...current.admin_crud_preferences,
       ...normalizeAdminCrudPreferences(payload.admin_crud_preferences),
@@ -129,6 +145,9 @@ export const mergePatchWithSettings = (
     patch.locale === null ? null : isLocaleCode(patch.locale) ? patch.locale : current.locale;
   const nextTheme = isThemeMode(patch.theme) ? patch.theme : current.theme;
   const nextCollapseMenu = resolveCollapseMenu(patch.collapse_menu) ?? current.collapse_menu;
+  const nextFavorites = patch.favorites
+    ? normalizeFavoriteKeys(patch.favorites)
+    : current.favorites;
 
   const nextCrud = patch.admin_crud_preferences
     ? {
@@ -147,6 +166,7 @@ export const mergePatchWithSettings = (
     locale: nextLocale,
     theme: nextTheme,
     collapse_menu: nextCollapseMenu,
+    favorites: nextFavorites,
     admin_crud_preferences: nextCrud,
     admin_navigation_sections: nextNavigationSections,
   };

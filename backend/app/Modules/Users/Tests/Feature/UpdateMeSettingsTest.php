@@ -28,6 +28,7 @@ final class UpdateMeSettingsTest extends TestCase
                 "locale" => "en",
                 "theme" => "dark",
                 "collapse_menu" => true,
+                "favorites" => ["act-public-1", "act-public-2"],
                 "admin_crud_preferences" => [
                     "users" => [
                         "contentMode" => "cards",
@@ -49,6 +50,10 @@ final class UpdateMeSettingsTest extends TestCase
         $this->assertSame("en", $auth["user"]->settings["locale"] ?? null);
         $this->assertSame("dark", $auth["user"]->settings["theme"] ?? null);
         $this->assertTrue($auth["user"]->settings["collapse_menu"] ?? false);
+        $this->assertSame(
+            ["act-public-1", "act-public-2"],
+            $auth["user"]->settings["favorites"] ?? [],
+        );
         $this->assertSame(
             "cards",
             $auth["user"]->settings["admin_crud_preferences"]["users"]["contentMode"] ?? null,
@@ -146,6 +151,20 @@ final class UpdateMeSettingsTest extends TestCase
     }
 
     #[Test]
+    public function invalid_favorites_item_returns_validation_error(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "favorites" => ["act-1", 123],
+            ],
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(["settings.favorites.1"]);
+    }
+
+    #[Test]
     public function guest_cannot_update_settings(): void
     {
         $this->patchJson("/api/me/settings", [
@@ -194,6 +213,7 @@ final class UpdateMeSettingsTest extends TestCase
                 "locale" => "ru",
                 "theme" => "light",
                 "collapse_menu" => true,
+                "favorites" => ["act-public-1", "act-public-2"],
                 "admin_crud_preferences" => [
                     "users" => [
                         "contentMode" => "cards",
@@ -221,6 +241,10 @@ final class UpdateMeSettingsTest extends TestCase
         $this->assertSame("ru", $auth["user"]->settings["locale"] ?? null);
         $this->assertSame("dark", $auth["user"]->settings["theme"] ?? null);
         $this->assertTrue($auth["user"]->settings["collapse_menu"] ?? false);
+        $this->assertSame(
+            ["act-public-1", "act-public-2"],
+            $auth["user"]->settings["favorites"] ?? [],
+        );
         $this->assertSame(
             "cards",
             $auth["user"]->settings["admin_crud_preferences"]["users"]["contentMode"] ?? null,

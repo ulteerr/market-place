@@ -1,7 +1,11 @@
-import { mergeIncomingSettings, mergeSettings } from '~/composables/user-settings/normalize';
+import {
+  mergeIncomingSettings,
+  mergeSettings,
+  normalizeFavoriteKeys,
+} from '~/composables/user-settings/normalize';
 import type { UserSettings } from '~/composables/user-settings/types';
 
-export const GUEST_PREFERENCES_COOKIE_KEY = 'guest_preferences';
+export const GUEST_PREFERENCES_COOKIE_KEY = 'guest_preferences_v2';
 
 export interface GuestPreferences {
   v: 1;
@@ -14,6 +18,7 @@ const guestCookieMaxAge = 60 * 60 * 24 * 365;
 const guestCookieOptions = {
   sameSite: 'lax' as const,
   maxAge: guestCookieMaxAge,
+  path: '/',
   secure: process.env.NODE_ENV === 'production',
 };
 
@@ -38,30 +43,25 @@ const decodeBase64Url = (value: string): string => {
   return decodeURIComponent(escape(atob(padded)));
 };
 
-const normalizeFavorites = (value: unknown): string[] => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return Array.from(
-    new Set(
-      value
-        .map((item) => (typeof item === 'string' ? item.trim() : ''))
-        .filter((item) => item !== '')
-    )
-  );
-};
-
 export const normalizeGuestPreferences = (value: unknown): GuestPreferences => {
   if (typeof value !== 'object' || value === null) {
     return { v: 1, favorites: [] };
   }
 
   const source = value as Record<string, unknown>;
-  const settings = source.settings
+  const baseSettings = source.settings
     ? mergeSettings(source.settings as Partial<UserSettings>)
     : undefined;
-  const favorites = normalizeFavorites(source.favorites);
+  const favorites = normalizeFavoriteKeys([
+    ...normalizeFavoriteKeys(source.favorites),
+    ...(baseSettings?.favorites ?? []),
+  ]);
+  const settings = baseSettings
+    ? {
+        ...baseSettings,
+        favorites,
+      }
+    : undefined;
 
   return {
     v: 1,
@@ -97,6 +97,25 @@ export const mergeGuestSettingsIntoAccountSettings = (
   }
 
   return mergeIncomingSettings(normalizedAccount, guestSettings);
+};
+
+export const mergeGuestPreferencesIntoAccountSettings = (
+  accountSettings: Partial<UserSettings> | null | undefined,
+  guestPreferences: GuestPreferences | null | undefined
+): UserSettings => {
+  const normalizedAccount = mergeSettings(accountSettings ?? null);
+  const merged = guestPreferences?.settings
+    ? mergeIncomingSettings(normalizedAccount, guestPreferences.settings)
+    : normalizedAccount;
+  const favorites = normalizeFavoriteKeys([
+    ...(guestPreferences?.favorites ?? []),
+    ...merged.favorites,
+  ]);
+
+  return {
+    ...merged,
+    favorites,
+  };
 };
 
 export const useGuestPreferencesCookie = () =>

@@ -37,7 +37,26 @@
           <div class="activity-page__content-column">
             <UiCard variant="default" padding="lg" data-test="public-activity-summary">
               <div class="activity-page__summary">
-                <p class="activity-page__eyebrow">{{ heroEyebrow }}</p>
+                <div class="activity-page__summary-top">
+                  <p class="activity-page__eyebrow">{{ heroEyebrow }}</p>
+                  <button
+                    type="button"
+                    class="activity-page__favorite-button"
+                    :class="{ 'activity-page__favorite-button--active': isCurrentFavorite }"
+                    :aria-pressed="isCurrentFavorite ? 'true' : 'false'"
+                    data-test="public-activity-favorite-toggle"
+                    @click="toggleCurrentFavorite"
+                  >
+                    <span aria-hidden="true">{{ isCurrentFavorite ? '♥' : '♡' }}</span>
+                    <span>
+                      {{
+                        isCurrentFavorite
+                          ? t('app.public.favorites.actions.remove')
+                          : t('app.public.favorites.actions.add')
+                      }}
+                    </span>
+                  </button>
+                </div>
                 <h1 class="activity-page__title">{{ heroTitle }}</h1>
                 <p class="activity-page__price">{{ priceLabel }}</p>
                 <p class="activity-page__lead">{{ heroDescription }}</p>
@@ -256,6 +275,7 @@ import { useActivityLeads } from '~/composables/useActivityLeads';
 import { usePublicPageSeo } from '~/composables/seo/usePublicPageSeo';
 import { buildPublicActivitySchemaNodes } from '~/composables/schema/public-activity-schema';
 import { usePublicSchemaNode } from '~/composables/schema/usePublicSchemaRegistry';
+import { useFavorites } from '~/composables/useFavorites';
 import PublicActionLinks from '~/components/public/PublicActionLinks/PublicActionLinks.vue';
 import PublicSection from '~/components/public/PublicSection/PublicSection.vue';
 import PublicStateMessage from '~/components/public/PublicStateMessage/PublicStateMessage.vue';
@@ -278,11 +298,28 @@ const previewState = usePublicPreviewState();
 const publicActivitiesApi = usePublicActivities();
 const activityLeadsApi = useActivityLeads();
 const { isAuthenticated, user } = useAuth();
+const { isFavorite, toggleFavorite } = useFavorites();
 
 const publicKey = computed(() => String(route.params.activity || ''));
-const activity = ref<Awaited<ReturnType<typeof publicActivitiesApi.show>> | null>(null);
-const activityError = ref<unknown>(null);
-const activityPending = ref(previewState.value === 'ready');
+const {
+  data: activity,
+  pending: activityPending,
+  error: activityError,
+} = await useAsyncData(
+  () => `public-activity:${publicKey.value}`,
+  async () => {
+    if (previewState.value !== 'ready') {
+      return null;
+    }
+
+    return publicActivitiesApi.show(publicKey.value);
+  },
+  {
+    server: previewState.value === 'ready',
+    lazy: false,
+    default: () => null,
+  }
+);
 const leadChildren = ref<ActivityLeadChild[]>([]);
 const leadLoadingChildren = ref(false);
 const leadSubmitting = ref(false);
@@ -326,19 +363,6 @@ const canonicalPath = computed(() => {
     primary_category: activity.value.primary_category,
   });
 });
-
-if (previewState.value === 'ready') {
-  try {
-    activity.value = await publicActivitiesApi.show(publicKey.value);
-  } catch (error) {
-    activity.value = null;
-    activityError.value = error;
-  } finally {
-    activityPending.value = false;
-  }
-} else {
-  activityPending.value = false;
-}
 
 const pageState = computed<'loading' | 'ready' | 'empty' | 'error'>(() => {
   if (previewState.value === 'loading') {
@@ -384,6 +408,14 @@ const heroTitle = computed(
 const heroDescription = computed(
   () => activity.value?.short_description || t('app.public.catalog.activity.fallbackDescription')
 );
+const isCurrentFavorite = computed(() => isFavorite(publicKey.value));
+const toggleCurrentFavorite = () => {
+  if (!publicKey.value) {
+    return;
+  }
+
+  toggleFavorite(publicKey.value);
+};
 
 usePublicPageSeo({
   h1: heroTitle,
@@ -749,10 +781,49 @@ onMounted(() => {
   gap: 0.85rem;
 }
 
+.activity-page__summary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .activity-page__eyebrow {
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.activity-page__favorite-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.activity-page__favorite-button:hover,
+.activity-page__favorite-button:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.activity-page__favorite-button--active {
+  color: #ff4f9a;
+  background: color-mix(in srgb, #ff4f9a 14%, var(--surface-elevated));
 }
 
 .activity-page__title {

@@ -14,6 +14,7 @@ Frontend handles public and admin pages; backend provides API/auth plus realtime
 - Tailwind CSS
 - PostgreSQL 15
 - Redis
+- Elasticsearch 8 (self-managed in Docker Compose)
 - Laravel Reverb / WebSocket (Echo)
 - Presence watcher (Redis key-expire listener)
 - Nginx
@@ -81,6 +82,70 @@ cp .env.example .env
 - внешние порты сервисов (`FRONTEND_PORT`, `WEB_PORT`, и т.д.)
 
 Default configuration works out of the box.
+
+### Search configuration (DI-ready)
+
+Backend search engine is resolved via interface, so we can swap implementation later without touching domain code:
+
+- Contract: `Modules\Search\Contracts\SearchEngineInterface`
+- Provider: `Modules\Search\SearchServiceProvider`
+- Current driver: Elasticsearch (`Modules\Search\Engines\ElasticsearchSearchEngine`)
+- Fallback driver: `NullSearchEngine`
+- Public endpoints:
+  - `GET /api/search/suggest?q=...`
+  - `GET /api/search?q=...`
+- Reindex command:
+  - `php artisan search:activities-reindex`
+
+Environment (see `backend/.env.example`):
+
+- `SEARCH_ENABLED=true`
+- `SEARCH_DRIVER=elasticsearch`
+- `SEARCH_INDEX_PREFIX=marketplace_`
+- `SEARCH_SQL_FALLBACK_ENABLED=true`
+- `ELASTICSEARCH_ENABLED=true`
+- `ELASTICSEARCH_URL=http://elasticsearch:9200`
+- `ELASTICSEARCH_USERNAME=elastic`
+- `ELASTICSEARCH_PASSWORD=marketplace-elastic-local`
+- `ELASTICSEARCH_TIMEOUT_SECONDS=1.5`
+- `ELASTICSEARCH_AVAILABILITY_TIMEOUT_SECONDS=0.35`
+
+Behavior:
+
+- If `SEARCH_ENABLED=false`, public search is disabled completely.
+- If `ELASTICSEARCH_ENABLED=false`, backend skips Elasticsearch and uses SQL search only.
+- If Elasticsearch is enabled but unavailable, backend automatically falls back to SQL.
+
+Optional local Kibana security setup:
+
+- `ELASTICSEARCH_XPACK_SECURITY_ENABLED=true`
+- `ELASTICSEARCH_USERNAME=elastic`
+- `ELASTICSEARCH_PASSWORD=marketplace-elastic-local`
+- `KIBANA_SYSTEM_PASSWORD=marketplace-kibana-system-local`
+- `KIBANA_ELASTICSEARCH_USERNAME=kibana_system`
+- `KIBANA_ELASTICSEARCH_PASSWORD=marketplace-kibana-system-local`
+
+Elasticsearch container is already included in `docker-compose.yml` with constrained resources:
+
+- CPU limit: `0.25`
+- Memory limit: `512m`
+- JVM heap: `-Xms256m -Xmx256m`
+- Optional heavy features disabled locally: `xpack.ml`, GeoIP downloader
+
+Elasticsearch data is stored in the repository docker directory:
+
+- `docker/data/elasticsearch`
+
+Kibana is included for local inspection/debugging, but is disabled by default to save resources. Start it only when needed:
+
+```bash
+docker compose --profile search-debug up -d kibana
+```
+
+After that it is available at:
+
+- URL: `http://localhost:5601`
+- Config: `docker/kibana/kibana.yml`
 
 ---
 

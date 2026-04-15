@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   deserializeGuestPreferences,
-  mergeGuestSettingsIntoAccountSettings,
+  mergeGuestPreferencesIntoAccountSettings,
   serializeGuestPreferences,
 } from '~/composables/guest-preferences';
 
@@ -25,6 +25,7 @@ describe('guest preferences runtime', () => {
         locale: 'ru',
         theme: 'dark',
         collapse_menu: false,
+        favorites: ['activity-1', 'activity-2'],
         admin_crud_preferences: {},
         admin_navigation_sections: {},
       },
@@ -32,22 +33,26 @@ describe('guest preferences runtime', () => {
     });
   });
 
-  it('merges guest settings over account settings for auth sync', () => {
+  it('merges guest preferences over account settings for auth sync', () => {
     expect(
-      mergeGuestSettingsIntoAccountSettings(
+      mergeGuestPreferencesIntoAccountSettings(
         {
           locale: 'en',
           theme: 'light',
           collapse_menu: false,
+          favorites: ['account-1'],
         },
         {
-          theme: 'dark',
+          v: 1,
+          settings: { theme: 'dark' },
+          favorites: ['guest-1'],
         }
       )
     ).toEqual({
       locale: 'en',
       theme: 'dark',
       collapse_menu: false,
+      favorites: ['guest-1', 'account-1'],
       admin_crud_preferences: {},
       admin_navigation_sections: {},
     });

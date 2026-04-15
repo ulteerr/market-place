@@ -18,16 +18,26 @@ type CatalogGroup = {
 export const usePublicHeaderConfig = () => {
   const { t } = useI18n();
   const publicCategoriesApi = usePublicCategories();
-  const categoriesTree = useState<Awaited<ReturnType<typeof publicCategoriesApi.tree>>>(
-    'public-header-categories-tree',
-    () => []
-  );
-  const categoriesPending = useState<boolean>('public-header-categories-pending', () => true);
-  const categoriesError = useState<string>('public-header-categories-error', () => '');
+  const { favoriteCount } = useFavorites();
+  const {
+    data: categoriesTreeData,
+    pending: categoriesPending,
+    error: categoriesError,
+  } = useAsyncData('public-header-categories-tree', () => publicCategoriesApi.tree(), {
+    default: () => [],
+    lazy: false,
+  });
+
+  const categoriesTree = computed(() => categoriesTreeData.value ?? []);
 
   const quickActions = computed<HeaderLink[]>(() => [
-    { label: t('app.layout.header.quickActions.orders'), to: '/login' },
-    { label: t('app.layout.header.quickActions.favorites'), to: '/login' },
+    {
+      label:
+        favoriteCount.value > 0
+          ? t('app.layout.header.quickActions.favoritesCount', { count: favoriteCount.value })
+          : t('app.layout.header.quickActions.favorites'),
+      to: '/favorites',
+    },
     { label: t('app.layout.header.quickActions.admin'), to: '/admin' },
   ]);
 
@@ -53,39 +63,11 @@ export const usePublicHeaderConfig = () => {
   const regionText = computed(() => t('app.layout.header.region'));
   const serviceStatusText = computed(() => t('app.layout.header.serviceStatus'));
 
-  const loadCategories = async () => {
-    if (categoriesTree.value.length) {
-      categoriesPending.value = false;
-      categoriesError.value = '';
-      return;
-    }
-
-    categoriesPending.value = true;
-    categoriesError.value = '';
-
-    try {
-      categoriesTree.value = await publicCategoriesApi.tree();
-    } catch {
-      categoriesTree.value = [];
-      categoriesError.value = t('app.layout.header.categoriesLoadError');
-    } finally {
-      categoriesPending.value = false;
-    }
-  };
-
-  if (import.meta.server) {
-    onServerPrefetch(loadCategories);
-  }
-
-  onMounted(() => {
-    if (categoriesPending.value || (!categoriesTree.value.length && !categoriesError.value)) {
-      void loadCategories();
-    }
-  });
-
   return {
     categoriesPending,
-    categoriesError,
+    categoriesError: computed(() =>
+      categoriesError.value ? t('app.layout.header.categoriesLoadError') : ''
+    ),
     quickActions,
     sectionLinks,
     catalogGroups,

@@ -2,7 +2,14 @@ import { createPresenceHeartbeatController } from '~/composables/presence-heartb
 
 export default defineNuxtPlugin(() => {
   const { isAuthenticated } = useAuth();
+  const route = useRoute();
   const config = useRuntimeConfig();
+  const isPresenceRoute = computed(
+    () =>
+      route.path.startsWith('/admin') ||
+      route.path.startsWith('/account') ||
+      route.path.startsWith('/organizations')
+  );
 
   const controller = createPresenceHeartbeatController({
     baseIntervalMs:
@@ -29,9 +36,9 @@ export default defineNuxtPlugin(() => {
   });
 
   const stopWatcher = watch(
-    isAuthenticated,
-    (value) => {
-      if (value) {
+    [isAuthenticated, isPresenceRoute],
+    ([authenticated, eligibleRoute]) => {
+      if (authenticated && eligibleRoute) {
         controller.start();
         return;
       }

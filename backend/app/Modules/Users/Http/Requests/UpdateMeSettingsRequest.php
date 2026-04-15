@@ -21,6 +21,8 @@ final class UpdateMeSettingsRequest extends FormRequest
             "settings.locale" => ["sometimes", "nullable", "string", Rule::in(["ru", "en"])],
             "settings.theme" => ["sometimes", "string", Rule::in(["light", "dark"])],
             "settings.collapse_menu" => ["sometimes", "boolean"],
+            "settings.favorites" => ["sometimes", "array"],
+            "settings.favorites.*" => ["string", "distinct"],
             "settings.admin_crud_preferences" => ["sometimes", "array"],
             "settings.admin_crud_preferences.*" => ["array"],
             "settings.admin_crud_preferences.*.contentMode" => [

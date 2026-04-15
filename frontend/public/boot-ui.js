@@ -23,7 +23,9 @@
         theme = userTheme;
       }
     } else {
-      var guestMatch = document.cookie.match(/(?:^|; )guest_preferences=([^;]+)/);
+      var guestMatch =
+        document.cookie.match(/(?:^|; )guest_preferences_v2=([^;]+)/) ||
+        document.cookie.match(/(?:^|; )guest_preferences=([^;]+)/);
       if (guestMatch && guestMatch[1]) {
         var base64 = guestMatch[1].replace(/-/g, '+').replace(/_/g, '/');
         var padded = base64 + '==='.slice((base64.length + 3) % 4);

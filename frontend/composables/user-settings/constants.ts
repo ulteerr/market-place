@@ -10,6 +10,7 @@ export const createDefaultSettings = (): UserSettings => ({
   locale: null,
   theme: DEFAULT_THEME,
   collapse_menu: DEFAULT_COLLAPSE_MENU,
+  favorites: [],
   admin_crud_preferences: {},
   admin_navigation_sections: {},
 });

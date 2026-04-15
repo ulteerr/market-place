@@ -16,6 +16,10 @@ import GlobalErrorReporter from '~/components/debug/GlobalErrorReporter/GlobalEr
 
 const { token, refreshUser, logout } = useAuth();
 const { applyServerSettings } = useUserSettings();
+const route = useRoute();
+
+const shouldRefreshSessionForPath = (path: string) =>
+  path.startsWith('/admin') || path.startsWith('/account') || path.startsWith('/organizations');
 
 const revealUi = () => {
   requestAnimationFrame(() => {
@@ -40,7 +44,7 @@ const waitForFontsAndRevealUi = async () => {
 onMounted(async () => {
   void waitForFontsAndRevealUi();
 
-  if (!token.value) {
+  if (!token.value || !shouldRefreshSessionForPath(route.path)) {
     return;
   }
 

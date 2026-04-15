@@ -162,7 +162,12 @@
         data-test="catalog-activities-error"
       />
       <template v-else>
-        <PublicCardGrid :items="activityCards" data-test="catalog-activities-grid" />
+        <PublicCardGrid
+          :items="activityCards"
+          show-favorite-button
+          data-test="catalog-activities-grid"
+          @toggle-favorite="toggleFavorite"
+        />
         <div
           v-if="activitiesLoadingMore"
           class="catalog-loading-more"
@@ -188,6 +193,7 @@ import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 import { usePublicPreviewState } from '~/composables/layout/usePublicPreviewState';
 import { usePublicCategories } from '~/composables/usePublicCategories';
 import { buildPublicActivityPath, usePublicActivities } from '~/composables/usePublicActivities';
+import { useFavorites } from '~/composables/useFavorites';
 import { usePublicPageSeo } from '~/composables/seo/usePublicPageSeo';
 import { buildBreadcrumbListSchema } from '~/composables/schema/public-schema-contract';
 import { usePublicSchemaNode } from '~/composables/schema/usePublicSchemaRegistry';
@@ -211,6 +217,7 @@ const config = useRuntimeConfig();
 const previewState = usePublicPreviewState();
 const publicActivitiesApi = usePublicActivities();
 const publicCategoriesApi = usePublicCategories();
+const { isFavorite, toggleFavorite } = useFavorites();
 
 const activities = ref<Awaited<ReturnType<typeof publicActivitiesApi.feed>>['items']>([]);
 const activitiesInitialPending = ref(true);
@@ -229,12 +236,14 @@ const filters = reactive<{
   search: string;
   root_category_id: string;
   category_id: string;
+  organization_id: string;
   is_featured: '' | 'true';
   sort_dir: SortDirection;
 }>({
   search: '',
   root_category_id: '',
   category_id: '',
+  organization_id: '',
   is_featured: '',
   sort_dir: 'desc',
 });
@@ -259,9 +268,11 @@ const normalizeSortDir = (value: string): SortDirection => (value === 'asc' ? 'a
 const normalizeFeaturedValue = (value: string): '' | 'true' => (value === 'true' ? 'true' : '');
 
 const hydrateFiltersFromRoute = () => {
-  filters.search = getSingleQueryValue(route.query.search).trim();
+  filters.search =
+    getSingleQueryValue(route.query.q).trim() || getSingleQueryValue(route.query.search).trim();
   filters.root_category_id = getSingleQueryValue(route.query.root_category_id).trim();
   filters.category_id = getSingleQueryValue(route.query.category_id).trim();
+  filters.organization_id = getSingleQueryValue(route.query.organization_id).trim();
   filters.is_featured = normalizeFeaturedValue(getSingleQueryValue(route.query.is_featured).trim());
   filters.sort_dir = normalizeSortDir(getSingleQueryValue(route.query.sort_dir).trim());
 };
@@ -319,6 +330,7 @@ const sortOptions = computed(() => [
 const hasActiveFilters = computed(() => {
   return Boolean(
     filters.search.trim() ||
+    filters.organization_id ||
     filters.category_id ||
     filters.is_featured ||
     filters.sort_dir !== 'desc'
@@ -373,6 +385,8 @@ const activityCards = computed(() =>
         : undefined,
     meta: [activity.organization?.name, activity.location?.city?.name].filter(Boolean).join(' · '),
     dataTest: `catalog-activity-${activity.id}`,
+    favoriteKey: activity.public_key,
+    isFavorite: isFavorite(activity.public_key),
   }))
 );
 
@@ -380,6 +394,7 @@ const activeFeedFilters = computed(() => ({
   search: filters.search.trim(),
   root_category_id: filters.root_category_id || undefined,
   category_id: filters.category_id || undefined,
+  organization_id: filters.organization_id || undefined,
   is_featured: filters.is_featured === 'true' ? true : '',
   sort_by: 'created_at' as const,
   sort_dir: filters.sort_dir,
@@ -397,37 +412,66 @@ const syncRootSelectionFromLeaf = () => {
   filters.root_category_id = matchedRoot?.id ?? '';
 };
 
+const {
+  data: initialCatalogData,
+  pending: initialCatalogPending,
+  error: initialCatalogError,
+} = await useAsyncData(
+  () =>
+    `public-catalog-initial:${JSON.stringify({
+      search: filters.search.trim(),
+      root_category_id: filters.root_category_id || '',
+      category_id: filters.category_id || '',
+      organization_id: filters.organization_id || '',
+      is_featured: filters.is_featured || '',
+      sort_dir: filters.sort_dir,
+    })}`,
+  async () => {
+    if (previewState.value !== 'ready') {
+      return {
+        categories: [],
+        feedItems: [],
+        nextCursor: null,
+      };
+    }
+
+    const [initialCategoriesData, initialActivitiesData] = await Promise.all([
+      publicCategoriesApi.tree(true),
+      publicActivitiesApi.feed({
+        limit: 12,
+        cursor: null,
+        ...activeFeedFilters.value,
+      }),
+    ]);
+
+    return {
+      categories: initialCategoriesData,
+      feedItems: initialActivitiesData.items,
+      nextCursor: initialActivitiesData.next_cursor,
+    };
+  },
+  {
+    server: previewState.value === 'ready',
+    lazy: false,
+    default: () => ({
+      categories: [],
+      feedItems: [],
+      nextCursor: null,
+    }),
+  }
+);
+
 if (previewState.value === 'ready') {
-  categoriesPending.value = true;
-  activitiesInitialPending.value = true;
-
-  try {
-    const initialCategoriesData = await publicCategoriesApi.tree(true);
-    categoriesTree.value = initialCategoriesData;
-    syncRootSelectionFromLeaf();
-  } catch {
-    categoriesTree.value = [];
-    categoriesError.value = t('app.public.catalog.filters.loadError');
-  } finally {
-    categoriesPending.value = false;
-  }
-
-  try {
-    const initialActivitiesData = await publicActivitiesApi.feed({
-      limit: 12,
-      cursor: null,
-      ...activeFeedFilters.value,
-    });
-
-    activities.value = initialActivitiesData.items;
-    activitiesNextCursor.value = initialActivitiesData.next_cursor;
-  } catch (error) {
-    activities.value = [];
-    activitiesNextCursor.value = null;
-    activitiesError.value = error;
-  } finally {
-    activitiesInitialPending.value = false;
-  }
+  categoriesTree.value = initialCatalogData.value?.categories ?? [];
+  syncRootSelectionFromLeaf();
+  activities.value = initialCatalogData.value?.feedItems ?? [];
+  activitiesNextCursor.value = initialCatalogData.value?.nextCursor ?? null;
+  categoriesPending.value = initialCatalogPending.value;
+  activitiesInitialPending.value = initialCatalogPending.value;
+  categoriesError.value = initialCatalogError.value
+    ? t('app.public.catalog.filters.loadError')
+    : '';
+  activitiesError.value = initialCatalogError.value;
 } else {
   activitiesInitialPending.value = false;
   categoriesPending.value = false;
@@ -509,26 +553,11 @@ const setupActivitiesObserver = () => {
 
 isHydratingFilters.value = false;
 
-const loadCategories = async () => {
-  categoriesPending.value = true;
-  categoriesError.value = '';
-
-  try {
-    categoriesTree.value = await publicCategoriesApi.tree(true);
-    syncRootSelectionFromLeaf();
-  } catch (error) {
-    categoriesTree.value = [];
-    categoriesError.value = t('app.public.catalog.filters.loadError');
-  } finally {
-    categoriesPending.value = false;
-  }
-};
-
 const syncCatalogQuery = async () => {
   const nextQuery: Record<string, string> = {};
 
   if (filters.search.trim()) {
-    nextQuery.search = filters.search.trim();
+    nextQuery.q = filters.search.trim();
   }
 
   if (filters.root_category_id) {
@@ -537,6 +566,10 @@ const syncCatalogQuery = async () => {
 
   if (filters.category_id) {
     nextQuery.category_id = filters.category_id;
+  }
+
+  if (filters.organization_id) {
+    nextQuery.organization_id = filters.organization_id;
   }
 
   if (filters.is_featured) {
@@ -566,6 +599,7 @@ const resetFilters = async () => {
   filters.search = '';
   filters.root_category_id = '';
   filters.category_id = '';
+  filters.organization_id = '';
   filters.is_featured = '';
   filters.sort_dir = 'desc';
 
@@ -666,6 +700,8 @@ onMounted(async () => {
     return;
   }
 
+  categoriesPending.value = false;
+  activitiesInitialPending.value = false;
   await nextTick();
   setupActivitiesObserver();
 });

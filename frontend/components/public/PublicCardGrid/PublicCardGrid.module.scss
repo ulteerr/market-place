@@ -4,6 +4,10 @@
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
+.item {
+  min-width: 0;
+}
+
 @media (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -24,6 +28,7 @@
 .copyCard,
 .mediaCard {
   height: 100%;
+  position: relative;
 }
 
 .mediaCard {
@@ -50,10 +55,6 @@
   transition: transform 0.25s ease;
 }
 
-.link:hover .mediaImage {
-  transform: scale(1.03);
-}
-
 .badge {
   position: absolute;
   left: 0.9rem;
@@ -67,11 +68,60 @@
   line-height: 1;
 }
 
+.item:hover .mediaImage {
+  transform: scale(1.03);
+}
+
+.stretchedLink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.favoriteButton {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-elevated) 90%, transparent);
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.favoriteButton:hover,
+.favoriteButton:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.favoriteButtonActive {
+  background: color-mix(in srgb, #ff4f9a 18%, var(--surface-elevated));
+  color: #ff4f9a;
+}
+
 .copy {
   display: grid;
   gap: 0.65rem;
   padding: 1.3rem 1.3rem 1.4rem;
   background: var(--surface-elevated);
+  position: relative;
+  z-index: 2;
 }
 
 .cardEyebrow {

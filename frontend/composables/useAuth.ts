@@ -1,7 +1,7 @@
 import { resolveAssetUrl } from '~/composables/asset-url';
 import {
   clearGuestPreferences,
-  mergeGuestSettingsIntoAccountSettings,
+  mergeGuestPreferencesIntoAccountSettings,
   readGuestPreferences,
   writeGuestPreferences,
 } from '~/composables/guest-preferences';
@@ -40,6 +40,7 @@ interface AuthUser {
         open?: boolean;
       }
     >;
+    favorites?: string[];
   } | null;
   roles?: string[];
   permissions?: string[];
@@ -116,35 +117,28 @@ export const useAuth = () => {
 
   const syncGuestPreferencesAfterAuth = async (): Promise<void> => {
     const guestPreferences = readGuestPreferences();
-    const guestSettings = guestPreferences.settings;
     const hasFavorites = (guestPreferences.favorites?.length ?? 0) > 0;
+    const hasSettings = Boolean(guestPreferences.settings);
 
-    if (!guestSettings) {
-      if (!hasFavorites) {
-        clearGuestPreferences();
-      }
-
+    if (!hasSettings && !hasFavorites) {
+      clearGuestPreferences();
       return;
     }
 
     const api = useApi();
+    const mergedSettings = mergeGuestPreferencesIntoAccountSettings(
+      user.value?.settings ?? null,
+      guestPreferences
+    );
+
     await api('/api/me/settings', {
       method: 'PATCH',
       body: {
-        settings: guestSettings,
+        settings: mergedSettings,
       },
     });
 
     await refreshUser();
-
-    if (hasFavorites) {
-      writeGuestPreferences({
-        v: 1,
-        favorites: guestPreferences.favorites,
-      });
-      return;
-    }
-
     clearGuestPreferences();
   };
 
@@ -160,12 +154,12 @@ export const useAuth = () => {
     });
 
     token.value = response.token;
-    const guestSettings = readGuestPreferences().settings;
+    const guestPreferences = readGuestPreferences();
     setUser({
       ...response.user,
-      settings: mergeGuestSettingsIntoAccountSettings(
+      settings: mergeGuestPreferencesIntoAccountSettings(
         response.user.settings ?? null,
-        guestSettings
+        guestPreferences
       ),
     });
     await syncGuestPreferencesAfterAuth();
@@ -180,12 +174,12 @@ export const useAuth = () => {
     });
 
     token.value = response.token;
-    const guestSettings = readGuestPreferences().settings;
+    const guestPreferences = readGuestPreferences();
     setUser({
       ...response.user,
-      settings: mergeGuestSettingsIntoAccountSettings(
+      settings: mergeGuestPreferencesIntoAccountSettings(
         response.user.settings ?? null,
-        guestSettings
+        guestPreferences
       ),
     });
     await syncGuestPreferencesAfterAuth();
@@ -234,6 +228,18 @@ export const useAuth = () => {
         settings,
       },
     });
+
+    if (user.value) {
+      const currentSettings =
+        user.value.settings && typeof user.value.settings === 'object' ? user.value.settings : {};
+      setUser({
+        ...user.value,
+        settings: {
+          ...currentSettings,
+          ...settings,
+        },
+      });
+    }
   };
 
   const uploadAvatar = async (avatar: File): Promise<AuthUser> => {
@@ -265,6 +271,7 @@ export const useAuth = () => {
       writeGuestPreferences({
         ...readGuestPreferences(),
         settings: user.value.settings,
+        favorites: user.value.settings.favorites ?? [],
       });
     }
 

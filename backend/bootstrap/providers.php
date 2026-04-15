@@ -11,6 +11,7 @@ use Modules\Files\FilesServiceProvider;
 use Modules\Geo\GeoServiceProvider;
 use Modules\Metro\MetroServiceProvider;
 use Modules\Organizations\OrganizationsServiceProvider;
+use Modules\Search\SearchServiceProvider;
 use Modules\Users\UsersServiceProvider;
 
 return [
@@ -25,6 +26,7 @@ return [
     GeoServiceProvider::class,
     MetroServiceProvider::class,
     OrganizationsServiceProvider::class,
+    SearchServiceProvider::class,
     FilesServiceProvider::class,
     ChangeLogServiceProvider::class,
 ];

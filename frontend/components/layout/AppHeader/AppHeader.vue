@@ -50,14 +50,151 @@
           :class="styles.searchForm"
           role="search"
           :aria-label="t('app.layout.header.searchAria')"
+          @submit.prevent="submitDesktopSearch()"
         >
-          <input
-            :class="styles.searchInput"
-            type="search"
-            name="query"
-            :placeholder="t('app.layout.header.searchPlaceholder')"
-            data-test="public-header-search"
-          />
+          <div :class="styles.searchBox">
+            <input
+              ref="searchInput"
+              v-model="searchQuery"
+              :class="styles.searchInput"
+              type="search"
+              name="query"
+              autocomplete="off"
+              :placeholder="t('app.layout.header.searchPlaceholder')"
+              data-test="public-header-search"
+              :aria-expanded="isSearchDropdownOpen ? 'true' : 'false'"
+              :aria-activedescendant="activeSearchOptionId"
+              aria-autocomplete="list"
+              aria-controls="public-header-search-dropdown"
+              @focus="onSearchFocus"
+              @keydown="onSearchInputKeydown"
+            />
+
+            <button
+              v-if="searchQuery.length > 0"
+              type="button"
+              :class="styles.searchClearButton"
+              :aria-label="t('app.layout.header.searchClear')"
+              data-test="public-header-search-clear"
+              @click="clearDesktopSearch"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill="currentColor"
+                  d="M6.4 6.4a1 1 0 0 1 1.4 0L12 10.59l4.2-4.2a1 1 0 1 1 1.4 1.42L13.41 12l4.2 4.2a1 1 0 0 1-1.42 1.4L12 13.41l-4.2 4.2a1 1 0 0 1-1.4-1.42l4.19-4.19l-4.2-4.2a1 1 0 0 1 0-1.4"
+                />
+              </svg>
+            </button>
+
+            <div
+              v-if="isSearchDropdownOpen"
+              id="public-header-search-dropdown"
+              :class="styles.searchDropdown"
+              data-test="public-header-search-dropdown"
+            >
+              <div
+                v-if="showRecentQueries"
+                :class="styles.searchGroup"
+                data-test="public-header-search-recent"
+              >
+                <div :class="styles.searchGroupTitle">
+                  {{ t('app.layout.header.searchRecentTitle') }}
+                </div>
+                <button
+                  v-for="item in recentSearchOptions"
+                  :id="searchOptionId(item.index)"
+                  :key="item.key"
+                  type="button"
+                  :class="[
+                    styles.searchSuggestionButton,
+                    item.index === activeSearchOptionIndex ? styles.searchOptionActive : '',
+                  ]"
+                  @mouseenter="activeSearchOptionIndex = item.index"
+                  @click="applyQuerySuggestion(item.label)"
+                >
+                  <span
+                    v-for="(part, partIndex) in getHighlightParts(item.label)"
+                    :key="`${item.key}-part-${partIndex}`"
+                    :class="part.match ? styles.searchHighlight : ''"
+                  >
+                    {{ part.value }}
+                  </span>
+                </button>
+              </div>
+
+              <div
+                v-if="showQuerySuggestions"
+                :class="styles.searchGroup"
+                data-test="public-header-search-queries"
+              >
+                <div :class="styles.searchGroupTitle">
+                  {{ t('app.layout.header.searchQueriesTitle') }}
+                </div>
+                <button
+                  v-for="item in querySearchOptions"
+                  :id="searchOptionId(item.index)"
+                  :key="item.key"
+                  type="button"
+                  :class="[
+                    styles.searchSuggestionButton,
+                    item.index === activeSearchOptionIndex ? styles.searchOptionActive : '',
+                  ]"
+                  @mouseenter="activeSearchOptionIndex = item.index"
+                  @click="applyQuerySuggestion(item.label)"
+                >
+                  <span
+                    v-for="(part, partIndex) in getHighlightParts(item.label)"
+                    :key="`${item.key}-part-${partIndex}`"
+                    :class="part.match ? styles.searchHighlight : ''"
+                  >
+                    {{ part.value }}
+                  </span>
+                </button>
+              </div>
+
+              <div
+                v-if="showEntitySuggestions"
+                :class="styles.searchGroup"
+                data-test="public-header-search-entities"
+              >
+                <div :class="styles.searchGroupTitle">
+                  {{ t('app.layout.header.searchEntitiesTitle') }}
+                </div>
+                <NuxtLink
+                  v-for="item in entitySearchOptions"
+                  :id="searchOptionId(item.index)"
+                  :key="item.key"
+                  :to="item.entity.url"
+                  :class="[
+                    styles.searchEntityLink,
+                    item.index === activeSearchOptionIndex ? styles.searchOptionActive : '',
+                  ]"
+                  @mouseenter="activeSearchOptionIndex = item.index"
+                  @click="handleEntityClick(item.label)"
+                >
+                  <span :class="styles.searchEntityType">{{ item.entity.type }}</span>
+                  <span :class="styles.searchEntityLabel">
+                    <span
+                      v-for="(part, partIndex) in getHighlightParts(item.label)"
+                      :key="`${item.key}-part-${partIndex}`"
+                      :class="part.match ? styles.searchHighlight : ''"
+                    >
+                      {{ part.value }}
+                    </span>
+                  </span>
+                  <span v-if="item.entity.subtitle" :class="styles.searchEntityMeta">
+                    {{ item.entity.subtitle }}
+                  </span>
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
         </form>
 
         <nav :class="styles.quickActions" :aria-label="t('app.layout.header.quickActionsAria')">
@@ -241,8 +378,10 @@
         :class="styles.mobileSearchForm"
         role="search"
         :aria-label="t('app.layout.header.searchAria')"
+        @submit.prevent="submitMobileSearch()"
       >
         <input
+          v-model="mobileSearchQuery"
           :class="styles.searchInput"
           type="search"
           name="mobile-query"
@@ -328,8 +467,14 @@
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
 import styles from './AppHeader.module.scss';
 import { usePublicHeaderConfig } from '~/composables/layout/usePublicHeaderConfig';
+import {
+  usePublicSearch,
+  type PublicSearchSuggestEntity,
+  type PublicSearchSuggestResponse,
+} from '~/composables/usePublicSearch';
 import PublicStateMessage from '~/components/public/PublicStateMessage/PublicStateMessage.vue';
 import UiFilterBarSkeleton from '~/components/ui/Skeleton/UiFilterBarSkeleton.vue';
+import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 
 const { t, locale, setLocale } = useI18n();
 const { isAuthenticated } = useAuth();
@@ -344,6 +489,9 @@ const { localeSelectOptions, onLocaleChange } = useAdminLocaleSync({
 const isThemeUiMounted = ref(false);
 const resolvedIsDark = computed(() => (isThemeUiMounted.value ? isDark.value : false));
 const route = useRoute();
+const router = useRouter();
+const searchInput = ref<HTMLInputElement | null>(null);
+const publicSearchApi = usePublicSearch();
 const {
   categoriesError,
   quickActions,
@@ -367,6 +515,341 @@ const selectedCatalogGroup = computed(
 );
 const isCatalogOpen = ref(false);
 const isMobileMenuOpen = ref(false);
+const searchQuery = ref('');
+const mobileSearchQuery = ref('');
+const searchSuggestions = ref<PublicSearchSuggestResponse>({
+  queries: [],
+  entities: [],
+  recent: [],
+});
+const isSearchFocused = ref(false);
+const recentQueries = ref<string[]>([]);
+const searchLoading = ref(false);
+const searchDebounce = useDebouncedSearch(160);
+const RECENT_SEARCHES_KEY = 'marketplace-public-search-recent';
+let activeSuggestRequestId = 0;
+const trimmedSearchQuery = computed(() => searchQuery.value.trim());
+const showRecentQueries = computed(
+  () => trimmedSearchQuery.value === '' && recentQueries.value.length > 0
+);
+const showQuerySuggestions = computed(
+  () => trimmedSearchQuery.value.length >= 2 && searchSuggestions.value.queries.length > 0
+);
+const showEntitySuggestions = computed(
+  () => trimmedSearchQuery.value.length >= 2 && searchSuggestions.value.entities.length > 0
+);
+const activeSearchOptionIndex = ref(-1);
+
+type SearchDropdownOption =
+  | {
+      index: number;
+      key: string;
+      kind: 'recent' | 'query';
+      label: string;
+    }
+  | {
+      index: number;
+      key: string;
+      kind: 'entity';
+      label: string;
+      entity: PublicSearchSuggestEntity;
+    };
+
+const recentSearchOptions = computed<SearchDropdownOption[]>(() =>
+  showRecentQueries.value
+    ? recentQueries.value.map((item, index) => ({
+        index,
+        key: `recent-${item}`,
+        kind: 'recent',
+        label: item,
+      }))
+    : []
+);
+
+const querySearchOptions = computed<SearchDropdownOption[]>(() => {
+  if (!showQuerySuggestions.value) {
+    return [];
+  }
+
+  const startIndex = recentSearchOptions.value.length;
+
+  return searchSuggestions.value.queries.map((item, index) => ({
+    index: startIndex + index,
+    key: `query-${item}`,
+    kind: 'query',
+    label: item,
+  }));
+});
+
+const entitySearchOptions = computed<SearchDropdownOption[]>(() => {
+  if (!showEntitySuggestions.value) {
+    return [];
+  }
+
+  const startIndex = recentSearchOptions.value.length + querySearchOptions.value.length;
+
+  return searchSuggestions.value.entities.map((entity, index) => ({
+    index: startIndex + index,
+    key: `${entity.type}-${entity.id}`,
+    kind: 'entity',
+    label: entity.label,
+    entity,
+  }));
+});
+
+const searchDropdownOptions = computed<SearchDropdownOption[]>(() => [
+  ...recentSearchOptions.value,
+  ...querySearchOptions.value,
+  ...entitySearchOptions.value,
+]);
+
+const activeSearchOptionId = computed(() =>
+  activeSearchOptionIndex.value >= 0 ? searchOptionId(activeSearchOptionIndex.value) : undefined
+);
+
+const isSearchDropdownOpen = computed(() => {
+  if (!isSearchFocused.value) {
+    return false;
+  }
+
+  if (trimmedSearchQuery.value === '') {
+    return showRecentQueries.value;
+  }
+
+  if (trimmedSearchQuery.value.length < 2) {
+    return false;
+  }
+
+  return showQuerySuggestions.value || showEntitySuggestions.value;
+});
+
+const searchOptionId = (index: number) => `public-header-search-option-${index}`;
+
+const loadRecentQueries = () => {
+  if (!import.meta.client) {
+    return;
+  }
+
+  try {
+    const payload = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    const parsed = payload ? JSON.parse(payload) : [];
+
+    recentQueries.value = Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      : [];
+  } catch {
+    recentQueries.value = [];
+  }
+};
+
+const persistRecentQuery = (value: string) => {
+  const normalized = value.trim();
+  if (!normalized || !import.meta.client) {
+    return;
+  }
+
+  recentQueries.value = [
+    normalized,
+    ...recentQueries.value.filter((item) => item !== normalized),
+  ].slice(0, 5);
+
+  window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentQueries.value));
+};
+
+const clearSearchSuggestions = () => {
+  activeSearchOptionIndex.value = -1;
+  searchSuggestions.value = {
+    queries: [],
+    entities: [],
+    recent: [],
+  };
+};
+
+const fetchSearchSuggestions = () => {
+  const query = searchQuery.value.trim();
+  const requestId = ++activeSuggestRequestId;
+
+  if (query === '' || query.length < 2) {
+    searchLoading.value = false;
+    clearSearchSuggestions();
+    return;
+  }
+
+  searchLoading.value = true;
+
+  searchDebounce.schedule(() => {
+    void publicSearchApi
+      .suggest(query, {
+        limit: 8,
+      })
+      .then((response) => {
+        if (requestId !== activeSuggestRequestId || query !== searchQuery.value.trim()) {
+          return;
+        }
+
+        searchSuggestions.value = response;
+      })
+      .catch(() => {
+        if (requestId !== activeSuggestRequestId) {
+          return;
+        }
+
+        clearSearchSuggestions();
+      })
+      .finally(() => {
+        if (requestId !== activeSuggestRequestId) {
+          return;
+        }
+
+        searchLoading.value = false;
+      });
+  });
+};
+
+const closeSearch = () => {
+  isSearchFocused.value = false;
+  searchLoading.value = false;
+  activeSearchOptionIndex.value = -1;
+  activeSuggestRequestId += 1;
+};
+
+const runCatalogSearch = async (query: string) => {
+  const normalized = query.trim();
+  if (!normalized) {
+    return;
+  }
+
+  persistRecentQuery(normalized);
+  closeMenus();
+  closeSearch();
+  mobileSearchQuery.value = normalized;
+
+  await router.push({
+    path: '/catalog',
+    query: {
+      q: normalized,
+    },
+  });
+};
+
+const applyQuerySuggestion = (value: string) => {
+  searchQuery.value = value;
+  void runCatalogSearch(value);
+};
+
+const handleEntityClick = (label: string) => {
+  persistRecentQuery(label);
+  closeMenus();
+  closeSearch();
+};
+
+const onSearchFocus = () => {
+  isSearchFocused.value = true;
+  loadRecentQueries();
+
+  if (searchQuery.value.trim().length >= 2) {
+    fetchSearchSuggestions();
+  } else {
+    clearSearchSuggestions();
+  }
+};
+
+const clearDesktopSearch = async () => {
+  searchQuery.value = '';
+  clearSearchSuggestions();
+  isSearchFocused.value = true;
+  await nextTick();
+  searchInput.value?.focus();
+};
+
+const moveActiveSearchOption = (direction: 1 | -1) => {
+  if (!searchDropdownOptions.value.length) {
+    activeSearchOptionIndex.value = -1;
+    return;
+  }
+
+  if (activeSearchOptionIndex.value < 0) {
+    activeSearchOptionIndex.value = direction > 0 ? 0 : searchDropdownOptions.value.length - 1;
+    return;
+  }
+
+  activeSearchOptionIndex.value =
+    (activeSearchOptionIndex.value + direction + searchDropdownOptions.value.length) %
+    searchDropdownOptions.value.length;
+};
+
+const selectSearchOption = async (option: SearchDropdownOption) => {
+  if (option.kind === 'entity') {
+    persistRecentQuery(option.label);
+    closeMenus();
+    closeSearch();
+    await router.push(option.entity.url);
+    return;
+  }
+
+  await runCatalogSearch(option.label);
+};
+
+const onSearchInputKeydown = (event: KeyboardEvent) => {
+  switch (event.key) {
+    case 'ArrowDown':
+      if (!searchDropdownOptions.value.length) {
+        return;
+      }
+      event.preventDefault();
+      moveActiveSearchOption(1);
+      break;
+    case 'ArrowUp':
+      if (!searchDropdownOptions.value.length) {
+        return;
+      }
+      event.preventDefault();
+      moveActiveSearchOption(-1);
+      break;
+    case 'Enter':
+      if (activeSearchOptionIndex.value < 0) {
+        return;
+      }
+      event.preventDefault();
+      void selectSearchOption(searchDropdownOptions.value[activeSearchOptionIndex.value]);
+      break;
+    case 'Escape':
+      closeSearch();
+      break;
+    default:
+      break;
+  }
+};
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const getHighlightParts = (value: string) => {
+  const query = trimmedSearchQuery.value;
+
+  if (!query || query.length < 2) {
+    return [{ value, match: false }];
+  }
+
+  const matcher = new RegExp(`(${escapeRegExp(query)})`, 'ig');
+  const parts = value.split(matcher).filter((part) => part.length > 0);
+
+  if (!parts.length) {
+    return [{ value, match: false }];
+  }
+
+  return parts.map((part) => ({
+    value: part,
+    match: part.toLocaleLowerCase() === query.toLocaleLowerCase(),
+  }));
+};
+
+const submitDesktopSearch = () => {
+  void runCatalogSearch(searchQuery.value);
+};
+
+const submitMobileSearch = () => {
+  void runCatalogSearch(mobileSearchQuery.value);
+};
 
 watch(
   catalogGroups,
@@ -381,6 +864,7 @@ watch(
 const closeMenus = () => {
   isCatalogOpen.value = false;
   isMobileMenuOpen.value = false;
+  closeSearch();
 };
 
 const focusCatalogCategoryByIndex = (index: number) => {
@@ -465,12 +949,48 @@ const onDocumentPointerDown = (event: PointerEvent) => {
 watch(
   () => route.fullPath,
   () => {
+    searchQuery.value =
+      typeof route.query.q === 'string'
+        ? route.query.q
+        : typeof route.query.search === 'string'
+          ? route.query.search
+          : '';
+    mobileSearchQuery.value = searchQuery.value;
     closeMenus();
   }
 );
 
+watch(searchQuery, () => {
+  activeSearchOptionIndex.value = -1;
+
+  if (!isSearchFocused.value) {
+    return;
+  }
+
+  fetchSearchSuggestions();
+});
+
+watch(searchDropdownOptions, (options) => {
+  if (!options.length) {
+    activeSearchOptionIndex.value = -1;
+    return;
+  }
+
+  if (activeSearchOptionIndex.value >= options.length) {
+    activeSearchOptionIndex.value = options.length - 1;
+  }
+});
+
 onMounted(() => {
   isThemeUiMounted.value = true;
+  searchQuery.value =
+    typeof route.query.q === 'string'
+      ? route.query.q
+      : typeof route.query.search === 'string'
+        ? route.query.search
+        : '';
+  mobileSearchQuery.value = searchQuery.value;
+  loadRecentQueries();
   window.addEventListener('keydown', onWindowKeydown);
   document.addEventListener('pointerdown', onDocumentPointerDown);
 });
@@ -478,5 +998,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onWindowKeydown);
   document.removeEventListener('pointerdown', onDocumentPointerDown);
+  searchDebounce.clear();
 });
 </script>

@@ -55,6 +55,11 @@ export default {
       catalogAria: 'Open catalog',
       searchAria: 'Search catalog',
       searchPlaceholder: 'Find sections, clubs, activities',
+      searchClear: 'Clear search',
+      searchRecentTitle: 'Recent searches',
+      searchQueriesTitle: 'Suggestions',
+      searchEntitiesTitle: 'Categories and organizations',
+      searchEmpty: 'Start typing and suggestions will appear',
       quickActionsAria: 'Quick actions',
       themeLight: 'Light theme',
       themeDark: 'Dark theme',
@@ -70,8 +75,8 @@ export default {
         'Once active root and child categories are available, they will appear in the catalog.',
       categoriesLoadError: 'Failed to load catalog categories.',
       quickActions: {
-        orders: 'Orders',
         favorites: 'Favorites',
+        favoritesCount: 'Favorites ({count})',
         admin: 'Admin',
       },
       sections: {
@@ -107,6 +112,22 @@ export default {
     },
   },
   public: {
+    favorites: {
+      eyebrow: 'Favorites',
+      heroTitle: 'Favorite activities',
+      heroDescription:
+        'Save sections and clubs you like so you can get back to them quickly later.',
+      seoTitle: 'Favorite activities',
+      sectionTitle: 'Saved cards',
+      emptyTitle: 'No favorites yet',
+      emptyDescription: 'Add activities to favorites from cards and from the activity page.',
+      errorTitle: 'Failed to load favorites',
+      errorDescription: 'Try again later or verify the public activities API is available.',
+      actions: {
+        add: 'Add to favorites',
+        remove: 'Remove from favorites',
+      },
+    },
     home: {
       eyebrow: 'Public',
       heroTitle: 'Marketplace: public layer',

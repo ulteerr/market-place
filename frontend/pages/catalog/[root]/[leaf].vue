@@ -45,7 +45,12 @@
           </NuxtLink>
         </div>
 
-        <PublicCardGrid :items="activityCards" data-test="catalog-leaf-category-activities-grid" />
+        <PublicCardGrid
+          :items="activityCards"
+          show-favorite-button
+          data-test="catalog-leaf-category-activities-grid"
+          @toggle-favorite="toggleFavorite"
+        />
       </template>
     </PublicSection>
   </div>
@@ -61,6 +66,7 @@ import {
   usePublicCategories,
 } from '~/composables/usePublicCategories';
 import { buildPublicActivityPath, usePublicActivities } from '~/composables/usePublicActivities';
+import { useFavorites } from '~/composables/useFavorites';
 import { usePublicPageSeo } from '~/composables/seo/usePublicPageSeo';
 import { buildBreadcrumbListSchema } from '~/composables/schema/public-schema-contract';
 import { usePublicSchemaNode } from '~/composables/schema/usePublicSchemaRegistry';
@@ -80,6 +86,7 @@ const config = useRuntimeConfig();
 const previewState = usePublicPreviewState();
 const publicCategoriesApi = usePublicCategories();
 const publicActivitiesApi = usePublicActivities();
+const { isFavorite, toggleFavorite } = useFavorites();
 const rootSlug = computed(() => String(route.params.root || ''));
 const leafSlug = computed(() => String(route.params.leaf || ''));
 
@@ -197,6 +204,8 @@ const activityCards = computed(() =>
         : undefined,
     meta: [activity.organization?.name, activity.location?.city?.name].filter(Boolean).join(' · '),
     dataTest: `catalog-leaf-category-activity-${activity.id}`,
+    favoriteKey: activity.public_key,
+    isFavorite: isFavorite(activity.public_key),
   }))
 );
 
