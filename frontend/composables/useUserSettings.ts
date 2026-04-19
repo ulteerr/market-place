@@ -160,6 +160,11 @@ export const useUserSettings = () => {
         theme: nextSettings.theme,
         collapse_menu: nextSettings.collapse_menu,
         favorites: [...nextSettings.favorites],
+        public_city: nextSettings.public_city
+          ? {
+              ...nextSettings.public_city,
+            }
+          : null,
         admin_crud_preferences: { ...nextSettings.admin_crud_preferences },
         admin_navigation_sections: { ...nextSettings.admin_navigation_sections },
       };

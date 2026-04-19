@@ -142,6 +142,15 @@ export const buildPublicActivityPath = (activity: {
 export const usePublicActivities = () => {
   const api = useApi();
   const config = useRuntimeConfig();
+  const { selectedCityId } = usePublicCity();
+
+  const resolveCityId = (cityId?: string) => {
+    if (cityId !== undefined) {
+      return cityId;
+    }
+
+    return selectedCityId.value || undefined;
+  };
 
   const normalizeFile = (file: PublicActivityFile): PublicActivityFile => {
     const url = resolveAssetUrl(config.public.apiBase, file.url);
@@ -167,7 +176,10 @@ export const usePublicActivities = () => {
       '/api/activities/featured',
       {
         method: 'GET',
-        query: { limit },
+        query: {
+          limit,
+          city_id: resolveCityId(),
+        },
       }
     );
 
@@ -182,7 +194,10 @@ export const usePublicActivities = () => {
       '/api/activities',
       {
         method: 'GET',
-        query: params,
+        query: {
+          ...params,
+          city_id: resolveCityId(params.city_id),
+        },
         signal: context?.signal,
       }
     );
@@ -201,7 +216,10 @@ export const usePublicActivities = () => {
       '/api/activities/feed',
       {
         method: 'GET',
-        query: params,
+        query: {
+          ...params,
+          city_id: resolveCityId(params.city_id),
+        },
         signal: context?.signal,
       }
     );

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isContentMode,
   isLocaleCode,
+  isPublicCitySource,
   isThemeMode,
   mergeIncomingSettings,
   mergePatchWithSettings,
@@ -13,6 +14,16 @@ const baseSettings: UserSettings = {
   locale: 'ru',
   theme: 'dark',
   collapse_menu: true,
+  favorites: ['fav-1'],
+  public_city: {
+    city_id: 'city-1',
+    city_name: 'Moscow',
+    source: 'manual',
+    region_id: 'region-1',
+    region_name: 'Moscow',
+    country_id: 'country-1',
+    country_name: 'Russia',
+  },
   admin_crud_preferences: {
     users: {
       contentMode: 'cards',
@@ -36,6 +47,10 @@ describe('user settings normalize', () => {
     expect(isThemeMode('light')).toBe(true);
     expect(isThemeMode('system')).toBe(false);
 
+    expect(isPublicCitySource('ip_auto')).toBe(true);
+    expect(isPublicCitySource('manual')).toBe(true);
+    expect(isPublicCitySource('fallback')).toBe(false);
+
     expect(isContentMode('table')).toBe(true);
     expect(isContentMode('table-cards')).toBe(true);
     expect(isContentMode('cards')).toBe(true);
@@ -47,6 +62,16 @@ describe('user settings normalize', () => {
       locale: 'en',
       theme: 'dark',
       collapse_menu: false,
+      favorites: ['fav-2', 'fav-2', 'fav-3'],
+      public_city: {
+        city_id: 'city-2',
+        city_name: 'Yekaterinburg',
+        source: 'ip_auto',
+        region_id: 'region-2',
+        region_name: 'Sverdlovsk Oblast',
+        country_id: 'country-1',
+        country_name: 'Russia',
+      },
       admin_crud_preferences: {
         users: { contentMode: 'table-cards', tableOnDesktop: true },
         roles: { contentMode: 'cards' },
@@ -61,6 +86,16 @@ describe('user settings normalize', () => {
     expect(merged.locale).toBe('en');
     expect(merged.theme).toBe('dark');
     expect(merged.collapse_menu).toBe(false);
+    expect(merged.favorites).toEqual(['fav-2', 'fav-3']);
+    expect(merged.public_city).toEqual({
+      city_id: 'city-2',
+      city_name: 'Yekaterinburg',
+      source: 'ip_auto',
+      region_id: 'region-2',
+      region_name: 'Sverdlovsk Oblast',
+      country_id: 'country-1',
+      country_name: 'Russia',
+    });
     expect(merged.admin_crud_preferences).toEqual({
       users: { contentMode: 'table-cards', tableOnDesktop: true },
       roles: { contentMode: 'cards' },
@@ -73,6 +108,7 @@ describe('user settings normalize', () => {
   it('applies incoming partial settings over current state', () => {
     const next = mergeIncomingSettings(baseSettings, {
       locale: 'en',
+      public_city: null,
       admin_crud_preferences: {
         users: { tableOnDesktop: true },
         roles: { contentMode: 'table' },
@@ -86,6 +122,8 @@ describe('user settings normalize', () => {
       locale: 'en',
       theme: 'dark',
       collapse_menu: true,
+      favorites: ['fav-1'],
+      public_city: null,
       admin_crud_preferences: {
         users: { tableOnDesktop: true },
         roles: { contentMode: 'table' },
@@ -101,6 +139,15 @@ describe('user settings normalize', () => {
       locale: null,
       theme: 'light',
       collapse_menu: false,
+      public_city: {
+        city_id: 'city-3',
+        city_name: 'Kazan',
+        source: 'manual',
+        region_id: null,
+        region_name: null,
+        country_id: 'country-1',
+        country_name: 'Russia',
+      },
       admin_crud_preferences: {
         users: { contentMode: 'table' },
       },
@@ -113,6 +160,16 @@ describe('user settings normalize', () => {
       locale: null,
       theme: 'light',
       collapse_menu: false,
+      favorites: ['fav-1'],
+      public_city: {
+        city_id: 'city-3',
+        city_name: 'Kazan',
+        source: 'manual',
+        region_id: null,
+        region_name: null,
+        country_id: 'country-1',
+        country_name: 'Russia',
+      },
       admin_crud_preferences: {
         users: { contentMode: 'table' },
       },

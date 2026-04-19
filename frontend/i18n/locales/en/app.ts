@@ -100,6 +100,21 @@ export default {
         english: 'English',
       },
       region: 'Moscow',
+      cityDetectionTitle: 'Is your city {city}?',
+      cityDetectionDescription:
+        'We have already applied this city to public listings. If it is not correct, choose another city manually.',
+      cityDetectionConfirm: 'Yes, correct',
+      cityDetectionChange: 'Choose another',
+      cityDetectionDismiss: 'Close',
+      cityPickerOpenAria: 'Choose city, current city is {city}',
+      cityPickerTitle: 'Choose city',
+      cityPickerDescription:
+        'The selected city affects public content in the catalog and on the homepage.',
+      cityPickerLabel: 'City',
+      cityPickerPlaceholder: 'Start typing a city name',
+      cityPickerHint: 'Start typing to find the right city.',
+      cityPickerLoading: 'Loading cities...',
+      cityPickerError: 'Failed to load cities. Please try again.',
       serviceStatus: 'Enrollment is open',
     },
     adminToolbar: {

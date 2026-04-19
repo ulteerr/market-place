@@ -19,6 +19,7 @@ export const usePublicHeaderConfig = () => {
   const { t } = useI18n();
   const publicCategoriesApi = usePublicCategories();
   const { favoriteCount } = useFavorites();
+  const { selectedCityLabel } = usePublicCity();
   const {
     data: categoriesTreeData,
     pending: categoriesPending,
@@ -38,7 +39,6 @@ export const usePublicHeaderConfig = () => {
           : t('app.layout.header.quickActions.favorites'),
       to: '/favorites',
     },
-    { label: t('app.layout.header.quickActions.admin'), to: '/admin' },
   ]);
 
   const sectionLinks = computed<HeaderLink[]>(() => [
@@ -60,9 +60,7 @@ export const usePublicHeaderConfig = () => {
     }))
   );
 
-  const regionText = computed(() => t('app.layout.header.region'));
-  const serviceStatusText = computed(() => t('app.layout.header.serviceStatus'));
-
+  const regionText = computed(() => selectedCityLabel.value || t('app.layout.header.region'));
   return {
     categoriesPending,
     categoriesError: computed(() =>
@@ -72,6 +70,5 @@ export const usePublicHeaderConfig = () => {
     sectionLinks,
     catalogGroups,
     regionText,
-    serviceStatusText,
   };
 };

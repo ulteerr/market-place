@@ -34,6 +34,24 @@ final class CitiesService
         return $this->repository->list(EntitySearchFiltersDTO::fromArray($filters)->toArray());
     }
 
+    public function publicOptions(string $search = "", int $limit = 20): Collection
+    {
+        return $this->repository->publicOptions($search, $limit);
+    }
+
+    public function firstById(): ?City
+    {
+        return $this->repository->firstById();
+    }
+
+    public function findByNames(
+        string $cityName,
+        ?string $countryName = null,
+        ?string $regionName = null,
+    ): ?City {
+        return $this->repository->findByNames($cityName, $countryName, $regionName);
+    }
+
     public function paginate(
         int $perPage = 20,
         array $with = [],

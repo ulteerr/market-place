@@ -217,6 +217,7 @@ const config = useRuntimeConfig();
 const previewState = usePublicPreviewState();
 const publicActivitiesApi = usePublicActivities();
 const publicCategoriesApi = usePublicCategories();
+const { selectedCityId } = usePublicCity();
 const { isFavorite, toggleFavorite } = useFavorites();
 
 const activities = ref<Awaited<ReturnType<typeof publicActivitiesApi.feed>>['items']>([]);
@@ -425,6 +426,7 @@ const {
       organization_id: filters.organization_id || '',
       is_featured: filters.is_featured || '',
       sort_dir: filters.sort_dir,
+      city_id: selectedCityId.value || '',
     })}`,
   async () => {
     if (previewState.value !== 'ready') {
@@ -650,6 +652,18 @@ watch(
     void refreshActivities();
   }
 );
+
+watch(selectedCityId, (nextCityId, previousCityId) => {
+  if (nextCityId === previousCityId || isHydratingFilters.value) {
+    return;
+  }
+
+  if (previewState.value !== 'ready') {
+    return;
+  }
+
+  void refreshActivities();
+});
 
 watch(
   () => filters.root_category_id,

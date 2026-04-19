@@ -8,6 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Modules\Activities\Models\Activity;
 use Modules\Categories\Models\Category;
+use Modules\Geo\Models\City;
+use Modules\Geo\Models\Country;
+use Modules\Geo\Models\Region;
 use Modules\Organizations\Models\Organization;
 use Modules\Organizations\Models\OrganizationLocation;
 use PHPUnit\Framework\Attributes\Test;
@@ -125,6 +128,82 @@ final class ActivitiesPublicReadTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, "data")
             ->assertJsonPath("data.0.id", (string) $featured->id);
+    }
+
+    #[Test]
+    public function featured_endpoint_applies_city_filter(): void
+    {
+        $country = Country::factory()->create(["name" => "Россия", "iso_code" => "RUS"]);
+        $region = Region::factory()->create([
+            "name" => "Центральный регион",
+            "country_id" => (string) $country->id,
+        ]);
+        $moscow = City::factory()->create([
+            "name" => "Москва",
+            "country_id" => (string) $country->id,
+            "region_id" => (string) $region->id,
+        ]);
+        $spb = City::factory()->create([
+            "name" => "Санкт-Петербург",
+            "country_id" => (string) $country->id,
+            "region_id" => (string) $region->id,
+        ]);
+
+        $organization = Organization::factory()->create(["status" => "active"]);
+        $moscowLocation = OrganizationLocation::factory()->create([
+            "organization_id" => (string) $organization->id,
+            "city_id" => (string) $moscow->id,
+            "address" => "Москва, Пушкина 10",
+        ]);
+        $spbLocation = OrganizationLocation::factory()->create([
+            "organization_id" => (string) $organization->id,
+            "city_id" => (string) $spb->id,
+            "address" => "Санкт-Петербург, Невский 1",
+        ]);
+        $root = Category::factory()->create([
+            "name" => "Спорт",
+            "slug" => "sport",
+        ]);
+        $leaf = Category::factory()
+            ->childOf($root)
+            ->create([
+                "name" => "Футбол",
+                "slug" => "futbol",
+            ]);
+
+        $moscowFeatured = Activity::factory()
+            ->forOrganizationLocation($organization, $moscowLocation)
+            ->published()
+            ->featured()
+            ->create([
+                "name" => "Футбол Москва",
+                "slug" => "futbol-moskva",
+            ]);
+        $spbFeatured = Activity::factory()
+            ->forOrganizationLocation($organization, $spbLocation)
+            ->published()
+            ->featured()
+            ->create([
+                "name" => "Футбол Питер",
+                "slug" => "futbol-piter",
+            ]);
+
+        DB::table("activity_categories")->insert([
+            [
+                "activity_id" => (string) $moscowFeatured->id,
+                "category_id" => (string) $leaf->id,
+            ],
+            [
+                "activity_id" => (string) $spbFeatured->id,
+                "category_id" => (string) $leaf->id,
+            ],
+        ]);
+
+        $this->getJson("/api/activities/featured?city_id=" . $moscow->id)
+            ->assertOk()
+            ->assertJsonCount(1, "data")
+            ->assertJsonPath("data.0.id", (string) $moscowFeatured->id)
+            ->assertJsonPath("data.0.location.city.id", (string) $moscow->id);
     }
 
     #[Test]

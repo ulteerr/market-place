@@ -42,4 +42,12 @@ return [
         "retry_times" => env("DADATA_RETRY_TIMES", 2),
         "retry_delay_ms" => env("DADATA_RETRY_DELAY_MS", 500),
     ],
+
+    "ip_geolocation" => [
+        "base_url" => env("IP_GEOLOCATION_BASE_URL", ""),
+        "lang" => env("IP_GEOLOCATION_LANG", "ru"),
+        "timeout_seconds" => env("IP_GEOLOCATION_TIMEOUT_SECONDS", 3),
+        "retry_times" => env("IP_GEOLOCATION_RETRY_TIMES", 1),
+        "retry_delay_ms" => env("IP_GEOLOCATION_RETRY_DELAY_MS", 250),
+    ],
 ];

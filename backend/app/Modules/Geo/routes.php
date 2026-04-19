@@ -10,7 +10,14 @@ use Modules\Geo\Http\Controllers\AdminRegionController;
 use Modules\Geo\Http\Controllers\CitiesController;
 use Modules\Geo\Http\Controllers\CountriesController;
 use Modules\Geo\Http\Controllers\DistrictsController;
+use Modules\Geo\Http\Controllers\PublicCitiesController;
+use Modules\Geo\Http\Controllers\PublicCityDetectionController;
 use Modules\Geo\Http\Controllers\RegionsController;
+
+Route::prefix("api/public/geo")->group(function (): void {
+    Route::get("/cities", [PublicCitiesController::class, "index"]);
+    Route::get("/detect-city", [PublicCityDetectionController::class, "show"]);
+});
 
 Route::middleware(["auth:sanctum"])
     ->prefix("api/geo")

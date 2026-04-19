@@ -280,11 +280,15 @@
         </nav>
 
         <div :class="styles.serviceTools">
-          <div :class="styles.serviceZone">
+          <button
+            type="button"
+            :class="[styles.serviceZone, styles.serviceZoneButton]"
+            data-test="public-header-city-picker-toggle"
+            :aria-label="t('app.layout.header.cityPickerOpenAria', { city: regionText })"
+            @click="openCityPicker"
+          >
             <span>{{ regionText }}</span>
-            <span aria-hidden="true">•</span>
-            <span>{{ serviceStatusText }}</span>
-          </div>
+          </button>
 
           <div :class="styles.localeSelect" data-test="public-header-locale-select">
             <UiSelect
@@ -405,6 +409,16 @@
       </nav>
 
       <div :class="styles.mobileUtilityRow">
+        <button
+          type="button"
+          :class="styles.mobileCityButton"
+          data-test="public-header-mobile-city-picker-toggle"
+          :aria-label="t('app.layout.header.cityPickerOpenAria', { city: regionText })"
+          @click="openCityPicker"
+        >
+          {{ regionText }}
+        </button>
+
         <div :class="styles.localeSelect" data-test="public-header-mobile-locale-select">
           <UiSelect
             class="public-header-locale-ui-select"
@@ -460,11 +474,85 @@
         </button>
       </div>
     </div>
+
+    <UiModal
+      :model-value="showDetectedCityPrompt"
+      :title="t('app.layout.header.cityDetectionTitle', { city: regionText })"
+      close-on-backdrop
+      @update:model-value="onDetectedCityPromptVisibilityChange"
+      @close="dismissDetectedCityPrompt"
+    >
+      <div :class="styles.cityDetectionBody" data-test="public-header-city-modal">
+        <p :class="styles.cityDetectionDescription">
+          {{ t('app.layout.header.cityDetectionDescription') }}
+        </p>
+
+        <div :class="styles.cityDetectionActions">
+          <button
+            type="button"
+            :class="[styles.cityDetectionAction, styles.cityDetectionActionPrimary]"
+            data-test="public-header-city-modal-confirm"
+            @click="dismissDetectedCityPrompt"
+          >
+            {{ t('app.layout.header.cityDetectionConfirm') }}
+          </button>
+
+          <button
+            type="button"
+            :class="[styles.cityDetectionAction, styles.cityDetectionActionSecondary]"
+            data-test="public-header-city-modal-change"
+            @click="changeDetectedCity"
+          >
+            {{ t('app.layout.header.cityDetectionChange') }}
+          </button>
+
+          <button
+            type="button"
+            :class="[styles.cityDetectionAction, styles.cityDetectionActionGhost]"
+            data-test="public-header-city-modal-dismiss"
+            @click="dismissDetectedCityPrompt"
+          >
+            {{ t('app.layout.header.cityDetectionDismiss') }}
+          </button>
+        </div>
+      </div>
+    </UiModal>
+
+    <UiModal
+      v-model="cityPickerOpen"
+      :title="t('app.layout.header.cityPickerTitle')"
+      close-on-backdrop
+    >
+      <div :class="styles.cityPickerBody">
+        <p :class="styles.cityPickerDescription">
+          {{ t('app.layout.header.cityPickerDescription') }}
+        </p>
+
+        <UiSelect
+          class="public-header-city-ui-select"
+          id="public-header-city-picker"
+          :model-value="selectedCityId || null"
+          :label="t('app.layout.header.cityPickerLabel')"
+          :options="pickerOptions"
+          :placeholder="t('app.layout.header.cityPickerPlaceholder')"
+          :hint="
+            pickerPending
+              ? t('app.layout.header.cityPickerLoading')
+              : t('app.layout.header.cityPickerHint')
+          "
+          :error="pickerLoadFailed ? t('app.layout.header.cityPickerError') : ''"
+          searchable
+          @search="schedulePickerSearch"
+          @update:model-value="selectManualCityByValue"
+        />
+      </div>
+    </UiModal>
   </header>
 </template>
 
 <script setup lang="ts">
 import UiSelect from '~/components/ui/FormControls/UiSelect/UiSelect.vue';
+import UiModal from '~/components/ui/Modal/UiModal.vue';
 import styles from './AppHeader.module.scss';
 import { usePublicHeaderConfig } from '~/composables/layout/usePublicHeaderConfig';
 import {
@@ -479,6 +567,19 @@ import { useDebouncedSearch } from '~/composables/useAsyncSelectOptions';
 const { t, locale, setLocale } = useI18n();
 const { isAuthenticated } = useAuth();
 const { settings, isDark, toggleTheme, updateSettings } = useUserSettings();
+const { selectedCityId } = usePublicCity();
+const {
+  pickerOpen: cityPickerOpen,
+  pickerOptions,
+  pickerPending,
+  pickerLoadFailed,
+  showDetectedBanner: showDetectedCityPrompt,
+  openPicker: openCityPicker,
+  schedulePickerSearch,
+  selectManualCityByValue,
+  dismissDetectedBanner: dismissDetectedCityPrompt,
+  detectAutoCity,
+} = usePublicCitySelection();
 const { localeSelectOptions, onLocaleChange } = useAdminLocaleSync({
   locale,
   setLocale,
@@ -492,20 +593,25 @@ const route = useRoute();
 const router = useRouter();
 const searchInput = ref<HTMLInputElement | null>(null);
 const publicSearchApi = usePublicSearch();
-const {
-  categoriesError,
-  quickActions,
-  sectionLinks,
-  catalogGroups,
-  regionText,
-  serviceStatusText,
-} = usePublicHeaderConfig();
+const { categoriesError, quickActions, sectionLinks, catalogGroups, regionText } =
+  usePublicHeaderConfig();
 const headerRoot = ref<HTMLElement | null>(null);
 const catalogToggleButton = ref<HTMLButtonElement | null>(null);
 const publicLocalePlaceholder = computed(() => locale.value.toUpperCase());
 const themeToggleLabel = computed(() =>
   resolvedIsDark.value ? t('app.layout.header.themeLight') : t('app.layout.header.themeDark')
 );
+
+const onDetectedCityPromptVisibilityChange = (visible: boolean) => {
+  if (!visible) {
+    dismissDetectedCityPrompt();
+  }
+};
+
+const changeDetectedCity = () => {
+  dismissDetectedCityPrompt();
+  openCityPicker();
+};
 
 const selectedCatalogGroupId = ref(catalogGroups.value[0]?.id ?? '');
 const selectedCatalogGroup = computed(
@@ -991,6 +1097,7 @@ onMounted(() => {
         : '';
   mobileSearchQuery.value = searchQuery.value;
   loadRecentQueries();
+  void detectAutoCity();
   window.addEventListener('keydown', onWindowKeydown);
   document.addEventListener('pointerdown', onDocumentPointerDown);
 });

@@ -29,6 +29,15 @@ final class UpdateMeSettingsTest extends TestCase
                 "theme" => "dark",
                 "collapse_menu" => true,
                 "favorites" => ["act-public-1", "act-public-2"],
+                "public_city" => [
+                    "city_id" => "11111111-1111-1111-1111-111111111111",
+                    "city_name" => "Москва",
+                    "source" => "manual",
+                    "region_id" => "22222222-2222-2222-2222-222222222222",
+                    "region_name" => "Москва",
+                    "country_id" => "33333333-3333-3333-3333-333333333333",
+                    "country_name" => "Россия",
+                ],
                 "admin_crud_preferences" => [
                     "users" => [
                         "contentMode" => "cards",
@@ -54,6 +63,12 @@ final class UpdateMeSettingsTest extends TestCase
             ["act-public-1", "act-public-2"],
             $auth["user"]->settings["favorites"] ?? [],
         );
+        $this->assertSame(
+            "11111111-1111-1111-1111-111111111111",
+            $auth["user"]->settings["public_city"]["city_id"] ?? null,
+        );
+        $this->assertSame("Москва", $auth["user"]->settings["public_city"]["city_name"] ?? null);
+        $this->assertSame("manual", $auth["user"]->settings["public_city"]["source"] ?? null);
         $this->assertSame(
             "cards",
             $auth["user"]->settings["admin_crud_preferences"]["users"]["contentMode"] ?? null,
@@ -165,6 +180,26 @@ final class UpdateMeSettingsTest extends TestCase
     }
 
     #[Test]
+    public function invalid_public_city_source_returns_validation_error(): void
+    {
+        $auth = $this->actingAsUser();
+
+        $response = $this->withHeaders($auth["headers"])->patchJson("/api/me/settings", [
+            "settings" => [
+                "public_city" => [
+                    "city_id" => "11111111-1111-1111-1111-111111111111",
+                    "city_name" => "Москва",
+                    "source" => "fallback",
+                    "country_id" => "33333333-3333-3333-3333-333333333333",
+                    "country_name" => "Россия",
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(["settings.public_city.source"]);
+    }
+
+    #[Test]
     public function guest_cannot_update_settings(): void
     {
         $this->patchJson("/api/me/settings", [
@@ -214,6 +249,15 @@ final class UpdateMeSettingsTest extends TestCase
                 "theme" => "light",
                 "collapse_menu" => true,
                 "favorites" => ["act-public-1", "act-public-2"],
+                "public_city" => [
+                    "city_id" => "11111111-1111-1111-1111-111111111111",
+                    "city_name" => "Москва",
+                    "source" => "manual",
+                    "region_id" => "22222222-2222-2222-2222-222222222222",
+                    "region_name" => "Москва",
+                    "country_id" => "33333333-3333-3333-3333-333333333333",
+                    "country_name" => "Россия",
+                ],
                 "admin_crud_preferences" => [
                     "users" => [
                         "contentMode" => "cards",
@@ -244,6 +288,10 @@ final class UpdateMeSettingsTest extends TestCase
         $this->assertSame(
             ["act-public-1", "act-public-2"],
             $auth["user"]->settings["favorites"] ?? [],
+        );
+        $this->assertSame(
+            "11111111-1111-1111-1111-111111111111",
+            $auth["user"]->settings["public_city"]["city_id"] ?? null,
         );
         $this->assertSame(
             "cards",

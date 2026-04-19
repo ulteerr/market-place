@@ -85,11 +85,12 @@ const config = useRuntimeConfig();
 const previewState = usePublicPreviewState();
 const publicCategoriesApi = usePublicCategories();
 const publicActivitiesApi = usePublicActivities();
+const { selectedCityId } = usePublicCity();
 const { isFavorite, toggleFavorite } = useFavorites();
 const rootSlug = computed(() => String(route.params.slug || ''));
 
 const { data, pending, error } = await useAsyncData(
-  () => `catalog-root-category:${rootSlug.value}`,
+  () => `catalog-root-category:${rootSlug.value}:${selectedCityId.value || 'all'}`,
   async () => {
     const tree = await publicCategoriesApi.tree();
     const resolved = findPublicCategoryBySlugs(tree, rootSlug.value);
@@ -112,6 +113,9 @@ const { data, pending, error } = await useAsyncData(
       children: resolved.root.children ?? [],
       activities: feed.items,
     };
+  },
+  {
+    watch: [selectedCityId],
   }
 );
 

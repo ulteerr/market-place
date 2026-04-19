@@ -22,8 +22,9 @@ final class SearchService
      *   entities: array<int, array<string, mixed>>,
      *   recent: array<int, string>
      * }
+     * @param array<string, mixed> $filters
      */
-    public function suggest(string $query, int $limit = 8): array
+    public function suggest(string $query, int $limit = 8, array $filters = []): array
     {
         if (!$this->searchEnabled()) {
             return [
@@ -36,7 +37,7 @@ final class SearchService
         $query = trim($query);
         if ($query === "") {
             return [
-                "queries" => $this->popularQueries($limit),
+                "queries" => $this->popularQueries($limit, $filters),
                 "entities" => [],
                 "recent" => [],
             ];
@@ -51,8 +52,8 @@ final class SearchService
         }
 
         return [
-            "queries" => $this->querySuggestions($query, $limit),
-            "entities" => $this->entitySuggestions($query, $limit),
+            "queries" => $this->querySuggestions($query, $limit, $filters),
+            "entities" => $this->entitySuggestions($query, $limit, $filters),
             "recent" => [],
         ];
     }
@@ -126,11 +127,11 @@ final class SearchService
 
     /**
      * @return array<int, string>
+     * @param array<string, mixed> $filters
      */
-    private function popularQueries(int $limit): array
+    private function popularQueries(int $limit, array $filters = []): array
     {
-        return Activity::query()
-            ->where("status", "published")
+        return $this->buildActivitySearchQuery("", $filters)
             ->orderByDesc("is_featured")
             ->orderByDesc("published_at")
             ->orderByDesc("created_at")
@@ -145,11 +146,12 @@ final class SearchService
 
     /**
      * @return array<int, string>
+     * @param array<string, mixed> $filters
      */
-    private function querySuggestions(string $query, int $limit): array
+    private function querySuggestions(string $query, int $limit, array $filters = []): array
     {
         $suggestions = collect();
-        if ($this->searchEngine->isAvailable()) {
+        if ($this->searchEngine->isAvailable() && !$this->hasStructuredFilters($filters)) {
             $suggestions = collect(
                 $this->searchEngine->suggest("activities", $query, [
                     "limit" => $limit,
@@ -159,18 +161,19 @@ final class SearchService
         }
 
         $fallback = collect(
-            Activity::query()
-                ->where("status", "published")
+            $this->buildActivitySearchQuery($query, $filters)
                 ->orderByDesc("is_featured")
                 ->orderByDesc("published_at")
+                ->orderByDesc("created_at")
                 ->limit(100)
                 ->get(["name", "slug", "short_description"])
-                ->filter(
-                    fn(Activity $activity): bool => $this->matchesText($activity->name, $query) ||
-                        $this->matchesText($activity->slug, $query) ||
-                        $this->matchesText($activity->short_description, $query),
+                ->sortBy(
+                    fn(Activity $activity): int => min(
+                        $this->textRank($activity->name, $query),
+                        $this->textRank($activity->slug, $query),
+                        $this->textRank($activity->short_description, $query),
+                    ),
                 )
-                ->sortBy(fn(Activity $activity): int => $this->textRank($activity->name, $query))
                 ->take($limit)
                 ->pluck("name")
                 ->all(),
@@ -188,18 +191,43 @@ final class SearchService
 
     /**
      * @return array<int, array<string, mixed>>
+     * @param array<string, mixed> $filters
      */
-    private function entitySuggestions(string $query, int $limit): array
+    private function entitySuggestions(string $query, int $limit, array $filters = []): array
     {
         $entityLimit = max(2, (int) ceil($limit / 2));
+        $matchingActivityIds = $this->buildActivitySearchQuery($query, $filters)
+            ->limit(200)
+            ->pluck("activities.id")
+            ->filter(fn($value) => is_string($value) && trim($value) !== "")
+            ->values();
+
+        if ($matchingActivityIds->isEmpty()) {
+            return [];
+        }
 
         $categories = collect(
             Category::query()
                 ->with(["parent:id,name,slug"])
+                ->join(
+                    "activity_categories",
+                    "activity_categories.category_id",
+                    "=",
+                    "categories.id",
+                )
                 ->where("is_active", true)
+                ->whereIn("activity_categories.activity_id", $matchingActivityIds->all())
+                ->select([
+                    "categories.id",
+                    "categories.name",
+                    "categories.slug",
+                    "categories.parent_id",
+                    "categories.sort_order",
+                ])
+                ->distinct()
                 ->orderBy("sort_order")
                 ->orderBy("name")
-                ->limit(100)
+                ->limit(200)
                 ->get()
                 ->filter(
                     fn(Category $category): bool => $this->matchesText($category->name, $query),
@@ -225,8 +253,12 @@ final class SearchService
 
         $organizations = collect(
             Organization::query()
-                ->orderByDesc("created_at")
-                ->limit(100)
+                ->join("activities", "activities.organization_id", "=", "organizations.id")
+                ->whereIn("activities.id", $matchingActivityIds->all())
+                ->select(["organizations.id", "organizations.name", "organizations.created_at"])
+                ->distinct()
+                ->orderByDesc("organizations.created_at")
+                ->limit(200)
                 ->get()
                 ->filter(
                     fn(Organization $organization): bool => $this->matchesText(
@@ -258,15 +290,10 @@ final class SearchService
         );
 
         $activities = collect(
-            Activity::query()
-                ->with([
-                    "primaryCategory.parent:id,name,slug",
-                    "primaryCategory:id,name,slug,parent_id",
-                ])
-                ->where("status", "published")
+            $this->buildActivitySearchQuery($query, $filters)
                 ->orderByDesc("is_featured")
                 ->orderByDesc("published_at")
-                ->limit(100)
+                ->limit(200)
                 ->get()
                 ->filter(
                     fn(Activity $activity): bool => $this->matchesText($activity->name, $query),
@@ -430,7 +457,7 @@ final class SearchService
         if ($query !== "") {
             $normalized = $this->normalizedQuery($query);
             $like = "%" . $normalized . "%";
-            $containsPatterns = $this->stringVariants($query, "%s");
+            $containsPatterns = $this->stringVariants($query, "%%%s%%");
 
             $builder->where(function (Builder $searchBuilder) use ($like, $containsPatterns): void {
                 $searchBuilder

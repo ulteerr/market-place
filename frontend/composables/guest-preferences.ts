@@ -3,6 +3,7 @@ import {
   mergeSettings,
   normalizeFavoriteKeys,
 } from '~/composables/user-settings/normalize';
+import { createDefaultSettings } from '~/composables/user-settings/constants';
 import type { UserSettings } from '~/composables/user-settings/types';
 
 export const GUEST_PREFERENCES_COOKIE_KEY = 'guest_preferences_v2';
@@ -104,8 +105,27 @@ export const mergeGuestPreferencesIntoAccountSettings = (
   guestPreferences: GuestPreferences | null | undefined
 ): UserSettings => {
   const normalizedAccount = mergeSettings(accountSettings ?? null);
-  const merged = guestPreferences?.settings
-    ? mergeIncomingSettings(normalizedAccount, guestPreferences.settings)
+  const defaultSettings = createDefaultSettings();
+  const guestSettings = guestPreferences?.settings
+    ? mergeSettings(guestPreferences.settings)
+    : null;
+
+  const merged = guestSettings
+    ? mergeIncomingSettings(normalizedAccount, {
+        locale: guestSettings.locale !== defaultSettings.locale ? guestSettings.locale : undefined,
+        theme: guestSettings.theme !== defaultSettings.theme ? guestSettings.theme : undefined,
+        collapse_menu:
+          guestSettings.collapse_menu !== defaultSettings.collapse_menu
+            ? guestSettings.collapse_menu
+            : undefined,
+        public_city: guestSettings.public_city ?? undefined,
+        admin_crud_preferences: Object.keys(guestSettings.admin_crud_preferences).length
+          ? guestSettings.admin_crud_preferences
+          : undefined,
+        admin_navigation_sections: Object.keys(guestSettings.admin_navigation_sections).length
+          ? guestSettings.admin_navigation_sections
+          : undefined,
+      })
     : normalizedAccount;
   const favorites = normalizeFavoriteKeys([
     ...(guestPreferences?.favorites ?? []),

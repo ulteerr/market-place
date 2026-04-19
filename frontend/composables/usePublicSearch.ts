@@ -86,10 +86,19 @@ interface PublicSearchResultsResponse {
 
 export const usePublicSearch = () => {
   const api = useApi();
+  const { selectedCityId } = usePublicCity();
+
+  const resolveCityId = (cityId?: string) => {
+    if (cityId !== undefined) {
+      return cityId;
+    }
+
+    return selectedCityId.value || undefined;
+  };
 
   const suggest = async (
     q: string,
-    context?: { signal?: AbortSignal; limit?: number }
+    context?: { signal?: AbortSignal; limit?: number; city_id?: string }
   ): Promise<PublicSearchSuggestResponse> => {
     const response = await api<PublicSearchApiResponse<PublicSearchSuggestResponse>>(
       '/api/search/suggest',
@@ -98,6 +107,7 @@ export const usePublicSearch = () => {
         query: {
           q,
           limit: context?.limit ?? 8,
+          city_id: resolveCityId(context?.city_id),
         },
         signal: context?.signal,
       }
@@ -114,7 +124,10 @@ export const usePublicSearch = () => {
       '/api/search',
       {
         method: 'GET',
-        query,
+        query: {
+          ...query,
+          city_id: resolveCityId(typeof query.city_id === 'string' ? query.city_id : undefined),
+        },
         signal: context?.signal,
       }
     );

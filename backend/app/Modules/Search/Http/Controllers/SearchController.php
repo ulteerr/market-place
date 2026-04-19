@@ -18,7 +18,11 @@ final class SearchController
         $query = trim((string) $request->query("q", ""));
         $limit = max(1, min(10, (int) $request->integer("limit", 8)));
 
-        return StatusResponseFactory::success($this->searchService->suggest($query, $limit));
+        return StatusResponseFactory::success(
+            $this->searchService->suggest($query, $limit, [
+                "city_id" => trim((string) $request->query("city_id", "")),
+            ]),
+        );
     }
 
     public function index(Request $request): JsonResponse

@@ -7,6 +7,7 @@ namespace Modules\Geo\Repositories;
 use App\Shared\Traits\AppliesEntitySearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Modules\Geo\Models\City;
 
 final class CitiesRepository implements CitiesRepositoryInterface
@@ -43,6 +44,120 @@ final class CitiesRepository implements CitiesRepositoryInterface
         });
 
         return $query->orderBy("cities.name")->orderBy("cities.id")->get();
+    }
+
+    public function publicOptions(string $search = "", int $limit = 20): Collection
+    {
+        $normalizedSearch = trim($search);
+        $normalizedLimit = max(1, min($limit, 50));
+
+        $query = City::query()
+            ->with(["country:id,name", "region:id,name"])
+            ->leftJoin("countries", "countries.id", "=", "cities.country_id")
+            ->leftJoin("regions", "regions.id", "=", "cities.region_id")
+            ->select(["cities.id", "cities.name", "cities.country_id", "cities.region_id"]);
+
+        if ($normalizedSearch !== "") {
+            $this->applyEntitySearchOrSearch(
+                $query,
+                [
+                    "search" => $normalizedSearch,
+                    "entity_search" => $normalizedSearch,
+                ],
+                "cities.name",
+                function ($searchQuery, string $search): void {
+                    $term = "%" . $search . "%";
+                    $searchQuery
+                        ->where("cities.name", "like", $term)
+                        ->orWhere("countries.name", "like", $term)
+                        ->orWhere("regions.name", "like", $term);
+                },
+            );
+        }
+
+        return $query->orderBy("cities.name")->orderBy("cities.id")->limit($normalizedLimit)->get();
+    }
+
+    public function firstById(): ?City
+    {
+        return City::query()
+            ->with(["country:id,name", "region:id,name"])
+            ->orderBy("id")
+            ->first();
+    }
+
+    public function findByNames(
+        string $cityName,
+        ?string $countryName = null,
+        ?string $regionName = null,
+    ): ?City {
+        $normalizedCityName = $this->normalizeName($cityName);
+        if ($normalizedCityName === "") {
+            return null;
+        }
+
+        $normalizedCountryName = $this->normalizeName((string) $countryName);
+        $normalizedRegionName = $this->normalizeName((string) $regionName);
+
+        $candidates = City::query()
+            ->with(["country:id,name", "region:id,name"])
+            ->whereIn("name", $this->exactNameVariants($cityName))
+            ->orderBy("id")
+            ->get();
+
+        if ($candidates->isEmpty()) {
+            return null;
+        }
+
+        $matchCountryAndRegion = fn(City $city): bool => $this->normalizeName(
+            (string) $city->country?->name,
+        ) === $normalizedCountryName &&
+            $this->normalizeName((string) $city->region?->name) === $normalizedRegionName;
+
+        $matchCountryOnly = fn(City $city): bool => $this->normalizeName(
+            (string) $city->country?->name,
+        ) === $normalizedCountryName;
+
+        if ($normalizedCountryName !== "" && $normalizedRegionName !== "") {
+            $matched = $candidates->first($matchCountryAndRegion);
+            if ($matched) {
+                return $matched;
+            }
+        }
+
+        if ($normalizedCountryName !== "") {
+            $matched = $candidates->first($matchCountryOnly);
+            if ($matched) {
+                return $matched;
+            }
+        }
+
+        return $candidates->first();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function exactNameVariants(string $value): array
+    {
+        $trimmed = trim($value);
+        if ($trimmed === "") {
+            return [];
+        }
+
+        return array_values(
+            array_unique([
+                $trimmed,
+                Str::lower($trimmed),
+                mb_strtoupper($trimmed, "UTF-8"),
+                mb_convert_case($trimmed, MB_CASE_TITLE, "UTF-8"),
+            ]),
+        );
+    }
+
+    private function normalizeName(string $value): string
+    {
+        return Str::lower(trim($value));
     }
 
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator

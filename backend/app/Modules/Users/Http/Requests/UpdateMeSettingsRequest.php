@@ -23,6 +23,31 @@ final class UpdateMeSettingsRequest extends FormRequest
             "settings.collapse_menu" => ["sometimes", "boolean"],
             "settings.favorites" => ["sometimes", "array"],
             "settings.favorites.*" => ["string", "distinct"],
+            "settings.public_city" => [
+                "sometimes",
+                "nullable",
+                "array",
+                "required_array_keys:city_id,city_name,source,country_id,country_name",
+            ],
+            "settings.public_city.city_id" => [
+                "required_with:settings.public_city",
+                "string",
+                "uuid",
+            ],
+            "settings.public_city.city_name" => ["required_with:settings.public_city", "string"],
+            "settings.public_city.source" => [
+                "required_with:settings.public_city",
+                "string",
+                Rule::in(["ip_auto", "manual"]),
+            ],
+            "settings.public_city.region_id" => ["sometimes", "nullable", "string", "uuid"],
+            "settings.public_city.region_name" => ["sometimes", "nullable", "string"],
+            "settings.public_city.country_id" => [
+                "required_with:settings.public_city",
+                "string",
+                "uuid",
+            ],
+            "settings.public_city.country_name" => ["required_with:settings.public_city", "string"],
             "settings.admin_crud_preferences" => ["sometimes", "array"],
             "settings.admin_crud_preferences.*" => ["array"],
             "settings.admin_crud_preferences.*.contentMode" => [

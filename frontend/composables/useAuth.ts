@@ -5,6 +5,8 @@ import {
   readGuestPreferences,
   writeGuestPreferences,
 } from '~/composables/guest-preferences';
+import { mergeSettings } from '~/composables/user-settings/normalize';
+import { settingsAreSame } from '~/composables/user-settings/runtime';
 
 interface AuthUser {
   avatar?: {
@@ -27,6 +29,15 @@ interface AuthUser {
     locale?: 'ru' | 'en' | null;
     theme?: 'light' | 'dark';
     collapse_menu?: boolean;
+    public_city?: {
+      city_id: string;
+      city_name: string;
+      source: 'ip_auto' | 'manual';
+      region_id?: string | null;
+      region_name?: string | null;
+      country_id: string;
+      country_name: string;
+    } | null;
     admin_crud_preferences?: Record<
       string,
       {
@@ -115,7 +126,9 @@ export const useAuth = () => {
     user.value = normalizeUserAssets(nextUser);
   };
 
-  const syncGuestPreferencesAfterAuth = async (): Promise<void> => {
+  const syncGuestPreferencesAfterAuth = async (
+    accountSettings?: AuthUser['settings'] | null
+  ): Promise<void> => {
     const guestPreferences = readGuestPreferences();
     const hasFavorites = (guestPreferences.favorites?.length ?? 0) > 0;
     const hasSettings = Boolean(guestPreferences.settings);
@@ -126,10 +139,18 @@ export const useAuth = () => {
     }
 
     const api = useApi();
+    const normalizedAccountSettings = mergeSettings(
+      accountSettings ?? user.value?.settings ?? null
+    );
     const mergedSettings = mergeGuestPreferencesIntoAccountSettings(
-      user.value?.settings ?? null,
+      accountSettings ?? user.value?.settings ?? null,
       guestPreferences
     );
+
+    if (settingsAreSame(normalizedAccountSettings, mergedSettings)) {
+      clearGuestPreferences();
+      return;
+    }
 
     await api('/api/me/settings', {
       method: 'PATCH',
@@ -162,7 +183,7 @@ export const useAuth = () => {
         guestPreferences
       ),
     });
-    await syncGuestPreferencesAfterAuth();
+    await syncGuestPreferencesAfterAuth(response.user.settings ?? null);
   };
 
   const register = async (payload: RegisterPayload): Promise<void> => {
@@ -182,7 +203,7 @@ export const useAuth = () => {
         guestPreferences
       ),
     });
-    await syncGuestPreferencesAfterAuth();
+    await syncGuestPreferencesAfterAuth(response.user.settings ?? null);
   };
 
   const refreshUser = async (): Promise<AuthUser | null> => {

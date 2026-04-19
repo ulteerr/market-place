@@ -111,9 +111,12 @@ final class ActivitiesService
         return $this->repository->findByPublicRouteKey($publicKey);
     }
 
-    public function featured(int $limit = 12): Collection
+    /**
+     * @param array<string, mixed> $filters
+     */
+    public function featured(int $limit = 12, array $filters = []): Collection
     {
-        return $this->repository->featured($limit);
+        return $this->repository->featured($limit, $filters);
     }
 
     /**

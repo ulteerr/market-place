@@ -12,6 +12,16 @@ interface CitiesRepositoryInterface
 {
     public function list(array $filters = []): Collection;
 
+    public function publicOptions(string $search = "", int $limit = 20): Collection;
+
+    public function firstById(): ?City;
+
+    public function findByNames(
+        string $cityName,
+        ?string $countryName = null,
+        ?string $regionName = null,
+    ): ?City;
+
     public function paginate(int $perPage = 20, array $filters = []): LengthAwarePaginator;
 
     public function create(array $data): City;

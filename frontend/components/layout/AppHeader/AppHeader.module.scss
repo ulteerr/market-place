@@ -37,6 +37,67 @@
   min-height: 4.45rem;
 }
 
+.cityDetectionAction,
+.serviceZoneButton,
+.mobileCityButton {
+  border: 1px solid var(--header-border-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--header-surface-elevated) 96%, white 4%);
+  color: var(--header-ink);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    border-color: var(--header-accent);
+    color: var(--header-accent);
+    background: var(--header-spotlight);
+  }
+}
+
+.cityDetectionBody {
+  display: grid;
+  gap: 1rem;
+}
+
+.cityDetectionDescription {
+  margin: 0;
+  color: var(--header-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.cityDetectionActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.cityDetectionAction {
+  padding: 0.52rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cityDetectionActionPrimary {
+  color: var(--header-ink);
+}
+
+.cityDetectionActionSecondary {
+  color: var(--header-muted);
+}
+
+.cityDetectionActionGhost {
+  color: var(--header-muted);
+  background: transparent;
+}
+
 .logo {
   font-family: var(--font-display);
   font-size: 1.45rem;
@@ -359,6 +420,11 @@
   white-space: nowrap;
 }
 
+.serviceZoneButton {
+  padding: 0.42rem 0.8rem;
+  cursor: pointer;
+}
+
 .localeSelect {
   min-width: 4rem;
   width: 4rem;
@@ -472,6 +538,29 @@
   gap: 0.75rem;
 }
 
+.mobileCityButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cityPickerBody {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.cityPickerDescription {
+  margin: 0;
+  color: var(--header-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 @media (max-width: 1120px) {
   .topRow {
     grid-template-columns: auto auto minmax(10rem, 1fr) auto auto;
@@ -483,6 +572,15 @@
 }
 
 @media (max-width: 860px) {
+  .cityDetectionActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .cityDetectionAction {
+    flex: 1 1 100%;
+  }
+
   .topRow {
     grid-template-columns: auto auto auto auto;
   }
@@ -591,6 +689,7 @@
 
   .mobileUtilityRow {
     align-items: stretch;
+    flex-wrap: wrap;
   }
 
   .localeSelect {

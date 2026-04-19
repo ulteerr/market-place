@@ -108,6 +108,7 @@ const onSubmit = async () => {
 
   try {
     await login(email.value, password.value);
+    await nextTick();
     await navigateTo(nextPath.value);
   } catch {
     error.value = 'Не удалось авторизоваться. Проверьте email и пароль.';

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { setGuestPreferencesCookie } from '../helpers/guest-preferences';
 import { E2E_VIEWPORTS } from '../helpers/viewports';
 
 const assertNoHorizontalOverflow = async (page: Page) => {
@@ -8,10 +9,49 @@ const assertNoHorizontalOverflow = async (page: Page) => {
   expect(hasHorizontalOverflow).toBeFalsy();
 };
 
+const waitForNuxtHydration = async (page: Page) => {
+  await page.waitForFunction(() => {
+    const runtimeWindow = window as Window & {
+      useNuxtApp?: () => { isHydrating?: boolean };
+    };
+
+    if (typeof runtimeWindow.useNuxtApp !== 'function') {
+      return false;
+    }
+
+    return runtimeWindow.useNuxtApp()?.isHydrating === false;
+  });
+};
+
+const setManualGuestCity = async (page: Page) => {
+  await setGuestPreferencesCookie(page, {
+    v: 1,
+    settings: {
+      locale: null,
+      theme: 'light',
+      collapse_menu: false,
+      favorites: [],
+      public_city: {
+        city_id: 'city-msk',
+        city_name: 'Москва',
+        source: 'manual',
+        region_id: 'region-msk',
+        region_name: 'Москва',
+        country_id: 'country-ru',
+        country_name: 'Россия',
+      },
+      admin_crud_preferences: {},
+      admin_navigation_sections: {},
+    },
+  });
+};
+
 test.describe('Public header responsive', () => {
   test('renders desktop navigation contract', async ({ page }) => {
     await page.setViewportSize(E2E_VIEWPORTS.desktop1366);
+    await setManualGuestCity(page);
     await page.goto('/');
+    await waitForNuxtHydration(page);
 
     await expect(page.locator('[data-test="public-header"]').last()).toBeVisible();
     await expect(page.locator('[data-test="public-header-search"]').last()).toBeVisible();
@@ -30,7 +70,9 @@ test.describe('Public header responsive', () => {
 
   test('renders tablet navigation contract', async ({ page }) => {
     await page.setViewportSize(E2E_VIEWPORTS.tablet768);
+    await setManualGuestCity(page);
     await page.goto('/');
+    await waitForNuxtHydration(page);
 
     await expect(page.locator('[data-test="public-header"]').last()).toBeVisible();
     await expect(page.locator('[data-test="public-header-bottom-row"]').last()).toBeVisible();
@@ -50,7 +92,9 @@ test.describe('Public header responsive', () => {
 
   test('renders mobile navigation contract', async ({ page }) => {
     await page.setViewportSize(E2E_VIEWPORTS.mobile390);
+    await setManualGuestCity(page);
     await page.goto('/');
+    await waitForNuxtHydration(page);
 
     await expect(page.locator('[data-test="public-header"]').last()).toBeVisible();
     await expect(

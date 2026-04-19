@@ -54,6 +54,15 @@ onMounted(async () => {
       (refreshedUser?.settings ?? null) as {
         theme?: 'light' | 'dark';
         collapse_menu?: boolean;
+        public_city?: {
+          city_id: string;
+          city_name: string;
+          source: 'ip_auto' | 'manual';
+          region_id?: string | null;
+          region_name?: string | null;
+          country_id: string;
+          country_name: string;
+        } | null;
         admin_crud_preferences?: Record<
           string,
           {

@@ -1,9 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { computed, ref } from 'vue';
 import { buildPublicActivityPath, usePublicActivities } from '~/composables/usePublicActivities';
 
 describe('usePublicActivities', () => {
+  const selectedCityId = ref('');
+
   beforeEach(() => {
     vi.restoreAllMocks();
+    selectedCityId.value = '';
+    vi.stubGlobal('usePublicCity', () => ({
+      selectedCityId: computed(() => selectedCityId.value),
+    }));
   });
 
   it('requests featured activities and normalizes cover urls', async () => {
@@ -34,13 +41,14 @@ describe('usePublicActivities', () => {
     vi.stubGlobal('useRuntimeConfig', () => ({
       public: { apiBase: 'http://api.localhost:8080' },
     }));
+    selectedCityId.value = 'city-1';
 
     const api = usePublicActivities();
     const items = await api.featured(8);
 
     expect(fetchMock).toHaveBeenCalledWith('/api/activities/featured', {
       method: 'GET',
-      query: { limit: 8 },
+      query: { limit: 8, city_id: 'city-1' },
     });
     expect(items[0]?.cover?.url).toBe('http://api.localhost:8080/storage/activities/cover.jpg');
   });
@@ -58,6 +66,7 @@ describe('usePublicActivities', () => {
     vi.stubGlobal('useRuntimeConfig', () => ({
       public: { apiBase: 'http://api.localhost:8080' },
     }));
+    selectedCityId.value = 'city-2';
 
     const api = usePublicActivities();
     await api.feed({
@@ -75,9 +84,41 @@ describe('usePublicActivities', () => {
         cursor: 'cursor-1',
         limit: 20,
         category_id: 'cat-1',
+        city_id: 'city-2',
         search: 'футбол',
         sort_by: 'created_at',
         sort_dir: 'asc',
+      },
+      signal: undefined,
+    });
+  });
+
+  it('preserves explicit city filter over selected city', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      status: 'ok',
+      data: {
+        items: [],
+        next_cursor: null,
+      },
+    });
+
+    vi.stubGlobal('useApi', () => fetchMock);
+    vi.stubGlobal('useRuntimeConfig', () => ({
+      public: { apiBase: 'http://api.localhost:8080' },
+    }));
+    selectedCityId.value = 'city-selected';
+
+    const api = usePublicActivities();
+    await api.feed({
+      limit: 12,
+      city_id: 'city-explicit',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/activities/feed', {
+      method: 'GET',
+      query: {
+        limit: 12,
+        city_id: 'city-explicit',
       },
       signal: undefined,
     });

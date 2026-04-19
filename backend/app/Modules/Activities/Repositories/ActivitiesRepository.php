@@ -38,17 +38,17 @@ final class ActivitiesRepository implements ActivitiesRepositoryInterface
         return Activity::query()->with($this->defaultRelations())->whereKey($uuid)->first();
     }
 
-    public function featured(int $limit = 12): Collection
+    public function featured(int $limit = 12, array $filters = []): Collection
     {
-        return Activity::query()
+        $query = Activity::query()
             ->select($this->feedSelect())
             ->with($this->feedRelations())
-            ->where("status", "published")
-            ->where("is_featured", true)
             ->orderByDesc("published_at")
-            ->orderByDesc("created_at")
-            ->limit($limit)
-            ->get();
+            ->orderByDesc("created_at");
+
+        $this->applyFilters($query, [...$filters, "status" => "published", "is_featured" => true]);
+
+        return $query->limit($limit)->get();
     }
 
     public function feed(int $limit = 20, ?string $cursor = null, array $filters = []): array

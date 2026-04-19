@@ -18,7 +18,10 @@ interface ActivitiesRepositoryInterface
 
     public function findByPublicRouteKey(string $publicKey): ?Activity;
 
-    public function featured(int $limit = 12): Collection;
+    /**
+     * @param array<string, mixed> $filters
+     */
+    public function featured(int $limit = 12, array $filters = []): Collection;
 
     /**
      * @param array<string, mixed> $filters

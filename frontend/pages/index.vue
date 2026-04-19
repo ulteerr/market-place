@@ -124,6 +124,7 @@ const { t } = useI18n();
 const previewState = usePublicPreviewState();
 const config = useRuntimeConfig();
 const publicActivitiesApi = usePublicActivities();
+const { selectedCityId } = usePublicCity();
 const { isFavorite, toggleFavorite } = useFavorites();
 
 const {
@@ -131,7 +132,7 @@ const {
   pending: initialHomePending,
   error: initialHomeError,
 } = await useAsyncData(
-  'public-home-initial',
+  () => `public-home-initial:${selectedCityId.value || 'all'}`,
   async () => {
     if (previewState.value !== 'ready') {
       return {
@@ -157,6 +158,7 @@ const {
       featured: [],
       feedItems: [],
     }),
+    watch: [selectedCityId],
   }
 );
 

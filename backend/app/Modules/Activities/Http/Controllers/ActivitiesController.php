@@ -16,7 +16,9 @@ final class ActivitiesController
     public function featured(Request $request): JsonResponse
     {
         $limit = max(1, min(24, (int) $request->integer("limit", 12)));
-        $items = $this->activitiesService->featured($limit);
+        $items = $this->activitiesService->featured($limit, [
+            "city_id" => trim((string) $request->query("city_id", "")),
+        ]);
 
         return ActivityResponseFactory::feedCollection($items);
     }
